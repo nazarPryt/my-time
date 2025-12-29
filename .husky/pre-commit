@@ -1,1 +1,7 @@
-npx lint-staged
+if command -v bun >/dev/null 2>&1; then
+  bun run lint-staged
+elif command -v bunx >/dev/null 2>&1; then
+  bunx lint-staged
+else
+  npx lint-staged
+fi

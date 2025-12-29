@@ -5,12 +5,10 @@ function App() {
 
   return (
     <>
-      <div className={'text-5xl'}>
-        <button className={'text-amber-800'} onClick={() => setCount(count => count + 1)}>
-          count is {count}
-        </button>
+      <div>
+        <button onClick={() => setCount(count => count + 1)}>count is {count}</button>
         <p>
-          Edit <code>src/App.tsx</code> and save fto test HMR
+          Edit <code>src/App.tsx</code> and save ftojhvjjgjgjg testghghfhg HMR
         </p>
       </div>
     </>
