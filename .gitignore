@@ -12,6 +12,19 @@ dist
 dist-ssr
 *.local
 
+# Test coverage
+coverage
+*.lcov
+.nyc_output
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Vitest
+.vitest
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
