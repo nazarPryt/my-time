@@ -24,7 +24,7 @@ export interface ReportsSlice {
 
 export const createReportsSlice: StateCreator<
   ReportsSlice,
-  [['zustand/devtools', never], ['zustand/persist', unknown], ['zustand/immer', never]],
+  [['zustand/immer', never], ['zustand/persist', unknown], ['zustand/devtools', never]],
   [],
   ReportsSlice
 > = set => ({

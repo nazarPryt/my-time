@@ -26,7 +26,7 @@ export interface TimerSlice {
 
 export const createTimerSlice: StateCreator<
   TimerSlice,
-  [['zustand/devtools', never], ['zustand/persist', unknown], ['zustand/immer', never]],
+  [['zustand/immer', never], ['zustand/persist', unknown], ['zustand/devtools', never]],
   [],
   TimerSlice
 > = set => ({

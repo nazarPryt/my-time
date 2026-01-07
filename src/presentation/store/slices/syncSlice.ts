@@ -29,7 +29,7 @@ export interface SyncSlice {
 
 export const createSyncSlice: StateCreator<
   SyncSlice,
-  [['zustand/devtools', never], ['zustand/persist', unknown], ['zustand/immer', never]],
+  [['zustand/immer', never], ['zustand/persist', unknown], ['zustand/devtools', never]],
   [],
   SyncSlice
 > = set => ({

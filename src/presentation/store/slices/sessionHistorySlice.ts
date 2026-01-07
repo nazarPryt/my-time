@@ -19,7 +19,7 @@ export interface SessionHistorySlice {
 
 export const createSessionHistorySlice: StateCreator<
   SessionHistorySlice,
-  [['zustand/devtools', never], ['zustand/persist', unknown], ['zustand/immer', never]],
+  [['zustand/immer', never], ['zustand/persist', unknown], ['zustand/devtools', never]],
   [],
   SessionHistorySlice
 > = set => ({

@@ -16,7 +16,7 @@ export interface SettingsSlice {
 
 export const createSettingsSlice: StateCreator<
   SettingsSlice,
-  [['zustand/devtools', never], ['zustand/persist', unknown], ['zustand/immer', never]],
+  [['zustand/immer', never], ['zustand/persist', unknown], ['zustand/devtools', never]],
   [],
   SettingsSlice
 > = set => ({

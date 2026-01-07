@@ -53,6 +53,5 @@ export const useAppStore = create<AppStore>()(
   ),
 )
 
-// Export types
-export type { AppStore }
+// Export all slice types
 export * from './slices'

@@ -3,7 +3,7 @@ import type { MonthlyReport } from '@/shared/schemas'
 import { MonthlyReportSchema } from '@/shared/schemas'
 import { db } from '../../connection'
 import { sessions } from '../../schemas'
-import { startOfMonth, endOfMonth, eachDayOfInterval, format, getWeek, getDayOfWeek, getHours, addDays } from 'date-fns'
+import { startOfMonth, endOfMonth, format, getWeek, getDay, getHours, addDays } from 'date-fns'
 
 /**
  * Monthly Report Generator

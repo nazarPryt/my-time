@@ -6,16 +6,6 @@
  * and injecting them into use cases.
  */
 
-import { db } from '@infra/database/connection'
-import {
-  PostgreSQLSessionRepository,
-  PostgreSQLSettingsRepository,
-  DailyReportGenerator,
-  WeeklyReportGenerator,
-  MonthlyReportGenerator,
-  DailyAggregateService,
-} from '@infra/database/repositories'
-
 // Use cases
 import {
   StartWorkUseCase,
@@ -64,27 +54,11 @@ export class AppContainer {
   public readonly updateSettingsUseCase: UpdateSettingsUseCase
 
   constructor() {
-    // Initialize repositories
-    this.sessionRepository = new PostgreSQLSessionRepository(db)
-    this.settingsRepository = new PostgreSQLSettingsRepository(db)
-
-    // Initialize report repository with its components
-    const dailyAggregateService = new DailyAggregateService(db)
-    const dailyReportGenerator = new DailyReportGenerator(db, dailyAggregateService)
-    const weeklyReportGenerator = new WeeklyReportGenerator(dailyReportGenerator)
-    const monthlyReportGenerator = new MonthlyReportGenerator(dailyReportGenerator)
-
-    // Create the report repository facade
-    this.reportRepository = {
-      getDailyReport: dailyReportGenerator.getDailyReport.bind(dailyReportGenerator),
-      getWeeklyReport: weeklyReportGenerator.getWeeklyReport.bind(weeklyReportGenerator),
-      getMonthlyReport: monthlyReportGenerator.getMonthlyReport.bind(monthlyReportGenerator),
-      regenerateDailyAggregate: dailyAggregateService.regenerateDailyAggregate.bind(dailyAggregateService),
-      getDailyReportsInRange: dailyReportGenerator.getDailyReportsInRange.bind(dailyReportGenerator),
-      invalidateCache: async () => {
-        // No-op for now, can implement cache invalidation later
-      },
-    }
+    // Initialize mock repositories for browser environment
+    // TODO: Replace with IndexedDB or localStorage implementations
+    this.sessionRepository = {} as unknown as ISessionRepository
+    this.settingsRepository = {} as unknown as ISettingsRepository
+    this.reportRepository = {} as unknown as IReportRepository
 
     // Initialize session use cases
     this.startWorkUseCase = new StartWorkUseCase(this.sessionRepository, this.settingsRepository)
@@ -105,10 +79,10 @@ export class AppContainer {
   }
 
   /**
-   * Cleanup method to close database connections
+   * Cleanup method (no-op in browser environment)
    */
   async cleanup(): Promise<void> {
-    await db.end()
+    // No cleanup needed in browser
   }
 }
 
