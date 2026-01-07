@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { TimerStateMachine, TimerState, TimerEvent, InvalidStateTransitionError } from '../TimerStateMachine'
+import { TimerStateMachine, TimerState, TimerEvent, InvalidStateTransitionError } from '@domain/services'
 
 describe('TimerStateMachine', () => {
   describe('initial state', () => {
