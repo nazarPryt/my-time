@@ -1,34 +1,15 @@
 {
-  "name": "my-time",
+  "name": "my-time-monorepo",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  },
-  "ignoreScripts": [
-    "sharp",
-    "unrs-resolver"
+  "workspaces": [
+    "packages/*"
   ],
-  "trustedDependencies": [
-    "sharp",
-    "unrs-resolver"
-  ]
+  "scripts": {
+    "dev:web": "bun --filter web dev",
+    "build:web": "bun --filter web build",
+    "dev:api": "bun --filter api dev",
+    "build:api": "bun --filter api build"
+  },
+  "devDependencies": {}
 }
