@@ -4,15 +4,18 @@ After completing a coding task, run the relevant checks depending on which app w
 
 ## Web app (`apps/web`)
 ```bash
-cd apps/web
-bun run lint       # ESLint check
-bun run build      # TypeScript + Vite build (catches type errors)
+# From monorepo root:
+bun run lint:fix   # Biome auto-fix
+bun run web:build  # TypeScript + Vite build (catches type errors)
+
+# Or from apps/web:
+bun run lint       # Biome check
+bun run build      # TypeScript + Vite build
 ```
 
 ## API (`apps/api`)
 ```bash
 cd apps/api
-# No dedicated lint/test script yet — bun run dev confirms it runs
 bun run dev        # Verify it starts
 ```
 
@@ -24,6 +27,7 @@ bun run build      # Full WXT build
 ```
 
 ## General
-- No global test suite defined yet (api has a stub "no test" script)
+- No global test suite defined yet
 - Ensure TypeScript compiles without errors before committing
-- Run lint before committing web changes
+- Run `bun run lint:fix` from root before committing
+- Zod version pinned at `4.3.6` exact in both `apps/web` and `shared/contracts` — keep in sync
