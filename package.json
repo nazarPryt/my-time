@@ -1,17 +1,21 @@
 {
-  "name": "my-time-monorepo",
-  "version": "0.1.0",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "shared/*"
-  ],
-  "scripts": {
-    "web:dev": "bun --filter web dev",
-    "web:build": "bun --filter web build",
-    "api:dev": "bun --filter api dev",
-    "api:build": "bun --filter api build",
-    "extension:dev": "bun --filter extension dev"
-  },
-  "devDependencies": {}
+	"name": "my-time-monorepo",
+	"version": "0.1.0",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"shared/*"
+	],
+	"scripts": {
+		"web:dev": "bun --filter web dev",
+		"web:build": "bun --filter web build",
+		"api:dev": "bun --filter api dev",
+		"extension:dev": "bun --filter extension dev",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.6"
+	}
 }

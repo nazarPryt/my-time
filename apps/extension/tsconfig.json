@@ -1,12 +1,12 @@
 {
-  "extends": "./.wxt/tsconfig.json",
-  "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@contracts": ["../../shared/contracts/index.ts"],
-      "@contracts/*": ["../../shared/contracts/*"]
-    }
-  }
+	"extends": "./.wxt/tsconfig.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"jsx": "react-jsx",
+		"baseUrl": ".",
+		"paths": {
+			"@contracts": ["../../shared/contracts/index.ts"],
+			"@contracts/*": ["../../shared/contracts/*"]
+		}
+	}
 }

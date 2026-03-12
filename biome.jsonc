@@ -1,0 +1,80 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.6/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": ["**", "!.claude", "!.serena"]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": true,
+			"tailwindDirectives": true
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"semicolons": "asNeeded"
+		}
+	},
+	"overrides": [
+		{
+			// React entry points use `document.getElementById('root')!` which is
+			// always guaranteed to exist by the HTML template — the non-null assertion
+			// is safe and intentional here.
+			"includes": ["**/src/main.tsx", "**/entrypoints/**/main.tsx"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			// UI primitives (shadcn/Base UI) intentionally use <div role="group">
+			// instead of <fieldset> for styling flexibility — fieldset has browser
+			// default styles that break the component design. Array index keys and
+			// click-without-keyboard are also acceptable in low-level primitives that
+			// handle their own accessibility at a higher composition level.
+			"includes": ["**/components/ui/**"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"useSemanticElements": "off",
+						"useKeyWithClickEvents": "off",
+						"noRedundantAlt": "off"
+					},
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		}
+	],
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}
