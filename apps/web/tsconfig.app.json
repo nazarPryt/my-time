@@ -25,7 +25,9 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@contracts": ["../../shared/contracts/index.ts"],
+      "@contracts/*": ["../../shared/contracts/*"]
     }
   },
   "include": ["src"]
