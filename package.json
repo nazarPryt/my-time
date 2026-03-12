@@ -6,10 +6,11 @@
     "apps/*"
   ],
   "scripts": {
-    "dev:web": "bun --filter web dev",
-    "build:web": "bun --filter web build",
-    "dev:api": "bun --filter api dev",
-    "build:api": "bun --filter api build"
+    "web:dev": "bun --filter web dev",
+    "web:build": "bun --filter web build",
+    "api:dev": "bun --filter api dev",
+    "api:build": "bun --filter api build",
+    "extension:dev": "bun --filter extension dev"
   },
   "devDependencies": {}
 }
