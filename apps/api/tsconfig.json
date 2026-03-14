@@ -5,8 +5,10 @@
 		"moduleResolution": "node",
 		"baseUrl": "./",
 		"paths": {
-			"@contracts": ["../../shared/contracts/index.ts"],
-			"@contracts/*": ["../../shared/contracts/*"]
+			"@db": ["src/db/index.ts"],
+			"@db/*": ["src/db/*"],
+			"@features/*": ["src/features/*"],
+			"@shared/*": ["src/shared/*"]
 		},
 		"types": ["bun-types"],
 		"esModuleInterop": true,

@@ -26,8 +26,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
-			"@contracts": ["../../shared/contracts/index.ts"],
-			"@contracts/*": ["../../shared/contracts/*"]
+			"@my-time/api": ["../../apps/api/src/index.ts"]
 		}
 	},
 	"include": ["src"]

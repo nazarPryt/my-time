@@ -1,9 +1,7 @@
-import {
-	type RegisterRequest,
-	RegisterRequestSchema,
-} from '@contracts/auth/api'
+import { type RegisterRequest, RegisterRequestSchema } from '@my-time/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { api } from '@/lib/api'
 
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -13,8 +11,14 @@ export function useRegister() {
 		defaultValues: { timezone: detectedTimezone },
 	})
 
-	async function onSubmit(_data: RegisterRequest) {
-		// TODO: wire up API call
+	async function onSubmit(data: RegisterRequest) {
+		const { data: res, error } = await api.auth.register.post(data)
+		if (error) {
+			// TODO: surface error.value.message
+			return
+		}
+		// TODO: store res.tokens, navigate to app
+		console.log('registered:', res.user)
 	}
 
 	return { form, onSubmit }
