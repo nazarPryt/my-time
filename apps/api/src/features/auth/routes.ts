@@ -1,5 +1,7 @@
-import { Elysia, t } from 'elysia'
 import { jwt } from '@elysiajs/jwt'
+import { API_CONFIG } from '@shared/api-config'
+import { Elysia, t } from 'elysia'
+import { refreshTokenRepository } from './repository'
 import {
 	LoginRequestSchema,
 	LogoutRequestSchema,
@@ -7,8 +9,6 @@ import {
 	RegisterRequestSchema,
 } from './schemas'
 import { authService } from './service'
-import { refreshTokenRepository } from './repository'
-import { API_CONFIG } from '@shared/api-config'
 
 const jwtPlugin = jwt({
 	name: 'jwt',
@@ -23,7 +23,10 @@ async function generateTokens(jwt: JwtSigner, userId: string) {
 	const now = Math.floor(Date.now() / 1000)
 	const accessToken = await jwt.sign({ sub: userId, exp: now + 15 * 60 })
 	const refreshExpiresAt = new Date((now + 7 * 24 * 60 * 60) * 1000)
-	const refreshToken = await jwt.sign({ sub: userId, exp: now + 7 * 24 * 60 * 60 })
+	const refreshToken = await jwt.sign({
+		sub: userId,
+		exp: now + 7 * 24 * 60 * 60,
+	})
 	await refreshTokenRepository.save(refreshToken, userId, refreshExpiresAt)
 	return { accessToken, refreshToken }
 }
@@ -39,7 +42,10 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 				return { user, tokens }
 			} catch (e: unknown) {
 				if (e instanceof Error && e.message === 'EMAIL_TAKEN') {
-					return status('Conflict', { code: 'EMAIL_TAKEN', message: 'Email already registered' })
+					return status('Conflict', {
+						code: 'EMAIL_TAKEN',
+						message: 'Email already registered',
+					})
 				}
 				throw e
 			}
@@ -57,7 +63,10 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 				const tokens = await generateTokens(jwt, user.id)
 				return { user, tokens }
 			} catch {
-				return status('Unauthorized', { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' })
+				return status('Unauthorized', {
+					code: 'INVALID_CREDENTIALS',
+					message: 'Invalid email or password',
+				})
 			}
 		},
 		{
@@ -70,11 +79,17 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		async ({ body, jwt, status }) => {
 			const valid = await refreshTokenRepository.exists(body.refreshToken)
 			if (!valid) {
-				return status('Unauthorized', { code: 'INVALID_TOKEN', message: 'Refresh token invalid or expired' })
+				return status('Unauthorized', {
+					code: 'INVALID_TOKEN',
+					message: 'Refresh token invalid or expired',
+				})
 			}
 			const payload = await jwt.verify(body.refreshToken)
 			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', { code: 'INVALID_TOKEN', message: 'Refresh token invalid or expired' })
+				return status('Unauthorized', {
+					code: 'INVALID_TOKEN',
+					message: 'Refresh token invalid or expired',
+				})
 			}
 			await refreshTokenRepository.remove(body.refreshToken)
 			const tokens = await generateTokens(jwt, payload.sub)
@@ -92,17 +107,27 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 		{ body: LogoutRequestSchema },
 	)
-	.get('/me', async ({ headers, jwt, status }) => {
-		const auth = headers.authorization
-		if (!auth?.startsWith('Bearer ')) {
-			return status('Unauthorized', { code: 'UNAUTHORIZED', message: 'Missing token' })
-		}
-		const payload = await jwt.verify(auth.slice(7))
-		if (!payload || typeof payload.sub !== 'string') {
-			return status('Unauthorized', { code: 'UNAUTHORIZED', message: 'Invalid token' })
-		}
-		const user = await authService.getById(payload.sub)
-		return { user }
-	}, {
-		response: { 401: AuthErrorSchema },
-	})
+	.get(
+		'/me',
+		async ({ headers, jwt, status }) => {
+			const auth = headers.authorization
+			if (!auth?.startsWith('Bearer ')) {
+				return status('Unauthorized', {
+					code: 'UNAUTHORIZED',
+					message: 'Missing token',
+				})
+			}
+			const payload = await jwt.verify(auth.slice(7))
+			if (!payload || typeof payload.sub !== 'string') {
+				return status('Unauthorized', {
+					code: 'UNAUTHORIZED',
+					message: 'Invalid token',
+				})
+			}
+			const user = await authService.getById(payload.sub)
+			return { user }
+		},
+		{
+			response: { 401: AuthErrorSchema },
+		},
+	)

@@ -1,5 +1,5 @@
-import { authRepository } from './repository'
 import type { users } from '@db/schema'
+import { authRepository } from './repository'
 
 type PublicUser = {
 	id: string
@@ -16,7 +16,12 @@ function toPublicUser(u: typeof users.$inferSelect): PublicUser {
 }
 
 export const authService = {
-	register: async (data: { email: string; name: string; password: string; timezone?: string }) => {
+	register: async (data: {
+		email: string
+		name: string
+		password: string
+		timezone?: string
+	}) => {
 		const existing = await authRepository.findByEmail(data.email)
 		if (existing) throw new Error('EMAIL_TAKEN')
 

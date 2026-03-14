@@ -1,5 +1,5 @@
-import { defineConfig } from 'drizzle-kit'
 import { API_CONFIG } from '@shared/api-config'
+import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
 	schema: './src/db/schema',

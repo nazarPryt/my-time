@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm'
 import { db } from '@db'
 import { refreshTokens, users } from '@db/schema'
+import { eq } from 'drizzle-orm'
 
 export const authRepository = {
 	findByEmail: async (email: string) => {
@@ -13,7 +13,12 @@ export const authRepository = {
 		return user ?? null
 	},
 
-	create: async (data: { email: string; name: string; passwordHash: string; timezone: string }) => {
+	create: async (data: {
+		email: string
+		name: string
+		passwordHash: string
+		timezone: string
+	}) => {
 		const [user] = await db.insert(users).values(data).returning()
 		return user
 	},
@@ -25,7 +30,10 @@ export const refreshTokenRepository = {
 	},
 
 	exists: async (token: string) => {
-		const [row] = await db.select().from(refreshTokens).where(eq(refreshTokens.token, token))
+		const [row] = await db
+			.select()
+			.from(refreshTokens)
+			.where(eq(refreshTokens.token, token))
 		return !!row
 	},
 

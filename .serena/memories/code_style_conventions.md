@@ -15,7 +15,7 @@
 ## Styling
 - TailwindCSS v4 (utility-first, no separate config file — uses CSS-based config)
 - shadcn/ui component pattern: components live in `src/components/ui/`
-- `clsx` + `tailwind-merge` used for conditional class merging (via `lib/utils.ts`)
+- `clsx` + `tailwind-merge` used for conditional class merging (via `lib/cn.ts`)
 - `class-variance-authority` (CVA) for component variants
 
 ## UI Components

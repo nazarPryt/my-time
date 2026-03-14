@@ -21,6 +21,22 @@ my-time/
 └── bun.lock
 ```
 
+## API Structure (apps/api/src/)
+
+```
+src/
+├── app.ts          # Elysia app definition (plugins, routes) — uses relative imports for Eden Treaty type inference
+├── index.ts        # Entry point — calls app.listen(), imports from ./app
+├── public.ts       # Public type surface for web client (re-exports App type from ./app, auth schemas)
+├── features/
+│   └── auth/       # Auth routes, service, schemas
+├── shared/
+│   └── api-config.ts
+└── db/
+```
+
+`app.ts` uses relative imports (not path aliases) so that `apps/web/tsconfig.app.json` can resolve the `App` type via `@my-time/api` → `public.ts` → `app.ts` without needing the API's internal path aliases.
+
 ## Tech Stack
 
 | Layer      | Tech                                          |
@@ -54,7 +70,7 @@ src/
 │   └── auth/
 │       ├── login.tsx   # /auth/login
 │       └── register.tsx # /auth/register
-├── lib/utils.ts        # cn() helper
+├── lib/cn.ts        # cn() helper
 └── index.css           # TailwindCSS v4 + theme CSS variables
 ```
 
