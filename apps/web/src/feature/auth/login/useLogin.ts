@@ -1,7 +1,7 @@
-import { type LoginRequest, LoginRequestSchema } from '@my-time/api'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { type LoginRequest, LoginRequestSchema } from '@my-time/api'
 import { useForm } from 'react-hook-form'
-import { api } from '@/lib/api'
+import { api } from '@/shared/lib/api.ts'
 
 export function useLogin() {
 	const form = useForm<LoginRequest>({

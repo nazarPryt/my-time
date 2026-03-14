@@ -14,6 +14,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
+			'@my-time/api': path.resolve(__dirname, '../../apps/api/src/public.ts'),
 		},
 	},
 })

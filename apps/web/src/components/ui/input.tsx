@@ -1,8 +1,8 @@
 import { Eye, EyeOff } from 'lucide-react'
-import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { type ComponentProps, useState } from 'react'
+import { cn } from '@/shared/lib/cn.ts'
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+function Input({ className, type, ...props }: ComponentProps<'input'>) {
 	const [showPassword, setShowPassword] = useState(false)
 
 	if (type === 'password') {

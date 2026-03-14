@@ -1,7 +1,7 @@
-import { type RegisterRequest, RegisterRequestSchema } from '@my-time/api'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { type RegisterRequest, RegisterRequestSchema } from '@my-time/api'
 import { useForm } from 'react-hook-form'
-import { api } from '@/lib/api'
+import { api } from '@/shared/lib/api.ts'
 
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
