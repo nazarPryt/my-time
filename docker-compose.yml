@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: DB
+    restart: unless-stopped
+    env_file:
+      - ./apps/api/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${DB_DATA_PATH}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: API
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/api/.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+      API_URL: http://0.0.0.0:3000
+    depends_on:
+      db:
+        condition: service_healthy

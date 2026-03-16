@@ -1,6 +1,11 @@
+import { connectToDatabase } from '@db/connect'
 import { API_CONFIG } from '@shared/api-config'
 import { app } from './app'
 
-app.listen({ hostname: API_CONFIG.HOSTNAME, port: API_CONFIG.PORT })
+await connectToDatabase()
 
-console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
+app.listen({ hostname: API_CONFIG.API_HOST, port: API_CONFIG.API_PORT })
+
+console.log(
+	`🚀 Server is up and running at http://${app.server?.hostname}:${app.server?.port}`,
+)
