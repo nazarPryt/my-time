@@ -21,11 +21,16 @@ type JwtSigner = { sign: (payload: Record<string, unknown>) => Promise<string> }
 
 async function generateTokens(jwt: JwtSigner, userId: string) {
 	const now = Math.floor(Date.now() / 1000)
-	const accessToken = await jwt.sign({ sub: userId, exp: now + 15 * 60 })
+	const accessToken = await jwt.sign({
+		sub: userId,
+		exp: now + 15 * 60,
+		jti: crypto.randomUUID(),
+	})
 	const refreshExpiresAt = new Date((now + 7 * 24 * 60 * 60) * 1000)
 	const refreshToken = await jwt.sign({
 		sub: userId,
 		exp: now + 7 * 24 * 60 * 60,
+		jti: crypto.randomUUID(),
 	})
 	await refreshTokenRepository.save(refreshToken, userId, refreshExpiresAt)
 	return { accessToken, refreshToken }

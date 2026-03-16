@@ -5,6 +5,7 @@
 		"moduleResolution": "node",
 		"baseUrl": "./",
 		"paths": {
+			"@/*": ["src/*"],
 			"@db": ["src/db/index.ts"],
 			"@db/*": ["src/db/*"],
 			"@features/*": ["src/features/*"],

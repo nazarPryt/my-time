@@ -26,7 +26,9 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
-			"@my-time/api": ["../../apps/api/src/public.ts"]
+			"@my-time/api": ["../../apps/api/src/public.ts"],
+			"@features/*": ["../../apps/api/src/features/*"],
+			"@shared/*": ["../../apps/api/src/shared/*"]
 		}
 	},
 	"include": ["src"]

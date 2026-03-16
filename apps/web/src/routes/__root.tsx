@@ -13,8 +13,9 @@ export const Route = createRootRoute({
 function RootLayout() {
 	const pathname = useRouterState({ select: (s) => s.location.pathname })
 	const isAuthRoute = pathname.startsWith('/auth')
+	const isDashboardRoute = pathname.startsWith('/dashboard')
 
-	if (isAuthRoute) {
+	if (isAuthRoute || isDashboardRoute) {
 		return (
 			<>
 				<Outlet />
