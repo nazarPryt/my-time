@@ -32,7 +32,11 @@ function LoginPage() {
 				</>
 			}
 		>
-			<form data-testid="login-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+			<form
+				data-testid="login-form"
+				onSubmit={handleSubmit(onSubmit)}
+				className="flex flex-col gap-5"
+			>
 				{/* Email */}
 				<div className="flex flex-col gap-1.5">
 					<Label htmlFor="email">Email</Label>
@@ -46,7 +50,12 @@ function LoginPage() {
 						{...register('email')}
 					/>
 					{errors.email && (
-						<p data-testid="login-email-error" className="text-xs text-destructive">{errors.email.message}</p>
+						<p
+							data-testid="login-email-error"
+							className="text-xs text-destructive"
+						>
+							{errors.email.message}
+						</p>
 					)}
 				</div>
 
@@ -71,7 +80,10 @@ function LoginPage() {
 						{...register('password')}
 					/>
 					{errors.password && (
-						<p data-testid="login-password-error" className="text-xs text-destructive">
+						<p
+							data-testid="login-password-error"
+							className="text-xs text-destructive"
+						>
 							{errors.password.message}
 						</p>
 					)}

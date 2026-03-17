@@ -1,6 +1,12 @@
 import { treaty } from '@elysiajs/eden'
 import type { App } from '@my-time/api'
 import { WEB_CONFIG } from '@/shared/config/web-config'
+import { tokenStorage } from './token-storage'
 
-const client = treaty<App>(WEB_CONFIG.API_URL)
+const client = treaty<App>(WEB_CONFIG.API_URL, {
+	headers() {
+		const token = tokenStorage.getAccessToken()
+		return token ? { authorization: `Bearer ${token}` } : {}
+	},
+})
 export const api = client.api.v1

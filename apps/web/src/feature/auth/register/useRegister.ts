@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useNavigate } from '@tanstack/react-router'
 import { type RegisterRequest, RegisterRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { api } from '@/shared/lib/api.ts'
+import { tokenStorage } from '@/shared/lib/token-storage'
 
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export function useRegister() {
+	const navigate = useNavigate()
 	const form = useForm<RegisterRequest>({
 		resolver: zodResolver(RegisterRequestSchema),
 		defaultValues: { timezone: detectedTimezone },
@@ -14,11 +17,11 @@ export function useRegister() {
 	async function onSubmit(data: RegisterRequest) {
 		const { data: res, error } = await api.auth.register.post(data)
 		if (error) {
-			// TODO: surface error.value.message
+			form.setError('email', { message: error.value.message })
 			return
 		}
-		// TODO: store res.tokens, navigate to app
-		console.log('registered:', res.user)
+		tokenStorage.setTokens(res.tokens.accessToken, res.tokens.refreshToken)
+		await navigate({ to: '/dashboard' })
 	}
 
 	return { form, onSubmit }

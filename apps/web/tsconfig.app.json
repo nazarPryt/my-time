@@ -30,9 +30,6 @@
 			"contracts": ["../../contracts/src/index.ts"]
 		}
 	},
-	"references": [
-		{ "path": "../../apps/api" },
-		{ "path": "../../contracts" }
-	],
+	"references": [{ "path": "../../apps/api" }, { "path": "../../contracts" }],
 	"include": ["src"]
 }

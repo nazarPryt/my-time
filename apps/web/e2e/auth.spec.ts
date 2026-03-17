@@ -14,7 +14,12 @@ test.describe('Login page', () => {
 
 	test('shows validation errors on empty submit', async ({ page }) => {
 		await page.getByTestId('login-submit').click()
-		await expect(page.getByTestId('login-email-error').or(page.getByTestId('login-password-error')).first()).toBeVisible()
+		await expect(
+			page
+				.getByTestId('login-email-error')
+				.or(page.getByTestId('login-password-error'))
+				.first(),
+		).toBeVisible()
 	})
 
 	test('has a link to register page', async ({ page }) => {

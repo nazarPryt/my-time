@@ -1,14 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { tokenStorage } from '@/shared/lib/token-storage'
 
 export const Route = createFileRoute('/')({
-	component: HomePage,
+	beforeLoad: () => {
+		throw redirect({
+			to: tokenStorage.getAccessToken() ? '/dashboard' : '/auth/login',
+		})
+	},
 })
-
-function HomePage() {
-	return (
-		<div data-testid="home-page">
-			<h1 className="text-2xl font-bold">Home</h1>
-			<p className="mt-2 text-muted-foreground">TanStack Router is working.</p>
-		</div>
-	)
-}

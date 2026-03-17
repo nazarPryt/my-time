@@ -36,6 +36,18 @@
 	},
 	"overrides": [
 		{
+			// Test files use `data!` after Eden Treaty calls where we know the
+			// response is non-null by construction (successful status asserted above).
+			"includes": ["**/*.test.ts", "**/*.spec.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
 			// React entry points use `document.getElementById('root')!` which is
 			// always guaranteed to exist by the HTML template — the non-null assertion
 			// is safe and intentional here.

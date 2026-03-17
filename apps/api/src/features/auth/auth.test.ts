@@ -41,11 +41,11 @@ describe('POST /auth/register', () => {
 	it('creates a user and returns tokens', async () => {
 		const { data, status } = await auth.register.post(VALID_USER)
 		expect(status).toBe(200)
-		expect(data!.user.email).toBe(VALID_USER.email)
-		expect(data!.user.name).toBe(VALID_USER.name)
-		expect(data!.user).not.toHaveProperty('passwordHash')
-		expect(typeof data!.tokens.accessToken).toBe('string')
-		expect(typeof data!.tokens.refreshToken).toBe('string')
+		expect(data?.user.email).toBe(VALID_USER.email)
+		expect(data?.user.name).toBe(VALID_USER.name)
+		expect(data?.user).not.toHaveProperty('passwordHash')
+		expect(typeof data?.tokens.accessToken).toBe('string')
+		expect(typeof data?.tokens.refreshToken).toBe('string')
 	})
 
 	it('returns 409 when email is already taken', async () => {
@@ -78,8 +78,8 @@ describe('POST /auth/login', () => {
 			password: VALID_USER.password,
 		})
 		expect(status).toBe(200)
-		expect(typeof data!.tokens.accessToken).toBe('string')
-		expect(typeof data!.tokens.refreshToken).toBe('string')
+		expect(typeof data?.tokens.accessToken).toBe('string')
+		expect(typeof data?.tokens.refreshToken).toBe('string')
 	})
 
 	it('returns 401 for wrong password', async () => {
@@ -113,8 +113,8 @@ describe('POST /auth/refresh', () => {
 			refreshToken: tokens.refreshToken,
 		})
 		expect(status).toBe(200)
-		expect(typeof data!.tokens.accessToken).toBe('string')
-		expect(typeof data!.tokens.refreshToken).toBe('string')
+		expect(typeof data?.tokens.accessToken).toBe('string')
+		expect(typeof data?.tokens.refreshToken).toBe('string')
 	})
 
 	it('refresh token is single-use', async () => {
@@ -160,8 +160,8 @@ describe('GET /auth/me', () => {
 			headers: { authorization: `Bearer ${tokens.accessToken}` },
 		})
 		expect(status).toBe(200)
-		expect(data!.user.email).toBe(VALID_USER.email)
-		expect(data!.user).not.toHaveProperty('passwordHash')
+		expect(data?.user.email).toBe(VALID_USER.email)
+		expect(data?.user).not.toHaveProperty('passwordHash')
 	})
 
 	it('returns 401 with no token', async () => {

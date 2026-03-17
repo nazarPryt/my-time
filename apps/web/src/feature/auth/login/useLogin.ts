@@ -1,9 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useNavigate } from '@tanstack/react-router'
 import { type LoginRequest, LoginRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { api } from '@/shared/lib/api.ts'
+import { tokenStorage } from '@/shared/lib/token-storage'
 
 export function useLogin() {
+	const navigate = useNavigate()
 	const form = useForm<LoginRequest>({
 		resolver: zodResolver(LoginRequestSchema),
 	})
@@ -11,11 +14,11 @@ export function useLogin() {
 	async function onSubmit(data: LoginRequest) {
 		const { data: res, error } = await api.auth.login.post(data)
 		if (error) {
-			// TODO: surface error.value.message (toast / form error)
+			form.setError('password', { message: error.value.message })
 			return
 		}
-		// TODO: store res.tokens, navigate to app
-		console.log('logged in:', res.user)
+		tokenStorage.setTokens(res.tokens.accessToken, res.tokens.refreshToken)
+		await navigate({ to: '/dashboard' })
 	}
 
 	return { form, onSubmit }
