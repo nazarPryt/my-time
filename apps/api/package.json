@@ -14,9 +14,11 @@
 	"dependencies": {
 		"@elysiajs/cors": "^1.4.1",
 		"@elysiajs/jwt": "latest",
+		"contracts": "workspace:*",
 		"drizzle-orm": "^0.45.1",
 		"drizzle-zod": "^0.8.3",
 		"elysia": "latest",
+		"jose": "^6.0.0",
 		"postgres": "^3.4.8",
 		"zod": "4.3.6"
 	},

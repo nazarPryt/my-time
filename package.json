@@ -4,7 +4,7 @@
 	"private": true,
 	"workspaces": [
 		"apps/*",
-		"shared/*"
+		"contracts"
 	],
 	"scripts": {
 		"web:dev": "bun --filter web dev",

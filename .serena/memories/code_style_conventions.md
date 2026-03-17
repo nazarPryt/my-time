@@ -10,12 +10,12 @@
 
 ## Path Aliases
 - `@/` maps to `src/` in web app (configured via Vite + tsconfig)
-- `@contracts` maps to `shared/contracts/` in web app
+- `@db` and `@db/schema` map to API internal db paths
 
 ## Styling
 - TailwindCSS v4 (utility-first, no separate config file — uses CSS-based config)
 - shadcn/ui component pattern: components live in `src/components/ui/`
-- `clsx` + `tailwind-merge` used for conditional class merging (via `lib/cn.ts`)
+- `clsx` + `tailwind-merge` used for conditional class merging (via `@/shared/lib/cn`)
 - `class-variance-authority` (CVA) for component variants
 
 ## UI Components
@@ -25,22 +25,33 @@
 - `Button` component has `isLoading?: boolean` prop — shows Loader2 spinner and disables itself
 - `Input` component auto-handles password visibility toggle when `type="password"`
 
+## Shared Web Utilities (apps/web/src/shared/)
+- `@/shared/lib/cn` — `cn()` helper (clsx + tailwind-merge)
+- `@/shared/lib/api` — Eden Treaty client; exports `api` pointing to `client.api.v1`
+- `@/shared/config/web-config` — `WEB_CONFIG` with `API_URL` (from `VITE_API_URL` env var)
+
 ## Feature Organization
 - Feature logic lives in `src/feature/<domain>/<feature>/`
 - Custom hooks encapsulate form logic (useForm + zodResolver + onSubmit)
 - Each feature folder has an `index.ts` barrel export
 - Example: `src/feature/auth/login/useLogin.ts` exported via `src/feature/auth/login/index.ts`
 
+## API Feature Organization
+- Each feature in `src/features/<domain>/` has: `routes.ts`, `service.ts`, `repository.ts`, `schemas.ts`
+- `repository.ts` handles all DB access for the feature
+- `schemas.ts` holds Zod schemas specific to the feature
+
 ## Forms
 - react-hook-form with `zodResolver` from `@hookform/resolvers/zod`
-- Zod schemas from `@contracts` used as the single source of truth for validation
-- No inline validation rules in `register()` calls — all validation in Zod schema
+- Zod schemas are the single source of truth for validation
+- No inline validation rules in `register()` calls
 - Form hook returns `{ form, onSubmit }` — component destructures `{ register, handleSubmit, formState }` from `form`
 
 ## Routing (TanStack Router)
 - File-based routing, auto code-splitting via `@tanstack/router-plugin/vite`
 - `routeTree.gen.ts` is auto-generated — do not edit manually
 - Auth routes under `src/routes/auth/` render full-bleed (no nav bar)
+- Dashboard routes: `routes/dashboard.tsx` is a layout route (sidebar + `<Outlet />`); sub-pages in `routes/dashboard/`
 
 ## Linting & Formatting
 - Biome (`biome.jsonc` at monorepo root) — replaces ESLint + Prettier

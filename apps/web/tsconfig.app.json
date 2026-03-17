@@ -27,9 +27,12 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@my-time/api": ["../../apps/api/src/public.ts"],
-			"@features/*": ["../../apps/api/src/features/*"],
-			"@shared/*": ["../../apps/api/src/shared/*"]
+			"contracts": ["../../contracts/src/index.ts"]
 		}
 	},
+	"references": [
+		{ "path": "../../apps/api" },
+		{ "path": "../../contracts" }
+	],
 	"include": ["src"]
 }

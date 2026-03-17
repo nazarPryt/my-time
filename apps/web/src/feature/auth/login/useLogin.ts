@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { type LoginRequest, LoginRequestSchema } from '@my-time/api'
+import { type LoginRequest, LoginRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { api } from '@/shared/lib/api.ts'
 
