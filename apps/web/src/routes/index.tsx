@@ -6,7 +6,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
 	return (
-		<div>
+		<div data-testid="home-page">
 			<h1 className="text-2xl font-bold">Home</h1>
 			<p className="mt-2 text-muted-foreground">TanStack Router is working.</p>
 		</div>
