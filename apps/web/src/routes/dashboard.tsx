@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { Home, LogOut, Settings } from 'lucide-react'
+import { Dumbbell, Home, LogOut, Settings } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { useLogout } from '@/feature/auth/logout'
 import { api } from '@/shared/lib/api'
@@ -19,6 +19,12 @@ export const Route = createFileRoute('/dashboard')({
 
 const NAV_ITEMS = [
 	{ to: '/dashboard' as const, label: 'Home', icon: Home, exact: true },
+	{
+		to: '/dashboard/workout' as const,
+		label: 'Workout',
+		icon: Dumbbell,
+		exact: false,
+	},
 	{
 		to: '/dashboard/settings' as const,
 		label: 'Settings',
