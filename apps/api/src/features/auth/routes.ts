@@ -9,6 +9,7 @@ import {
 	RegisterRequestSchema,
 } from './schemas'
 import { authService } from './service'
+import { generateTokens } from './token'
 
 const jwtPlugin = jwt({
 	name: 'jwt',
@@ -16,25 +17,6 @@ const jwtPlugin = jwt({
 })
 
 const AuthErrorSchema = t.Object({ code: t.String(), message: t.String() })
-
-type JwtSigner = { sign: (payload: Record<string, unknown>) => Promise<string> }
-
-async function generateTokens(jwt: JwtSigner, userId: string) {
-	const now = Math.floor(Date.now() / 1000)
-	const accessToken = await jwt.sign({
-		sub: userId,
-		exp: now + 15 * 60,
-		jti: crypto.randomUUID(),
-	})
-	const refreshExpiresAt = new Date((now + 7 * 24 * 60 * 60) * 1000)
-	const refreshToken = await jwt.sign({
-		sub: userId,
-		exp: now + 7 * 24 * 60 * 60,
-		jti: crypto.randomUUID(),
-	})
-	await refreshTokenRepository.save(refreshToken, userId, refreshExpiresAt)
-	return { accessToken, refreshToken }
-}
 
 export const authPlugin = new Elysia({ prefix: '/auth' })
 	.use(jwtPlugin)
@@ -57,7 +39,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 		{
 			body: RegisterRequestSchema,
-			response: { 409: AuthErrorSchema },
+			response: { Conflict: AuthErrorSchema },
 		},
 	)
 	.post(
@@ -76,7 +58,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 		{
 			body: LoginRequestSchema,
-			response: { 401: AuthErrorSchema },
+			response: { Unauthorized: AuthErrorSchema },
 		},
 	)
 	.post(
@@ -102,7 +84,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 		{
 			body: RefreshRequestSchema,
-			response: { 401: AuthErrorSchema },
+			response: { Unauthorized: AuthErrorSchema },
 		},
 	)
 	.post(
@@ -133,6 +115,6 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 			return { user }
 		},
 		{
-			response: { 401: AuthErrorSchema },
+			response: { Unauthorized: AuthErrorSchema },
 		},
 	)

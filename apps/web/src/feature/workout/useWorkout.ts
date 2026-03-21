@@ -1,26 +1,9 @@
+import type { SetResponse, TodayResponse } from 'contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '@/shared/lib/api'
 
-interface SetEntry {
-	id: string
-	exerciseType: string
-	reps: number
-	createdAt: string
-}
-
-interface GoalEntry {
-	exerciseType: string
-	targetReps: number
-}
-
-interface WorkoutData {
-	sets: SetEntry[]
-	goal: GoalEntry
-	total: number
-}
-
 export function useWorkout() {
-	const [data, setData] = useState<WorkoutData | null>(null)
+	const [data, setData] = useState<TodayResponse | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
@@ -42,15 +25,16 @@ export function useWorkout() {
 
 	useEffect(() => {
 		const controller = new AbortController()
-		fetchData(controller.signal)
+		void fetchData(controller.signal)
 		return () => controller.abort()
 	}, [fetchData])
 
 	const addSet = useCallback(
 		async (reps: number) => {
 			if (!data) return
-			const optimistic: SetEntry = {
-				id: crypto.randomUUID(),
+			const tempId = crypto.randomUUID()
+			const optimistic: SetResponse = {
+				id: tempId,
 				exerciseType: 'pushups',
 				reps,
 				createdAt: new Date().toISOString(),
@@ -63,13 +47,21 @@ export function useWorkout() {
 					total: prev.total + reps,
 				}
 			})
-			const { error: err } = await api.workout.sets.post({
+			const { data: created, error: err } = await api.workout.sets.post({
 				exerciseType: 'pushups',
 				reps,
 			})
-			if (err) {
+			if (err || !created) {
 				console.error(err)
 				await fetchData()
+			} else {
+				setData((prev) => {
+					if (!prev) return prev
+					return {
+						...prev,
+						sets: prev.sets.map((s) => (s.id === tempId ? created : s)),
+					}
+				})
 			}
 		},
 		[data, fetchData],

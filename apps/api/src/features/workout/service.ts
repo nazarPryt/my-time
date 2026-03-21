@@ -1,6 +1,7 @@
 import { endOfDay, startOfDay } from 'date-fns'
 import { workoutGoalsRepository, workoutSetsRepository } from './repository'
 import type { GoalResponse, SetResponse, TodayResponse } from './schemas'
+import { ExerciseTypeSchema } from './schemas'
 
 function todayBounds() {
 	const now = new Date()
@@ -21,12 +22,12 @@ export const workoutService = {
 		return {
 			sets: sets.map((s) => ({
 				id: s.id,
-				exerciseType: s.exerciseType,
+				exerciseType: ExerciseTypeSchema.parse(s.exerciseType),
 				reps: s.reps,
 				createdAt: s.createdAt.toISOString(),
 			})),
 			goal: {
-				exerciseType: goal?.exerciseType ?? exerciseType,
+				exerciseType: ExerciseTypeSchema.parse(goal?.exerciseType ?? exerciseType),
 				targetReps: goal?.targetReps ?? 100,
 			},
 			total,
@@ -41,7 +42,7 @@ export const workoutService = {
 		const set = await workoutSetsRepository.addSet(userId, exerciseType, reps)
 		return {
 			id: set.id,
-			exerciseType: set.exerciseType,
+			exerciseType: ExerciseTypeSchema.parse(set.exerciseType),
 			reps: set.reps,
 			createdAt: set.createdAt.toISOString(),
 		}
@@ -63,7 +64,7 @@ export const workoutService = {
 			targetReps,
 		)
 		return {
-			exerciseType: goal.exerciseType,
+			exerciseType: ExerciseTypeSchema.parse(goal.exerciseType),
 			targetReps: goal.targetReps,
 		}
 	},
