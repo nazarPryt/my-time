@@ -1,6 +1,6 @@
 import { db } from '@db'
 import { refreshTokens, users } from '@db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, lt } from 'drizzle-orm'
 
 export const authRepository = {
 	findByEmail: async (email: string) => {
@@ -39,5 +39,9 @@ export const refreshTokenRepository = {
 
 	remove: async (token: string) => {
 		await db.delete(refreshTokens).where(eq(refreshTokens.token, token))
+	},
+
+	deleteExpired: async () => {
+		await db.delete(refreshTokens).where(lt(refreshTokens.expiresAt, new Date()))
 	},
 }

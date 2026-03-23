@@ -81,6 +81,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 				})
 			}
 			await refreshTokenRepository.remove(body.refreshToken)
+			refreshTokenRepository.deleteExpired()
 			const tokens = await generateTokens(jwt, payload.sub)
 			return { tokens }
 		},
