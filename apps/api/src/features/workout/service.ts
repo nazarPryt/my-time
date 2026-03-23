@@ -1,6 +1,6 @@
 import { endOfDay, startOfDay } from 'date-fns'
 import { workoutGoalsRepository, workoutSetsRepository } from './repository'
-import type { GoalResponse, SetResponse, TodayResponse } from './schemas'
+import type {ExerciseType, GoalResponse, SetResponse, TodayResponse} from './schemas'
 import { ExerciseTypeSchema } from './schemas'
 
 function todayBounds() {
@@ -11,7 +11,7 @@ function todayBounds() {
 export const workoutService = {
 	getToday: async (
 		userId: string,
-		exerciseType: string,
+		exerciseType: ExerciseType,
 	): Promise<TodayResponse> => {
 		const { start, end } = todayBounds()
 		const [sets, goal] = await Promise.all([
@@ -27,7 +27,9 @@ export const workoutService = {
 				createdAt: s.createdAt.toISOString(),
 			})),
 			goal: {
-				exerciseType: ExerciseTypeSchema.parse(goal?.exerciseType ?? exerciseType),
+				exerciseType: ExerciseTypeSchema.parse(
+					goal?.exerciseType ?? exerciseType,
+				),
 				targetReps: goal?.targetReps ?? 100,
 			},
 			total,
@@ -36,7 +38,7 @@ export const workoutService = {
 
 	addSet: async (
 		userId: string,
-		exerciseType: string,
+		exerciseType: ExerciseType,
 		reps: number,
 	): Promise<SetResponse> => {
 		const set = await workoutSetsRepository.addSet(userId, exerciseType, reps)
@@ -48,14 +50,14 @@ export const workoutService = {
 		}
 	},
 
-	resetToday: async (userId: string, exerciseType: string): Promise<void> => {
+	resetToday: async (userId: string, exerciseType: ExerciseType): Promise<void> => {
 		const { start, end } = todayBounds()
 		await workoutSetsRepository.resetTodaySets(userId, exerciseType, start, end)
 	},
 
 	updateGoal: async (
 		userId: string,
-		exerciseType: string,
+		exerciseType: ExerciseType,
 		targetReps: number,
 	): Promise<GoalResponse> => {
 		const goal = await workoutGoalsRepository.upsertGoal(

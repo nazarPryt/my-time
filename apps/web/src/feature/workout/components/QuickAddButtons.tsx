@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react'
 
-const QUICK_ADD = [1, 5, 10, 25] as const
+const QUICK_ADD = [5, 10, 15, 20] as const
 
 interface QuickAddButtonsProps {
 	onAdd: (reps: number) => void
@@ -16,7 +16,7 @@ export function QuickAddButtons({ onAdd, disabled }: QuickAddButtonsProps) {
 					key={n}
 					onClick={() => onAdd(n)}
 					disabled={disabled}
-					className="group h-[68px] rounded-xl border border-border bg-card hover:bg-muted active:scale-95 transition-all duration-100 flex flex-col items-center justify-center gap-0.5 select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					className="group h-17 rounded-xl border border-border bg-card hover:bg-muted active:scale-95 transition-all duration-100 flex flex-col items-center justify-center gap-0.5 select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					<Plus
 						size={11}

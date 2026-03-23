@@ -48,7 +48,7 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 			</span>
 
 			<div className="w-full space-y-2">
-				<div className="w-full h-[3px] rounded-full bg-muted overflow-hidden">
+				<div className="w-full h-0.75 rounded-full bg-muted overflow-hidden">
 					<div
 						className="h-full rounded-full bg-foreground transition-all duration-500 ease-out"
 						style={{ width: `${pct}%` }}

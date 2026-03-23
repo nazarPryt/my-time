@@ -1,27 +1,14 @@
+import type { MeResponse, RegisterRequest } from 'contracts'
 import type { users } from '@db/schema'
 import { authRepository } from './repository'
 
-type PublicUser = {
-	id: string
-	email: string
-	name: string
-	timezone: string
-	createdAt: Date
-	updatedAt: Date
-}
-
-function toPublicUser(u: typeof users.$inferSelect): PublicUser {
-	const { passwordHash: _, ...pub } = u
+function toPublicUser(u: typeof users.$inferSelect): MeResponse {
+	const { passwordHash: _, createdAt: __, updatedAt: ___, ...pub } = u
 	return pub
 }
 
 export const authService = {
-	register: async (data: {
-		email: string
-		name: string
-		password: string
-		timezone?: string
-	}) => {
+	register: async (data: RegisterRequest) => {
 		const existing = await authRepository.findByEmail(data.email)
 		if (existing) throw new Error('EMAIL_TAKEN')
 

@@ -1,11 +1,12 @@
 import { db } from '@db'
 import { workoutGoals, workoutSets } from '@db/schema'
 import { and, eq, gte, lt } from 'drizzle-orm'
+import type {ExerciseType} from "contracts";
 
 export const workoutSetsRepository = {
 	getTodaySets: async (
 		userId: string,
-		exerciseType: string,
+		exerciseType: ExerciseType,
 		startOfDay: Date,
 		endOfDay: Date,
 	) => {
@@ -22,7 +23,7 @@ export const workoutSetsRepository = {
 			)
 	},
 
-	addSet: async (userId: string, exerciseType: string, reps: number) => {
+	addSet: async (userId: string, exerciseType: ExerciseType, reps: number) => {
 		const [set] = await db
 			.insert(workoutSets)
 			.values({ userId, exerciseType, reps })
@@ -32,7 +33,7 @@ export const workoutSetsRepository = {
 
 	resetTodaySets: async (
 		userId: string,
-		exerciseType: string,
+		exerciseType: ExerciseType,
 		startOfDay: Date,
 		endOfDay: Date,
 	) => {
@@ -50,7 +51,7 @@ export const workoutSetsRepository = {
 }
 
 export const workoutGoalsRepository = {
-	getGoal: async (userId: string, exerciseType: string) => {
+	getGoal: async (userId: string, exerciseType: ExerciseType) => {
 		const [goal] = await db
 			.select()
 			.from(workoutGoals)
@@ -65,7 +66,7 @@ export const workoutGoalsRepository = {
 
 	upsertGoal: async (
 		userId: string,
-		exerciseType: string,
+		exerciseType: ExerciseType,
 		targetReps: number,
 	) => {
 		const [goal] = await db
