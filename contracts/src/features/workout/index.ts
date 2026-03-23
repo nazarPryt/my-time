@@ -1,4 +1,5 @@
 export * from './exercise-type'
 export * from './goal'
+export * from './progress'
 export * from './set'
 export * from './today'

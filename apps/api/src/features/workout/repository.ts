@@ -1,7 +1,7 @@
 import { db } from '@db'
 import { workoutGoals, workoutSets } from '@db/schema'
 import { and, eq, gte, lt } from 'drizzle-orm'
-import type {ExerciseType} from "contracts";
+import type { ExerciseType } from 'contracts';
 
 export const workoutSetsRepository = {
 	getTodaySets: async (
@@ -45,6 +45,28 @@ export const workoutSetsRepository = {
 					eq(workoutSets.exerciseType, exerciseType),
 					gte(workoutSets.createdAt, startOfDay),
 					lt(workoutSets.createdAt, endOfDay),
+				),
+			)
+	},
+
+	getMonthSets: async (
+		userId: string,
+		exerciseType: ExerciseType,
+		start: Date,
+		end: Date,
+	) => {
+		return db
+			.select({
+				createdAt: workoutSets.createdAt,
+				reps: workoutSets.reps,
+			})
+			.from(workoutSets)
+			.where(
+				and(
+					eq(workoutSets.userId, userId),
+					eq(workoutSets.exerciseType, exerciseType),
+					gte(workoutSets.createdAt, start),
+					lt(workoutSets.createdAt, end),
 				),
 			)
 	},

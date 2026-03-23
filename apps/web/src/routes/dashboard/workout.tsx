@@ -5,7 +5,7 @@ import {
 	QuickAddButtons,
 	SetsLog,
 	WorkoutHeader,
-} from '@/feature/workout/components'
+} from '@/feature/workout/ui'
 
 export const Route = createFileRoute('/dashboard/workout')({
 	component: WorkoutPage,

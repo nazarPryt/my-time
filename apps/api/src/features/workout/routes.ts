@@ -2,6 +2,7 @@ import { authMacro } from '@shared/auth-macro'
 import {
 	CreateSetRequestSchema,
 	ExerciseTypeSchema,
+	ProgressQuerySchema,
 	UpdateGoalRequestSchema,
 } from 'contracts'
 import { Elysia } from 'elysia'
@@ -47,5 +48,17 @@ export const workoutPlugin = new Elysia({ prefix: '/workout' })
 					)
 				},
 				{ body: UpdateGoalRequestSchema },
+			)
+			.get(
+				'/progress',
+				async ({ userId, query }) => {
+					return workoutService.getProgress(
+						userId,
+						query.exerciseType,
+						query.year,
+						query.month,
+					)
+				},
+				{ query: ProgressQuerySchema },
 			),
 	)
