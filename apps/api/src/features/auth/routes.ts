@@ -1,13 +1,15 @@
 import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
 import { Elysia, t } from 'elysia'
-import { refreshTokenRepository } from './repository'
 import {
+	AuthResponseSchema,
 	LoginRequestSchema,
 	LogoutRequestSchema,
+	MeResponseSchema,
 	RefreshRequestSchema,
 	RegisterRequestSchema,
-} from './schemas'
+} from 'contracts'
+import { refreshTokenRepository } from './repository'
 import { authService } from './service'
 import { generateTokens } from './token'
 
@@ -26,7 +28,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 			try {
 				const user = await authService.register(body)
 				const tokens = await generateTokens(jwt, user.id)
-				return { user, tokens }
+				return AuthResponseSchema.parse({ user, tokens })
 			} catch (e: unknown) {
 				if (e instanceof Error && e.message === 'EMAIL_TAKEN') {
 					return status('Conflict', {
@@ -46,7 +48,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		'/login',
 		async ({ body, jwt, status }) => {
 			try {
-				const user = await authService.login(body.email, body.password)
+				const user = await authService.login(body)
 				const tokens = await generateTokens(jwt, user.id)
 				return { user, tokens }
 			} catch {
@@ -112,7 +114,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 				})
 			}
 			const user = await authService.getById(payload.sub)
-			return { user }
+			return MeResponseSchema.parse(user)
 		},
 		{
 			response: { Unauthorized: AuthErrorSchema },

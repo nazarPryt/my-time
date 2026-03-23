@@ -1,10 +1,11 @@
-import type { MeResponse, RegisterRequest } from 'contracts'
+import type { LoginRequest, RegisterRequest } from 'contracts'
+import { MeResponseSchema } from 'contracts'
 import type { users } from '@db/schema'
 import { authRepository } from './repository'
 
-function toPublicUser(u: typeof users.$inferSelect): MeResponse {
+function toPublicUser(u: typeof users.$inferSelect) {
 	const { passwordHash: _, createdAt: __, updatedAt: ___, ...pub } = u
-	return pub
+	return MeResponseSchema.parse(pub)
 }
 
 export const authService = {
@@ -23,7 +24,7 @@ export const authService = {
 		return toPublicUser(user)
 	},
 
-	login: async (email: string, password: string) => {
+	login: async ({ email, password }: LoginRequest) => {
 		const user = await authRepository.findByEmail(email)
 		if (!user) throw new Error('INVALID_CREDENTIALS')
 

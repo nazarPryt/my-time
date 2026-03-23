@@ -1,3 +1,4 @@
+import { RefreshResponseSchema } from 'contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { tokenStorage } from './token-storage'
 
@@ -19,7 +20,8 @@ async function refreshTokens(): Promise<boolean> {
 		return false
 	}
 
-	const data = await response.json()
+	const raw = await response.json()
+	const data = RefreshResponseSchema.parse(raw)
 	tokenStorage.setTokens(data.tokens.accessToken, data.tokens.refreshToken)
 	return true
 }

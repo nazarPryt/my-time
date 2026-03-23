@@ -1,7 +1,7 @@
 import { endOfDay, startOfDay } from 'date-fns'
 import { workoutGoalsRepository, workoutSetsRepository } from './repository'
-import type {ExerciseType, GoalResponse, SetResponse, TodayResponse} from './schemas'
-import { ExerciseTypeSchema } from './schemas'
+import type { ExerciseType, GoalResponse, SetResponse, TodayResponse } from 'contracts'
+import { ExerciseTypeSchema } from 'contracts'
 
 function todayBounds() {
 	const now = new Date()

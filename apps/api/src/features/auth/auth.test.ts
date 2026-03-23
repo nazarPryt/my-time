@@ -160,8 +160,8 @@ describe('GET /auth/me', () => {
 			headers: { authorization: `Bearer ${tokens.accessToken}` },
 		})
 		expect(status).toBe(200)
-		expect(data?.user.email).toBe(VALID_USER.email)
-		expect(data?.user).not.toHaveProperty('passwordHash')
+		expect(data?.email).toBe(VALID_USER.email)
+		expect(data).not.toHaveProperty('passwordHash')
 	})
 
 	it('returns 401 with no token', async () => {

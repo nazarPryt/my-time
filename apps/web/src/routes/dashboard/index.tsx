@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { format } from 'date-fns'
 import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/dashboard/')({
@@ -13,9 +14,9 @@ function LiveClock() {
 		return () => clearInterval(id)
 	}, [])
 
-	const hh = String(time.getHours()).padStart(2, '0')
-	const mm = String(time.getMinutes()).padStart(2, '0')
-	const ss = String(time.getSeconds()).padStart(2, '0')
+	const hh = format(time, 'HH')
+	const mm = format(time, 'mm')
+	const ss = format(time, 'ss')
 
 	return (
 		<div className="flex items-baseline gap-1 select-none" aria-live="off">
@@ -54,11 +55,7 @@ function StatCard({
 }
 
 function DashboardHome() {
-	const today = new Date().toLocaleDateString('en-US', {
-		weekday: 'long',
-		month: 'long',
-		day: 'numeric',
-	})
+	const today = format(new Date(), 'EEEE, MMMM d')
 
 	return (
 		<div className="h-full flex flex-col">
