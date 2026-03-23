@@ -9,12 +9,20 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
-import { useWorkoutProgress } from '../useWorkoutProgress'
 import type { ChartEntry } from '../useWorkoutProgress'
+import { useWorkoutProgress } from '../useWorkoutProgress'
 
 export function WorkoutProgressChart() {
-	const { data, loading, goalReps, monthLabel, todayDay, isCurrentMonth, prevMonth, nextMonth } =
-		useWorkoutProgress()
+	const {
+		data,
+		loading,
+		goalReps,
+		monthLabel,
+		todayDay,
+		isCurrentMonth,
+		prevMonth,
+		nextMonth,
+	} = useWorkoutProgress()
 
 	return (
 		<div className="rounded-xl border border-border bg-card p-5">
@@ -24,7 +32,9 @@ export function WorkoutProgressChart() {
 					<p className="text-xs font-medium tracking-wide uppercase text-muted-foreground/70">
 						Push-ups
 					</p>
-					<p className="text-sm font-semibold text-foreground mt-0.5">{monthLabel}</p>
+					<p className="text-sm font-semibold text-foreground mt-0.5">
+						{monthLabel}
+					</p>
 				</div>
 				<div className="flex items-center gap-1">
 					<button
@@ -54,7 +64,11 @@ export function WorkoutProgressChart() {
 				) : (
 					<ResponsiveContainer width="100%" height={160}>
 						<BarChart data={data} barCategoryGap="20%">
-							<CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--border)" />
+							<CartesianGrid
+								vertical={false}
+								strokeDasharray="3 3"
+								stroke="var(--border)"
+							/>
 							<XAxis
 								dataKey="day"
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
@@ -75,7 +89,9 @@ export function WorkoutProgressChart() {
 									const entry = payload[0].payload as ChartEntry
 									return (
 										<div className="rounded-lg border border-border bg-card px-3 py-2 shadow-md text-xs">
-											<p className="font-semibold text-foreground">{entry.date}</p>
+											<p className="font-semibold text-foreground">
+												{entry.date}
+											</p>
 											<p className="text-muted-foreground">
 												{entry.total} reps
 												{entry.total >= goalReps && (
@@ -98,7 +114,14 @@ export function WorkoutProgressChart() {
 												? 'hsl(142 71% 45%)'
 												: 'var(--muted-foreground)'
 									const opacity = day === todayDay ? 1 : total > 0 ? 0.75 : 0.2
-									return <Rectangle {...props} fill={fill} opacity={opacity} radius={[3, 3, 0, 0]} />
+									return (
+										<Rectangle
+											{...props}
+											fill={fill}
+											opacity={opacity}
+											radius={[3, 3, 0, 0]}
+										/>
+									)
 								}}
 							/>
 						</BarChart>

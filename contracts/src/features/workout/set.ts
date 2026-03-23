@@ -7,6 +7,11 @@ export const CreateSetRequestSchema = z.object({
 })
 export type CreateSetRequest = z.infer<typeof CreateSetRequestSchema>
 
+export const DeleteSetRequestSchema = z.object({
+	id: z.uuid(),
+})
+export type DeleteSetRequest = z.infer<typeof DeleteSetRequestSchema>
+
 export const SetResponseSchema = z.object({
 	id: z.uuid(),
 	exerciseType: ExerciseTypeSchema,

@@ -1,7 +1,20 @@
-import { endOfDay, endOfMonth, format, getDaysInMonth, startOfDay, startOfMonth } from 'date-fns'
-import { workoutGoalsRepository, workoutSetsRepository } from './repository'
-import type { ExerciseType, GoalResponse, ProgressResponse, SetResponse, TodayResponse } from 'contracts'
+import type {
+	ExerciseType,
+	GoalResponse,
+	ProgressResponse,
+	SetResponse,
+	TodayResponse,
+} from 'contracts'
 import { ExerciseTypeSchema } from 'contracts'
+import {
+	endOfDay,
+	endOfMonth,
+	format,
+	getDaysInMonth,
+	startOfDay,
+	startOfMonth,
+} from 'date-fns'
+import { workoutGoalsRepository, workoutSetsRepository } from './repository'
 
 function todayBounds() {
 	const now = new Date()
@@ -50,7 +63,14 @@ export const workoutService = {
 		}
 	},
 
-	resetToday: async (userId: string, exerciseType: ExerciseType): Promise<void> => {
+	deleteSet: async (userId: string, setId: string): Promise<void> => {
+		await workoutSetsRepository.deleteSet(userId, setId)
+	},
+
+	resetToday: async (
+		userId: string,
+		exerciseType: ExerciseType,
+	): Promise<void> => {
 		const { start, end } = todayBounds()
 		await workoutSetsRepository.resetTodaySets(userId, exerciseType, start, end)
 	},
@@ -102,7 +122,9 @@ export const workoutService = {
 		return {
 			days,
 			goal: {
-				exerciseType: ExerciseTypeSchema.parse(goal?.exerciseType ?? exerciseType),
+				exerciseType: ExerciseTypeSchema.parse(
+					goal?.exerciseType ?? exerciseType,
+				),
 				targetReps: goal?.targetReps ?? 100,
 			},
 		}

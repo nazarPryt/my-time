@@ -1,6 +1,6 @@
+import type { users } from '@db/schema'
 import type { LoginRequest, RegisterRequest } from 'contracts'
 import { MeResponseSchema } from 'contracts'
-import type { users } from '@db/schema'
 import { authRepository } from './repository'
 
 function toPublicUser(u: typeof users.$inferSelect) {

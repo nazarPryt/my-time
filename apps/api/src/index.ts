@@ -1,6 +1,6 @@
 import { connectToDatabase } from '@db/connect'
-import { API_CONFIG } from '@shared/api-config'
 import { scheduleAuthJobs } from '@features/auth/jobs'
+import { API_CONFIG } from '@shared/api-config'
 import { app } from './app'
 
 await connectToDatabase()

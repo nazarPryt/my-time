@@ -1,6 +1,5 @@
 import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
-import { Elysia, t } from 'elysia'
 import {
 	AuthResponseSchema,
 	LoginRequestSchema,
@@ -9,6 +8,7 @@ import {
 	RefreshRequestSchema,
 	RegisterRequestSchema,
 } from 'contracts'
+import { Elysia, t } from 'elysia'
 import { refreshTokenRepository } from './repository'
 import { authService } from './service'
 import { generateTokens } from './token'

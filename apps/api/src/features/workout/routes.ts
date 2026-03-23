@@ -31,6 +31,9 @@ export const workoutPlugin = new Elysia({ prefix: '/workout' })
 				},
 				{ body: CreateSetRequestSchema },
 			)
+			.delete('/sets/:id', async ({ userId, params }) => {
+				await workoutService.deleteSet(userId, params.id)
+			})
 			.delete(
 				'/sets',
 				async ({ userId, query }) => {

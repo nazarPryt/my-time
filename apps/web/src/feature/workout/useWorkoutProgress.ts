@@ -6,7 +6,9 @@ export type ChartEntry = { day: string; total: number; date: string }
 
 // Eden Treaty may deserialize ISO date strings to Date objects at runtime — normalize either.
 function toDateStr(value: unknown): string {
-	return value instanceof Date ? format(value, 'yyyy-MM-dd') : String(value).slice(0, 10)
+	return value instanceof Date
+		? format(value, 'yyyy-MM-dd')
+		: String(value).slice(0, 10)
 }
 
 export function useWorkoutProgress() {
@@ -29,7 +31,11 @@ export function useWorkoutProgress() {
 				setData(
 					res.days.map((d) => {
 						const date = toDateStr(d.date)
-						return { date, total: d.total, day: String(parseInt(date.slice(8), 10)) }
+						return {
+							date,
+							total: d.total,
+							day: String(parseInt(date.slice(8), 10)),
+						}
 					}),
 				)
 				setGoalReps(res.goal.targetReps)

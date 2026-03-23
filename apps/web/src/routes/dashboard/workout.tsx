@@ -12,8 +12,10 @@ export const Route = createFileRoute('/dashboard/workout')({
 })
 
 function WorkoutPage() {
-	const { data, loading, addSet, resetDay, updateGoal } = useWorkout()
+	const { data, loading, addSet, deleteSet, resetDay, updateGoal } =
+		useWorkout()
 
+	//todo fix inline animation
 	return (
 		<>
 			<style>{`
@@ -48,7 +50,11 @@ function WorkoutPage() {
 									onGoalChange={updateGoal}
 								/>
 								<QuickAddButtons onAdd={addSet} />
-								<SetsLog sets={data.sets} onReset={resetDay} />
+								<SetsLog
+									sets={data.sets}
+									onDelete={deleteSet}
+									onReset={resetDay}
+								/>
 							</>
 						)}
 					</div>

@@ -67,6 +67,26 @@ export function useWorkout() {
 		[data, fetchData],
 	)
 
+	const deleteSet = useCallback(
+		async (id: string) => {
+			setData((prev) => {
+				if (!prev) return prev
+				const set = prev.sets.find((s) => s.id === id)
+				return {
+					...prev,
+					sets: prev.sets.filter((s) => s.id !== id),
+					total: prev.total - (set?.reps ?? 0),
+				}
+			})
+			const { error: err } = await api.workout.sets({ id }).delete()
+			if (err) {
+				console.error(err)
+				await fetchData()
+			}
+		},
+		[fetchData],
+	)
+
 	const resetDay = useCallback(async () => {
 		const { error: err } = await api.workout.sets.delete(
 			{},
@@ -96,5 +116,5 @@ export function useWorkout() {
 		[fetchData],
 	)
 
-	return { data, loading, error, addSet, resetDay, updateGoal }
+	return { data, loading, error, addSet, deleteSet, resetDay, updateGoal }
 }

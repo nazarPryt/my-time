@@ -1,7 +1,7 @@
 import { db } from '@db'
 import { workoutGoals, workoutSets } from '@db/schema'
+import type { ExerciseType } from 'contracts'
 import { and, eq, gte, lt } from 'drizzle-orm'
-import type { ExerciseType } from 'contracts';
 
 export const workoutSetsRepository = {
 	getTodaySets: async (
@@ -29,6 +29,12 @@ export const workoutSetsRepository = {
 			.values({ userId, exerciseType, reps })
 			.returning()
 		return set
+	},
+
+	deleteSet: async (userId: string, setId: string) => {
+		await db
+			.delete(workoutSets)
+			.where(and(eq(workoutSets.id, setId), eq(workoutSets.userId, userId)))
 	},
 
 	resetTodaySets: async (

@@ -42,6 +42,8 @@ export const refreshTokenRepository = {
 	},
 
 	deleteExpired: async () => {
-		await db.delete(refreshTokens).where(lt(refreshTokens.expiresAt, new Date()))
+		await db
+			.delete(refreshTokens)
+			.where(lt(refreshTokens.expiresAt, new Date()))
 	},
 }
