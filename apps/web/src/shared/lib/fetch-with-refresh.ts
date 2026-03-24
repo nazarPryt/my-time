@@ -6,13 +6,9 @@ import { tokenStorage } from './token-storage'
 let refreshPromise: Promise<boolean> | null = null
 
 async function refreshTokens(): Promise<boolean> {
-	const refreshToken = tokenStorage.getRefreshToken()
-	if (!refreshToken) return false
-
 	const response = await fetch(`${WEB_CONFIG.API_URL}/api/v1/auth/refresh`, {
 		method: 'POST',
-		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ refreshToken }),
+		credentials: 'include',
 	})
 
 	if (!response.ok) {
@@ -22,7 +18,7 @@ async function refreshTokens(): Promise<boolean> {
 
 	const raw = await response.json()
 	const data = RefreshResponseSchema.parse(raw)
-	tokenStorage.setTokens(data.tokens.accessToken, data.tokens.refreshToken)
+	tokenStorage.setAccessToken(data.tokens.accessToken)
 	return true
 }
 
@@ -30,7 +26,7 @@ export async function fetchWithRefresh(
 	input: RequestInfo | URL,
 	init?: RequestInit,
 ): Promise<Response> {
-	const response = await fetch(input, init)
+	const response = await fetch(input, { ...init, credentials: 'include' })
 
 	if (response.status !== 401) return response
 
@@ -50,6 +46,7 @@ export async function fetchWithRefresh(
 	const newToken = tokenStorage.getAccessToken()
 	return fetch(input, {
 		...init,
+		credentials: 'include',
 		headers: { ...init?.headers, authorization: `Bearer ${newToken}` },
 	})
 }

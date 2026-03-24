@@ -16,8 +16,14 @@ const VALID_USER = {
 }
 
 async function registerUser(overrides?: Partial<typeof VALID_USER>) {
-	const { data } = await auth.register.post({ ...VALID_USER, ...overrides })
-	return data!
+	return auth.register.post({ ...VALID_USER, ...overrides })
+}
+
+/** Extracts the refreshToken cookie string from a Set-Cookie header */
+function getRefreshCookie(response: Response): string {
+	const setCookie = response.headers.get('set-cookie') ?? ''
+	const match = setCookie.match(/refreshToken=([^;]+)/)
+	return match ? `refreshToken=${match[1]}` : ''
 }
 
 // ---------------------------------------------------------------------------
@@ -38,14 +44,16 @@ afterEach(async () => {
 // ---------------------------------------------------------------------------
 
 describe('POST /auth/register', () => {
-	it('creates a user and returns tokens', async () => {
-		const { data, status } = await auth.register.post(VALID_USER)
+	it('creates a user and returns access token + sets refresh cookie', async () => {
+		const { data, status, response } = await auth.register.post(VALID_USER)
 		expect(status).toBe(200)
 		expect(data?.user.email).toBe(VALID_USER.email)
 		expect(data?.user.name).toBe(VALID_USER.name)
 		expect(data?.user).not.toHaveProperty('passwordHash')
 		expect(typeof data?.tokens.accessToken).toBe('string')
-		expect(typeof data?.tokens.refreshToken).toBe('string')
+		expect(data?.tokens).not.toHaveProperty('refreshToken')
+		expect(response.headers.get('set-cookie')).toContain('refreshToken=')
+		expect(response.headers.get('set-cookie')).toContain('HttpOnly')
 	})
 
 	it('returns 409 when email is already taken', async () => {
@@ -71,15 +79,17 @@ describe('POST /auth/register', () => {
 // ---------------------------------------------------------------------------
 
 describe('POST /auth/login', () => {
-	it('returns tokens for valid credentials', async () => {
+	it('returns access token and sets refresh cookie for valid credentials', async () => {
 		await registerUser()
-		const { data, status } = await auth.login.post({
+		const { data, status, response } = await auth.login.post({
 			email: VALID_USER.email,
 			password: VALID_USER.password,
 		})
 		expect(status).toBe(200)
 		expect(typeof data?.tokens.accessToken).toBe('string')
-		expect(typeof data?.tokens.refreshToken).toBe('string')
+		expect(data?.tokens).not.toHaveProperty('refreshToken')
+		expect(response.headers.get('set-cookie')).toContain('refreshToken=')
+		expect(response.headers.get('set-cookie')).toContain('HttpOnly')
 	})
 
 	it('returns 401 for wrong password', async () => {
@@ -107,29 +117,31 @@ describe('POST /auth/login', () => {
 // ---------------------------------------------------------------------------
 
 describe('POST /auth/refresh', () => {
-	it('returns new tokens for a valid refresh token', async () => {
-		const { tokens } = await registerUser()
-		const { data, status } = await auth.refresh.post({
-			refreshToken: tokens.refreshToken,
-		})
+	it('returns new access token and rotates refresh cookie', async () => {
+		const { response: registerResponse } = await registerUser()
+		const cookie = getRefreshCookie(registerResponse)
+
+		const { data, status, response } = await auth.refresh.post(
+			{},
+			{ headers: { cookie } },
+		)
 		expect(status).toBe(200)
 		expect(typeof data?.tokens.accessToken).toBe('string')
-		expect(typeof data?.tokens.refreshToken).toBe('string')
+		expect(data?.tokens).not.toHaveProperty('refreshToken')
+		expect(response.headers.get('set-cookie')).toContain('refreshToken=')
 	})
 
 	it('refresh token is single-use', async () => {
-		const { tokens } = await registerUser()
-		await auth.refresh.post({ refreshToken: tokens.refreshToken })
-		const { status } = await auth.refresh.post({
-			refreshToken: tokens.refreshToken,
-		})
+		const { response: registerResponse } = await registerUser()
+		const cookie = getRefreshCookie(registerResponse)
+
+		await auth.refresh.post({}, { headers: { cookie } })
+		const { status } = await auth.refresh.post({}, { headers: { cookie } })
 		expect(status).toBe(401)
 	})
 
-	it('returns 401 for an invalid token', async () => {
-		const { status } = await auth.refresh.post({
-			refreshToken: 'not-a-real-token',
-		})
+	it('returns 401 when no cookie is sent', async () => {
+		const { status } = await auth.refresh.post({})
 		expect(status).toBe(401)
 	})
 })
@@ -140,11 +152,11 @@ describe('POST /auth/refresh', () => {
 
 describe('POST /auth/logout', () => {
 	it('invalidates the refresh token', async () => {
-		const { tokens } = await registerUser()
-		await auth.logout.post({ refreshToken: tokens.refreshToken })
-		const { status } = await auth.refresh.post({
-			refreshToken: tokens.refreshToken,
-		})
+		const { response: registerResponse } = await registerUser()
+		const cookie = getRefreshCookie(registerResponse)
+
+		await auth.logout.post({}, { headers: { cookie } })
+		const { status } = await auth.refresh.post({}, { headers: { cookie } })
 		expect(status).toBe(401)
 	})
 })
@@ -155,9 +167,9 @@ describe('POST /auth/logout', () => {
 
 describe('GET /auth/me', () => {
 	it('returns the authenticated user', async () => {
-		const { tokens } = await registerUser()
+		const { data: registered } = await registerUser()
 		const { data, status } = await auth.me.get({
-			headers: { authorization: `Bearer ${tokens.accessToken}` },
+			headers: { authorization: `Bearer ${registered!.tokens.accessToken}` },
 		})
 		expect(status).toBe(200)
 		expect(data?.email).toBe(VALID_USER.email)

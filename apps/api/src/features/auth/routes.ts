@@ -3,9 +3,7 @@ import { API_CONFIG } from '@shared/api-config'
 import {
 	AuthResponseSchema,
 	LoginRequestSchema,
-	LogoutRequestSchema,
 	MeResponseSchema,
-	RefreshRequestSchema,
 	RegisterRequestSchema,
 } from 'contracts'
 import { Elysia, t } from 'elysia'
@@ -20,15 +18,31 @@ const jwtPlugin = jwt({
 
 const AuthErrorSchema = t.Object({ code: t.String(), message: t.String() })
 
+const REFRESH_COOKIE = 'refreshToken'
+const COOKIE_OPTIONS = {
+	httpOnly: true,
+	secure: true,
+	sameSite: 'strict',
+	maxAge: 7 * 24 * 60 * 60, // 7 days
+	path: '/',
+} as const
+
 export const authPlugin = new Elysia({ prefix: '/auth' })
 	.use(jwtPlugin)
 	.post(
 		'/register',
-		async ({ body, jwt, status }) => {
+		async ({ body, jwt, status, cookie }) => {
 			try {
 				const user = await authService.register(body)
 				const tokens = await generateTokens(jwt, user.id)
-				return AuthResponseSchema.parse({ user, tokens })
+				cookie[REFRESH_COOKIE].set({
+					value: tokens.refreshToken,
+					...COOKIE_OPTIONS,
+				})
+				return AuthResponseSchema.parse({
+					user,
+					tokens: { accessToken: tokens.accessToken },
+				})
 			} catch (e: unknown) {
 				if (e instanceof Error && e.message === 'EMAIL_TAKEN') {
 					return status('Conflict', {
@@ -46,11 +60,15 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 	)
 	.post(
 		'/login',
-		async ({ body, jwt, status }) => {
+		async ({ body, jwt, status, cookie }) => {
 			try {
 				const user = await authService.login(body)
 				const tokens = await generateTokens(jwt, user.id)
-				return { user, tokens }
+				cookie[REFRESH_COOKIE].set({
+					value: tokens.refreshToken,
+					...COOKIE_OPTIONS,
+				})
+				return { user, tokens: { accessToken: tokens.accessToken } }
 			} catch {
 				return status('Unauthorized', {
 					code: 'INVALID_CREDENTIALS',
@@ -65,37 +83,51 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 	)
 	.post(
 		'/refresh',
-		async ({ body, jwt, status }) => {
-			const valid = await refreshTokenRepository.exists(body.refreshToken)
+		async ({ jwt, status, cookie: { refreshToken: refreshCookie } }) => {
+			const token = refreshCookie.value
+			if (!token) {
+				return status('Unauthorized', {
+					code: 'INVALID_TOKEN',
+					message: 'Refresh token invalid or expired',
+				})
+			}
+			const valid = await refreshTokenRepository.exists(token)
 			if (!valid) {
 				return status('Unauthorized', {
 					code: 'INVALID_TOKEN',
 					message: 'Refresh token invalid or expired',
 				})
 			}
-			const payload = await jwt.verify(body.refreshToken)
+			const payload = await jwt.verify(token)
 			if (!payload || typeof payload.sub !== 'string') {
 				return status('Unauthorized', {
 					code: 'INVALID_TOKEN',
 					message: 'Refresh token invalid or expired',
 				})
 			}
-			await refreshTokenRepository.remove(body.refreshToken)
-			refreshTokenRepository.deleteExpired()
+			await refreshTokenRepository.remove(token)
+			await refreshTokenRepository.deleteExpired().catch((err) => {
+				console.error('Failed to purge expired tokens:', err)
+			})
 			const tokens = await generateTokens(jwt, payload.sub)
-			return { tokens }
+			refreshCookie.set({ value: tokens.refreshToken, ...COOKIE_OPTIONS })
+			return { tokens: { accessToken: tokens.accessToken } }
 		},
 		{
-			body: RefreshRequestSchema,
+			cookie: t.Cookie({ refreshToken: t.Optional(t.String()) }),
 			response: { Unauthorized: AuthErrorSchema },
 		},
 	)
 	.post(
 		'/logout',
-		async ({ body }) => {
-			await refreshTokenRepository.remove(body.refreshToken)
+		async ({ cookie: { refreshToken: refreshCookie } }) => {
+			const token = refreshCookie.value
+			if (token) {
+				await refreshTokenRepository.remove(token)
+			}
+			refreshCookie.remove()
 		},
-		{ body: LogoutRequestSchema },
+		{ cookie: t.Cookie({ refreshToken: t.Optional(t.String()) }) },
 	)
 	.get(
 		'/me',

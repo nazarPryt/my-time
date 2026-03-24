@@ -6,10 +6,7 @@ export function useLogout() {
 	const navigate = useNavigate()
 
 	async function logout() {
-		const refreshToken = tokenStorage.getRefreshToken()
-		if (refreshToken) {
-			await api.auth.logout.post({ refreshToken })
-		}
+		await api.auth.logout.post({})
 		tokenStorage.clear()
 		await navigate({ to: '/auth/login' })
 	}

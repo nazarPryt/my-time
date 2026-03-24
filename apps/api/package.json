@@ -2,10 +2,10 @@
 	"name": "api",
 	"version": "1.0.50",
 	"scripts": {
-		"test": "bun test --env-file .env.test",
+		"test": "bun test src --env-file .env.test",
 		"test:db:up": "docker compose -f ../../docker-compose.test.yml up -d --wait",
 		"test:db:down": "docker compose -f ../../docker-compose.test.yml down",
-		"test:ci": "bun run test:db:up && bun test --env-file .env.test; bun run test:db:down",
+		"test:ci": "bun run test:db:up && bun test src --env-file .env.test; bun run test:db:down",
 		"dev": "bun run --watch src/index.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",

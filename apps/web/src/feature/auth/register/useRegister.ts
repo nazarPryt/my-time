@@ -20,7 +20,7 @@ export function useRegister() {
 			form.setError('email', { message: error.value.message })
 			return
 		}
-		tokenStorage.setTokens(res.tokens.accessToken, res.tokens.refreshToken)
+		tokenStorage.setAccessToken(res.tokens.accessToken)
 		await navigate({ to: '/dashboard' })
 	}
 
