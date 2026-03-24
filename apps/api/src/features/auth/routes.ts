@@ -91,8 +91,9 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 					message: 'Refresh token invalid or expired',
 				})
 			}
-			const valid = await refreshTokenRepository.exists(token)
-			if (!valid) {
+			// Atomically consume the token — only one concurrent request can succeed
+			const consumed = await refreshTokenRepository.consume(token)
+			if (!consumed) {
 				return status('Unauthorized', {
 					code: 'INVALID_TOKEN',
 					message: 'Refresh token invalid or expired',
@@ -105,7 +106,6 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 					message: 'Refresh token invalid or expired',
 				})
 			}
-			await refreshTokenRepository.remove(token)
 			await refreshTokenRepository.deleteExpired().catch((err) => {
 				console.error('Failed to purge expired tokens:', err)
 			})

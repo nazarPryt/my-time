@@ -29,12 +29,15 @@ export const refreshTokenRepository = {
 		await db.insert(refreshTokens).values({ token, userId, expiresAt })
 	},
 
-	exists: async (token: string) => {
+	// Atomically deletes the token and returns the row if it existed.
+	// Using DELETE...RETURNING prevents two concurrent requests from both
+	// passing an exists() check before either removes the token.
+	consume: async (token: string) => {
 		const [row] = await db
-			.select()
-			.from(refreshTokens)
+			.delete(refreshTokens)
 			.where(eq(refreshTokens.token, token))
-		return !!row
+			.returning()
+		return row ?? null
 	},
 
 	remove: async (token: string) => {
