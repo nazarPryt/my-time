@@ -76,7 +76,7 @@ month: z.number().int().min(1).max(12),
 
 ---
 
-### 8. Add database indexes on `userId` and compound columns
+### ✅ 8. Add database indexes on `userId` and compound columns
 **File:** `apps/api/src/db/schema/workout-sets.ts`
 
 The `userId` foreign key and the `(userId, exerciseType)` pair have no explicit indexes. Every query filtering by user does a full table scan, which degrades linearly as the `workout_sets` table grows.

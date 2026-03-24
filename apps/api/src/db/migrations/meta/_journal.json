@@ -22,6 +22,13 @@
 			"when": 1773868282000,
 			"tag": "0002_bouncy_texas_twister",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1774370698056,
+			"tag": "0003_light_maestro",
+			"breakpoints": true
 		}
 	]
 }

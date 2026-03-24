@@ -1,0 +1,2 @@
+CREATE INDEX "idx_workout_sets_user_id" ON "workout_sets" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "idx_workout_sets_user_exercise" ON "workout_sets" USING btree ("user_id","exercise_type");
