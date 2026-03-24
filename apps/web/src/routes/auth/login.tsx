@@ -26,6 +26,7 @@ function LoginPage() {
 					<Link
 						to="/auth/register"
 						className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"
+						data-testid="login-register-link"
 					>
 						Sign up
 					</Link>

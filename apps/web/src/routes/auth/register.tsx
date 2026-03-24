@@ -26,18 +26,24 @@ function RegisterPage() {
 					<Link
 						to="/auth/login"
 						className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"
+						data-testid="register-login-link"
 					>
 						Sign in
 					</Link>
 				</>
 			}
 		>
-			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+			<form
+				data-testid="register-form"
+				onSubmit={handleSubmit(onSubmit)}
+				className="flex flex-col gap-5"
+			>
 				{/* Name */}
 				<div className="flex flex-col gap-1.5">
 					<Label htmlFor="name">Full name</Label>
 					<Input
 						id="name"
+						data-testid="register-name"
 						type="text"
 						autoComplete="name"
 						placeholder="Alex Johnson"
@@ -45,7 +51,12 @@ function RegisterPage() {
 						{...register('name')}
 					/>
 					{errors.name && (
-						<p className="text-xs text-destructive">{errors.name.message}</p>
+						<p
+							data-testid="register-name-error"
+							className="text-xs text-destructive"
+						>
+							{errors.name.message}
+						</p>
 					)}
 				</div>
 
@@ -54,6 +65,7 @@ function RegisterPage() {
 					<Label htmlFor="email">Email</Label>
 					<Input
 						id="email"
+						data-testid="register-email"
 						type="email"
 						autoComplete="email"
 						placeholder="you@example.com"
@@ -61,7 +73,12 @@ function RegisterPage() {
 						{...register('email')}
 					/>
 					{errors.email && (
-						<p className="text-xs text-destructive">{errors.email.message}</p>
+						<p
+							data-testid="register-email-error"
+							className="text-xs text-destructive"
+						>
+							{errors.email.message}
+						</p>
 					)}
 				</div>
 
@@ -70,6 +87,7 @@ function RegisterPage() {
 					<Label htmlFor="password">Password</Label>
 					<Input
 						id="password"
+						data-testid="register-password"
 						type="password"
 						autoComplete="new-password"
 						placeholder="At least 4 characters"
@@ -77,7 +95,10 @@ function RegisterPage() {
 						{...register('password')}
 					/>
 					{errors.password ? (
-						<p className="text-xs text-destructive">
+						<p
+							data-testid="register-password-error"
+							className="text-xs text-destructive"
+						>
 							{errors.password.message}
 						</p>
 					) : (
@@ -109,6 +130,7 @@ function RegisterPage() {
 				{/* Submit */}
 				<div>
 					<Button
+						data-testid="register-submit"
 						type="submit"
 						className="w-full gap-2"
 						size="lg"

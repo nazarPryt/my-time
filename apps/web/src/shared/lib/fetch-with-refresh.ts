@@ -35,7 +35,7 @@ export async function fetchWithRefresh(
 	if (url.includes('/auth/refresh')) return response
 
 	// Deduplicate: reuse in-flight refresh if one is already running
-	refreshPromise ??= refreshTokens().finally(() => {
+	refreshPromise ??= refreshTokens().catch(() => false).finally(() => {
 		refreshPromise = null
 	})
 	const refreshed = await refreshPromise

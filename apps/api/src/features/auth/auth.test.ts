@@ -1,7 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { treaty } from '@elysiajs/eden'
+import { AUTH_ERRORS } from 'contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
+import { REFRESH_TOKEN } from './constants'
 
 const auth = treaty(app).api.v1.auth
 
@@ -22,8 +24,8 @@ async function registerUser(overrides?: Partial<typeof VALID_USER>) {
 /** Extracts the refreshToken cookie string from a Set-Cookie header */
 function getRefreshCookie(response: Response): string {
 	const setCookie = response.headers.get('set-cookie') ?? ''
-	const match = setCookie.match(/refreshToken=([^;]+)/)
-	return match ? `refreshToken=${match[1]}` : ''
+	const match = setCookie.match(new RegExp(`${REFRESH_TOKEN}=([^;]+)`))
+	return match ? `${REFRESH_TOKEN}=${match[1]}` : ''
 }
 
 // ---------------------------------------------------------------------------
@@ -51,8 +53,8 @@ describe('POST /auth/register', () => {
 		expect(data?.user.name).toBe(VALID_USER.name)
 		expect(data?.user).not.toHaveProperty('passwordHash')
 		expect(typeof data?.tokens.accessToken).toBe('string')
-		expect(data?.tokens).not.toHaveProperty('refreshToken')
-		expect(response.headers.get('set-cookie')).toContain('refreshToken=')
+		expect(data?.tokens).not.toHaveProperty(REFRESH_TOKEN)
+		expect(response.headers.get('set-cookie')).toContain(`${REFRESH_TOKEN}=`)
 		expect(response.headers.get('set-cookie')).toContain('HttpOnly')
 	})
 
@@ -61,7 +63,7 @@ describe('POST /auth/register', () => {
 		const { error, status } = await auth.register.post(VALID_USER)
 		expect(status).toBe(409)
 		if (error?.status !== 409) throw new Error('Expected 409 error')
-		expect(error.value.code).toBe('EMAIL_TAKEN')
+		expect(error.value.code).toBe(AUTH_ERRORS.EMAIL_TAKEN.code)
 	})
 
 	it('returns 422 for invalid request body', async () => {
@@ -87,8 +89,8 @@ describe('POST /auth/login', () => {
 		})
 		expect(status).toBe(200)
 		expect(typeof data?.tokens.accessToken).toBe('string')
-		expect(data?.tokens).not.toHaveProperty('refreshToken')
-		expect(response.headers.get('set-cookie')).toContain('refreshToken=')
+		expect(data?.tokens).not.toHaveProperty(REFRESH_TOKEN)
+		expect(response.headers.get('set-cookie')).toContain(`${REFRESH_TOKEN}=`)
 		expect(response.headers.get('set-cookie')).toContain('HttpOnly')
 	})
 
@@ -100,7 +102,7 @@ describe('POST /auth/login', () => {
 		})
 		expect(status).toBe(401)
 		if (error?.status !== 401) throw new Error('Expected 401 error')
-		expect(error.value.code).toBe('INVALID_CREDENTIALS')
+		expect(error.value.code).toBe(AUTH_ERRORS.INVALID_CREDENTIALS.code)
 	})
 
 	it('returns 401 for unknown email', async () => {
@@ -127,8 +129,8 @@ describe('POST /auth/refresh', () => {
 		)
 		expect(status).toBe(200)
 		expect(typeof data?.tokens.accessToken).toBe('string')
-		expect(data?.tokens).not.toHaveProperty('refreshToken')
-		expect(response.headers.get('set-cookie')).toContain('refreshToken=')
+		expect(data?.tokens).not.toHaveProperty(REFRESH_TOKEN)
+		expect(response.headers.get('set-cookie')).toContain(`${REFRESH_TOKEN}=`)
 	})
 
 	it('refresh token is single-use', async () => {

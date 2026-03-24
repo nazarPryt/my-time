@@ -1,12 +1,15 @@
 import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
 import {
+	AUTH_ERRORS,
+	AuthErrorSchema,
 	AuthResponseSchema,
 	LoginRequestSchema,
 	MeResponseSchema,
 	RegisterRequestSchema,
 } from 'contracts'
 import { Elysia, t } from 'elysia'
+import { REFRESH_TOKEN } from './constants'
 import { refreshTokenRepository } from './repository'
 import { authService } from './service'
 import { generateTokens } from './token'
@@ -15,10 +18,6 @@ const jwtPlugin = jwt({
 	name: 'jwt',
 	secret: API_CONFIG.JWT_SECRET,
 })
-
-const AuthErrorSchema = t.Object({ code: t.String(), message: t.String() })
-
-const REFRESH_COOKIE = 'refreshToken'
 const COOKIE_OPTIONS = {
 	httpOnly: true,
 	secure: true,
@@ -35,7 +34,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 			try {
 				const user = await authService.register(body)
 				const tokens = await generateTokens(jwt, user.id)
-				cookie[REFRESH_COOKIE].set({
+				cookie[REFRESH_TOKEN].set({
 					value: tokens.refreshToken,
 					...COOKIE_OPTIONS,
 				})
@@ -44,11 +43,8 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 					tokens: { accessToken: tokens.accessToken },
 				})
 			} catch (e: unknown) {
-				if (e instanceof Error && e.message === 'EMAIL_TAKEN') {
-					return status('Conflict', {
-						code: 'EMAIL_TAKEN',
-						message: 'Email already registered',
-					})
+				if (e instanceof Error && e.message === AUTH_ERRORS.EMAIL_TAKEN.code) {
+					return status('Conflict', AUTH_ERRORS.EMAIL_TAKEN)
 				}
 				throw e
 			}
@@ -64,16 +60,13 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 			try {
 				const user = await authService.login(body)
 				const tokens = await generateTokens(jwt, user.id)
-				cookie[REFRESH_COOKIE].set({
+				cookie[REFRESH_TOKEN].set({
 					value: tokens.refreshToken,
 					...COOKIE_OPTIONS,
 				})
 				return { user, tokens: { accessToken: tokens.accessToken } }
 			} catch {
-				return status('Unauthorized', {
-					code: 'INVALID_CREDENTIALS',
-					message: 'Invalid email or password',
-				})
+				return status('Unauthorized', AUTH_ERRORS.INVALID_CREDENTIALS)
 			}
 		},
 		{
@@ -86,25 +79,16 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		async ({ jwt, status, cookie: { refreshToken: refreshCookie } }) => {
 			const token = refreshCookie.value
 			if (!token) {
-				return status('Unauthorized', {
-					code: 'INVALID_TOKEN',
-					message: 'Refresh token invalid or expired',
-				})
+				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
 			// Atomically consume the token — only one concurrent request can succeed
 			const consumed = await refreshTokenRepository.consume(token)
 			if (!consumed) {
-				return status('Unauthorized', {
-					code: 'INVALID_TOKEN',
-					message: 'Refresh token invalid or expired',
-				})
+				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
 			const payload = await jwt.verify(token)
 			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', {
-					code: 'INVALID_TOKEN',
-					message: 'Refresh token invalid or expired',
-				})
+				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
 			await refreshTokenRepository.deleteExpired().catch((err) => {
 				console.error('Failed to purge expired tokens:', err)
@@ -133,18 +117,10 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		'/me',
 		async ({ headers, jwt, status }) => {
 			const auth = headers.authorization
-			if (!auth?.startsWith('Bearer ')) {
-				return status('Unauthorized', {
-					code: 'UNAUTHORIZED',
-					message: 'Missing token',
-				})
-			}
-			const payload = await jwt.verify(auth.slice(7))
+			const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
+			const payload = token ? await jwt.verify(token) : null
 			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', {
-					code: 'UNAUTHORIZED',
-					message: 'Invalid token',
-				})
+				return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
 			}
 			const user = await authService.getById(payload.sub)
 			return MeResponseSchema.parse(user)

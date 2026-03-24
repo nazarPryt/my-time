@@ -11,7 +11,7 @@ function DashboardHome() {
 	const today = format(new Date(), 'EEEE, MMMM d')
 
 	return (
-		<div className="h-full flex flex-col">
+		<div data-testid="dashboard-home" className="h-full flex flex-col">
 			<header className="h-14 flex items-center px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground tracking-tight">
 					Overview

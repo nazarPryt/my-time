@@ -4,6 +4,7 @@ import { type RegisterRequest, RegisterRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { api } from '@/shared/lib/api.ts'
 import { tokenStorage } from '@/shared/lib/token-storage'
+import { getAuthErrorMessage } from '../authErrorHandler'
 
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -17,7 +18,8 @@ export function useRegister() {
 	async function onSubmit(data: RegisterRequest) {
 		const { data: res, error } = await api.auth.register.post(data)
 		if (error) {
-			form.setError('email', { message: error.value.message })
+			console.error('Register error:', error.value)
+			form.setError('email', { message: getAuthErrorMessage(error.value) })
 			return
 		}
 		tokenStorage.setAccessToken(res.tokens.accessToken)

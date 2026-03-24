@@ -116,7 +116,7 @@ try {
 
 ## Medium Priority 🟡
 
-### 10. Use generic error messages in auth forms
+### ✅ 10. Use generic error messages in auth forms
 **Files:** `apps/web/src/feature/auth/login/useLogin.ts:14-22`, `apps/web/src/feature/auth/register/useRegister.ts:20`
 
 Raw API error messages are forwarded directly to the user. If the server returns different messages for "user not found" vs "wrong password", attackers can enumerate valid email addresses.
