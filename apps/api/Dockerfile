@@ -1,13 +1,15 @@
-FROM oven/bun:1-alpine AS base
+FROM oven/bun:1-alpine
 WORKDIR /app
 
-FROM base AS deps
+# Copy workspace manifests first — bun install layer is cached until these change
 COPY package.json bun.lock* ./
-RUN bun install --frozen-lockfile
+COPY apps/api/package.json ./apps/api/
+COPY contracts/package.json ./contracts/
+RUN bun install
 
-FROM base AS runner
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+# Copy source
+COPY contracts ./contracts
+COPY apps/api ./apps/api
 
 EXPOSE 3000
-CMD ["bun", "run", "src/index.ts"]
+CMD ["bun", "run", "apps/api/src/index.ts"]
