@@ -13,6 +13,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as TestErrorRouteImport } from './routes/test/error'
 import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
@@ -37,6 +38,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const TestErrorRoute = TestErrorRouteImport.update({
+  id: '/test/error',
+  path: '/test/error',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardWorkoutRoute = DashboardWorkoutRouteImport.update({
   id: '/workout',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
+  '/test/error': typeof TestErrorRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
+  '/test/error': typeof TestErrorRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
+  '/test/error': typeof TestErrorRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/dashboard/settings'
     | '/dashboard/workout'
+    | '/test/error'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/dashboard/settings'
     | '/dashboard/workout'
+    | '/test/error'
     | '/dashboard'
   id:
     | '__root__'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/dashboard/settings'
     | '/dashboard/workout'
+    | '/test/error'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
+  TestErrorRoute: typeof TestErrorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -156,6 +169,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/test/error': {
+      id: '/test/error'
+      path: '/test/error'
+      fullPath: '/test/error'
+      preLoaderRoute: typeof TestErrorRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/workout': {
       id: '/dashboard/workout'
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
+  TestErrorRoute: TestErrorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

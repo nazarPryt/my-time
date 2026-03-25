@@ -5,9 +5,18 @@ import {
 	useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { ErrorScreen } from '@/components/error-boundary'
+import { NotFoundScreen } from '@/components/not-found-screen'
 
 export const Route = createRootRoute({
 	component: RootLayout,
+	errorComponent: ({ error, reset }) => (
+		<ErrorScreen
+			error={error instanceof Error ? error : undefined}
+			onReset={reset}
+		/>
+	),
+	notFoundComponent: () => <NotFoundScreen />,
 })
 
 function RootLayout() {
