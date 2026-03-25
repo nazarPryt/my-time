@@ -17,7 +17,6 @@ export const authService = {
 		const user = await authRepository.create({
 			email: data.email,
 			name: data.name,
-			timezone: data.timezone ?? 'UTC',
 			passwordHash,
 		})
 

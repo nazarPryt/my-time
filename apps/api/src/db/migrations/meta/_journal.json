@@ -29,6 +29,13 @@
 			"when": 1774370698056,
 			"tag": "0003_light_maestro",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1774443529283,
+			"tag": "0004_brief_lord_tyger",
+			"breakpoints": true
 		}
 	]
 }

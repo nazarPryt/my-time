@@ -17,7 +17,6 @@ export const authRepository = {
 		email: string
 		name: string
 		passwordHash: string
-		timezone: string
 	}) => {
 		const [user] = await db.insert(users).values(data).returning()
 		return user

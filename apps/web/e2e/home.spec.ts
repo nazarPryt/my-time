@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import {AUTH_ERRORS} from "contracts";
+import { AUTH_ERRORS } from 'contracts'
 
 const API_ME = '**/api/v1/auth/me'
 

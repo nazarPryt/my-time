@@ -16,6 +16,8 @@ import {
 } from 'date-fns'
 import { workoutGoalsRepository, workoutSetsRepository } from './repository'
 
+const DEFAULT_GOAL_REPS = 100
+
 function todayBounds() {
 	const now = new Date()
 	return { start: startOfDay(now), end: endOfDay(now) }
@@ -43,7 +45,7 @@ export const workoutService = {
 				exerciseType: ExerciseTypeSchema.parse(
 					goal?.exerciseType ?? exerciseType,
 				),
-				targetReps: goal?.targetReps ?? 100,
+				targetReps: goal?.targetReps ?? DEFAULT_GOAL_REPS,
 			},
 			total,
 		}
@@ -125,7 +127,7 @@ export const workoutService = {
 				exerciseType: ExerciseTypeSchema.parse(
 					goal?.exerciseType ?? exerciseType,
 				),
-				targetReps: goal?.targetReps ?? 100,
+				targetReps: goal?.targetReps ?? DEFAULT_GOAL_REPS,
 			},
 		}
 	},

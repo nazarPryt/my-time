@@ -34,7 +34,7 @@ export function useWorkoutProgress() {
 						return {
 							date,
 							total: d.total,
-							day: String(parseInt(date.slice(8), 10)),
+							day: String(parseInt(date.split('-')[2], 10)), // 'YYYY-MM-DD' → day without leading zero
 						}
 					}),
 				)

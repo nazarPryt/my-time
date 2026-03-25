@@ -6,13 +6,10 @@ import { api } from '@/shared/lib/api.ts'
 import { tokenStorage } from '@/shared/lib/token-storage'
 import { getAuthErrorMessage } from '../authErrorHandler'
 
-const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-
 export function useRegister() {
 	const navigate = useNavigate()
 	const form = useForm<RegisterRequest>({
 		resolver: zodResolver(RegisterRequestSchema),
-		defaultValues: { timezone: detectedTimezone },
 	})
 
 	async function onSubmit(data: RegisterRequest) {

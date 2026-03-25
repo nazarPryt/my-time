@@ -63,7 +63,7 @@ When an API call fails, `fetchData()` is called but its errors are not handled. 
 
 ---
 
-### 7. Validate `year` and `month` query parameters
+### ✅ 7. Validate `year` and `month` query parameters
 **File:** `apps/api/src/features/workout/routes.ts:56-65`
 
 The `year` and `month` query params are passed to `new Date(year, month - 1, 1)` without range validation. Sending `month=13` or `year=-1` produces unexpected `Date` values that silently corrupt query results.
@@ -125,7 +125,7 @@ Raw API error messages are forwarded directly to the user. If the server returns
 
 ---
 
-### 11. Validate timezone input
+### ✅ 11. Validate timezone input (removed entirely)
 **File:** `contracts/src/features/auth/register.ts:7`
 
 `timezone: z.string().optional()` accepts any string, including invalid values like `"not/real"`. If this value is used in date calculations it will cause runtime errors.
@@ -145,7 +145,7 @@ Errors are only logged to the browser console. In production this means failures
 
 ## Low Priority 🔵
 
-### 13. Move inline `<style>` block to a CSS file
+### ✅ 13. Move inline `<style>` block to a CSS file
 **File:** `apps/web/src/routes/dashboard/workout.tsx:20-34`
 
 Animation keyframes are defined inline in JSX with a `// TODO` comment. This mixes concerns, can't be reused, and makes the component harder to read.
@@ -154,7 +154,7 @@ Animation keyframes are defined inline in JSX with a `// TODO` comment. This mix
 
 ---
 
-### 14. Extract hardcoded `'pushups'` exercise type
+### ✅ 14. Extract hardcoded `'pushups'` exercise type
 **File:** `apps/web/src/feature/workout/useWorkout.ts` (5+ locations)
 
 `exerciseType: 'pushups'` is hardcoded in multiple places. Adding a second exercise type will require hunting down every occurrence.
@@ -163,7 +163,7 @@ Animation keyframes are defined inline in JSX with a `// TODO` comment. This mix
 
 ---
 
-### 15. Extract default goal reps constant
+### ✅ 15. Extract default goal reps constant
 **File:** `apps/api/src/features/workout/service.ts:46` (3+ locations)
 
 `?? 100` appears in multiple places as the fallback goal. If the default ever changes, it needs to be updated everywhere.
@@ -175,7 +175,7 @@ const DEFAULT_GOAL_REPS = 100
 
 ---
 
-### 16. Replace magic number in date string slicing
+### ✅ 16. Replace magic number in date string slicing
 **File:** `apps/web/src/feature/workout/useWorkoutProgress.ts:37`
 
 `date.slice(8, 10)` extracts the day from a `YYYY-MM-DD` string using a magic index with no comment explaining it.

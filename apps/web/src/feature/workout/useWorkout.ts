@@ -1,27 +1,30 @@
-import type { SetResponse, TodayResponse } from 'contracts'
+import type { ExerciseType, SetResponse, TodayResponse } from 'contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '@/shared/lib/api'
 
-export function useWorkout() {
+export function useWorkout(exerciseType: ExerciseType = 'pushups') {
 	const [data, setData] = useState<TodayResponse | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
-	const fetchData = useCallback(async (signal?: AbortSignal) => {
-		const { data: result, error: err } = await api.workout.today.get({
-			query: { exerciseType: 'pushups' },
-			fetch: { signal },
-		})
-		if (signal?.aborted) return
-		if (err) {
-			setError('Failed to load workout data')
-			console.error(err)
-		} else {
-			setData(result)
-			setError(null)
-		}
-		setLoading(false)
-	}, [])
+	const fetchData = useCallback(
+		async (signal?: AbortSignal) => {
+			const { data: result, error: err } = await api.workout.today.get({
+				query: { exerciseType },
+				fetch: { signal },
+			})
+			if (signal?.aborted) return
+			if (err) {
+				setError('Failed to load workout data')
+				console.error(err)
+			} else {
+				setData(result)
+				setError(null)
+			}
+			setLoading(false)
+		},
+		[exerciseType],
+	)
 
 	useEffect(() => {
 		const controller = new AbortController()
@@ -35,7 +38,7 @@ export function useWorkout() {
 			const tempId = crypto.randomUUID()
 			const optimistic: SetResponse = {
 				id: tempId,
-				exerciseType: 'pushups',
+				exerciseType,
 				reps,
 				createdAt: new Date().toISOString(),
 			}
@@ -48,7 +51,7 @@ export function useWorkout() {
 				}
 			})
 			const { data: created, error: err } = await api.workout.sets.post({
-				exerciseType: 'pushups',
+				exerciseType,
 				reps,
 			})
 			if (err || !created) {
@@ -64,7 +67,7 @@ export function useWorkout() {
 				})
 			}
 		},
-		[data, fetchData],
+		[data, fetchData, exerciseType],
 	)
 
 	const deleteSet = useCallback(
@@ -90,13 +93,13 @@ export function useWorkout() {
 	const resetDay = useCallback(async () => {
 		const { error: err } = await api.workout.sets.delete(
 			{},
-			{ query: { exerciseType: 'pushups' } },
+			{ query: { exerciseType } },
 		)
 		if (err) {
 			console.error(err)
 		}
 		await fetchData()
-	}, [fetchData])
+	}, [fetchData, exerciseType])
 
 	const updateGoal = useCallback(
 		async (targetReps: number) => {
@@ -105,7 +108,7 @@ export function useWorkout() {
 				return { ...prev, goal: { ...prev.goal, targetReps } }
 			})
 			const { error: err } = await api.workout.goal.put({
-				exerciseType: 'pushups',
+				exerciseType,
 				targetReps,
 			})
 			if (err) {
@@ -113,7 +116,7 @@ export function useWorkout() {
 				await fetchData()
 			}
 		},
-		[fetchData],
+		[fetchData, exerciseType],
 	)
 
 	return { data, loading, error, addSet, deleteSet, resetDay, updateGoal }

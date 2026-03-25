@@ -108,25 +108,6 @@ function RegisterPage() {
 					)}
 				</div>
 
-				{/* Timezone (pre-filled, optional) */}
-				<div className="flex flex-col gap-1.5">
-					<Label htmlFor="timezone">
-						Timezone{' '}
-						<span className="text-muted-foreground font-normal">
-							(optional)
-						</span>
-					</Label>
-					<Input
-						id="timezone"
-						type="text"
-						placeholder="e.g. Europe/Warsaw"
-						{...register('timezone')}
-					/>
-					<p className="text-xs text-muted-foreground">
-						Auto-detected from your browser. You can change this later.
-					</p>
-				</div>
-
 				{/* Submit */}
 				<div>
 					<Button
