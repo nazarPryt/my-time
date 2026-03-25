@@ -36,9 +36,11 @@ export function ConfirmDialog({
 			<AlertDialogContent size="sm">
 				<AlertDialogHeader>
 					<AlertDialogTitle>{title}</AlertDialogTitle>
-					{description && (
-						<AlertDialogDescription>{description}</AlertDialogDescription>
-					)}
+					<AlertDialogDescription
+						className={description ? undefined : 'sr-only'}
+					>
+						{description ?? title}
+					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel>{cancelLabel}</AlertDialogCancel>

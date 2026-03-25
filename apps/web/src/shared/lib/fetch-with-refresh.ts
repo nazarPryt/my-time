@@ -2,6 +2,13 @@ import { RefreshResponseSchema } from 'contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { tokenStorage } from './token-storage'
 
+const TIMEOUT_MS = 15_000
+
+function timeoutSignal(existing?: AbortSignal | null): AbortSignal {
+	const timeout = AbortSignal.timeout(TIMEOUT_MS)
+	return existing ? AbortSignal.any([existing, timeout]) : timeout
+}
+
 // Shared promise so concurrent 401s trigger only one refresh call
 let refreshPromise: Promise<boolean> | null = null
 
@@ -9,6 +16,7 @@ async function refreshTokens(): Promise<boolean> {
 	const response = await fetch(`${WEB_CONFIG.API_URL}/api/v1/auth/refresh`, {
 		method: 'POST',
 		credentials: 'include',
+		signal: AbortSignal.timeout(TIMEOUT_MS),
 	})
 
 	if (!response.ok) {
@@ -26,7 +34,11 @@ export async function fetchWithRefresh(
 	input: RequestInfo | URL,
 	init?: RequestInit,
 ): Promise<Response> {
-	const response = await fetch(input, { ...init, credentials: 'include' })
+	const response = await fetch(input, {
+		...init,
+		credentials: 'include',
+		signal: timeoutSignal(init?.signal),
+	})
 
 	if (response.status !== 401) return response
 
@@ -50,5 +62,6 @@ export async function fetchWithRefresh(
 		...init,
 		credentials: 'include',
 		headers: { ...init?.headers, authorization: `Bearer ${newToken}` },
+		signal: timeoutSignal(init?.signal),
 	})
 }

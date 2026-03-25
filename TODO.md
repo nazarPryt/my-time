@@ -54,7 +54,7 @@ await refreshTokenRepository.deleteExpired().catch(err => {
 
 ---
 
-### 6. Fix race condition in optimistic UI updates
+### ✅ 6. Fix race condition in optimistic UI updates
 **File:** `apps/web/src/feature/workout/useWorkout.ts:32-68`
 
 When an API call fails, `fetchData()` is called but its errors are not handled. Rapid button clicks can also produce multiple in-flight requests that complete out of order, leaving the UI in an inconsistent state.
@@ -96,7 +96,7 @@ Then run `db:generate` + `db:migrate`.
 
 ---
 
-### 9. Add request timeouts to fetch calls
+### ✅ 9. Add request timeouts to fetch calls
 **File:** `apps/web/src/shared/lib/fetch-with-refresh.ts`
 
 All `fetch` calls have no timeout. A slow or unresponsive API will hang the UI indefinitely with no way to recover.

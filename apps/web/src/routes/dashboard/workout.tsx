@@ -12,7 +12,7 @@ export const Route = createFileRoute('/dashboard/workout')({
 })
 
 function WorkoutPage() {
-	const { data, loading, addSet, deleteSet, resetDay, updateGoal } =
+	const { data, loading, submitting, addSet, deleteSet, resetDay, updateGoal } =
 		useWorkout()
 
 	return (
@@ -32,7 +32,7 @@ function WorkoutPage() {
 								goal={data.goal.targetReps}
 								onGoalChange={updateGoal}
 							/>
-							<QuickAddButtons onAdd={addSet} />
+							<QuickAddButtons onAdd={addSet} disabled={submitting} />
 							<SetsLog
 								sets={data.sets}
 								onDelete={deleteSet}

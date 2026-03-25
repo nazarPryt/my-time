@@ -6,6 +6,7 @@ export function useWorkout(exerciseType: ExerciseType = 'pushups') {
 	const [data, setData] = useState<TodayResponse | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
+	const [submitting, setSubmitting] = useState(false)
 
 	const fetchData = useCallback(
 		async (signal?: AbortSignal) => {
@@ -34,7 +35,8 @@ export function useWorkout(exerciseType: ExerciseType = 'pushups') {
 
 	const addSet = useCallback(
 		async (reps: number) => {
-			if (!data) return
+			if (!data || submitting) return
+			setSubmitting(true)
 			const tempId = crypto.randomUUID()
 			const optimistic: SetResponse = {
 				id: tempId,
@@ -55,8 +57,16 @@ export function useWorkout(exerciseType: ExerciseType = 'pushups') {
 				reps,
 			})
 			if (err || !created) {
+				setData((prev) => {
+					if (!prev) return prev
+					return {
+						...prev,
+						sets: prev.sets.filter((s) => s.id !== tempId),
+						total: prev.total - reps,
+					}
+				})
+				setError('Failed to add set')
 				console.error(err)
-				await fetchData()
 			} else {
 				setData((prev) => {
 					if (!prev) return prev
@@ -66,28 +76,40 @@ export function useWorkout(exerciseType: ExerciseType = 'pushups') {
 					}
 				})
 			}
+			setSubmitting(false)
 		},
-		[data, fetchData, exerciseType],
+		[data, submitting, exerciseType],
 	)
 
 	const deleteSet = useCallback(
 		async (id: string) => {
+			if (!data || submitting) return
+			setSubmitting(true)
+			const deletedSet = data.sets.find((s) => s.id === id)
 			setData((prev) => {
 				if (!prev) return prev
-				const set = prev.sets.find((s) => s.id === id)
 				return {
 					...prev,
 					sets: prev.sets.filter((s) => s.id !== id),
-					total: prev.total - (set?.reps ?? 0),
+					total: prev.total - (deletedSet?.reps ?? 0),
 				}
 			})
 			const { error: err } = await api.workout.sets({ id }).delete()
 			if (err) {
+				setData((prev) => {
+					if (!prev || !deletedSet) return prev
+					return {
+						...prev,
+						sets: [...prev.sets, deletedSet],
+						total: prev.total + deletedSet.reps,
+					}
+				})
+				setError('Failed to delete set')
 				console.error(err)
-				await fetchData()
 			}
+			setSubmitting(false)
 		},
-		[fetchData],
+		[data, submitting],
 	)
 
 	const resetDay = useCallback(async () => {
@@ -119,5 +141,14 @@ export function useWorkout(exerciseType: ExerciseType = 'pushups') {
 		[fetchData, exerciseType],
 	)
 
-	return { data, loading, error, addSet, deleteSet, resetDay, updateGoal }
+	return {
+		data,
+		loading,
+		error,
+		submitting,
+		addSet,
+		deleteSet,
+		resetDay,
+		updateGoal,
+	}
 }
