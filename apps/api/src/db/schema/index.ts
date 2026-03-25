@@ -1,4 +1,5 @@
 export * from './refresh-tokens'
+export * from './time-sessions'
 export * from './users'
 export * from './workout-goals'
 export * from './workout-sets'

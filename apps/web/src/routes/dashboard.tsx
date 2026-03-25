@@ -1,5 +1,12 @@
-import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
-import { Dumbbell, Home, Settings } from 'lucide-react'
+import {
+	createFileRoute,
+	Link,
+	type LinkProps,
+	Outlet,
+	redirect,
+} from '@tanstack/react-router'
+import type { LucideIcon } from 'lucide-react'
+import { Dumbbell, Home, Settings, Timer } from 'lucide-react'
 import { NotFoundScreen } from '@/components/not-found-screen'
 import { SignOutButton } from '@/feature/auth/logout'
 import { api } from '@/shared/lib/api'
@@ -18,16 +25,28 @@ export const Route = createFileRoute('/dashboard')({
 	notFoundComponent: () => <NotFoundScreen />,
 })
 
-const NAV_ITEMS = [
-	{ to: '/dashboard' as const, label: 'Home', icon: Home, exact: true },
+type NavItemType = {
+	to: LinkProps['to']
+	label: string
+	icon: LucideIcon
+	exact: boolean
+}
+const NAV_ITEMS: NavItemType[] = [
+	{ to: '/dashboard', label: 'Home', icon: Home, exact: true },
 	{
-		to: '/dashboard/workout' as const,
+		to: '/dashboard/workout',
 		label: 'Workout',
 		icon: Dumbbell,
 		exact: false,
 	},
 	{
-		to: '/dashboard/settings' as const,
+		to: '/dashboard/time-tracker',
+		label: 'Time tracker',
+		icon: Timer,
+		exact: false,
+	},
+	{
+		to: '/dashboard/settings',
 		label: 'Settings',
 		icon: Settings,
 		exact: false,

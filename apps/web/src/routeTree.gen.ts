@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as TestErrorRouteImport } from './routes/test/error'
 import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout'
+import { Route as DashboardTimeTrackerRouteImport } from './routes/dashboard/time-tracker'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -49,6 +50,11 @@ const DashboardWorkoutRoute = DashboardWorkoutRouteImport.update({
   path: '/workout',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardTimeTrackerRoute = DashboardTimeTrackerRouteImport.update({
+  id: '/time-tracker',
+  path: '/time-tracker',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/dashboard/settings'
+    | '/dashboard/time-tracker'
     | '/dashboard/workout'
     | '/test/error'
     | '/dashboard/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/dashboard/settings'
+    | '/dashboard/time-tracker'
     | '/dashboard/workout'
     | '/test/error'
     | '/dashboard'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/dashboard/settings'
+    | '/dashboard/time-tracker'
     | '/dashboard/workout'
     | '/test/error'
     | '/dashboard/'
@@ -184,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkoutRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/time-tracker': {
+      id: '/dashboard/time-tracker'
+      path: '/time-tracker'
+      fullPath: '/dashboard/time-tracker'
+      preLoaderRoute: typeof DashboardTimeTrackerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/settings': {
       id: '/dashboard/settings'
       path: '/settings'
@@ -222,12 +241,14 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardTimeTrackerRoute: typeof DashboardTimeTrackerRoute
   DashboardWorkoutRoute: typeof DashboardWorkoutRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardTimeTrackerRoute: DashboardTimeTrackerRoute,
   DashboardWorkoutRoute: DashboardWorkoutRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
