@@ -20,7 +20,7 @@ function WorkoutPage() {
 			<WorkoutHeader />
 
 			<div className="flex-1 overflow-auto p-8">
-				<div className="max-w-sm space-y-4">
+				<div className="max-w-sm mx-auto space-y-4">
 					{loading || !data ? (
 						<div className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-48">
 							<span className="text-xs text-muted-foreground">Loading…</span>
