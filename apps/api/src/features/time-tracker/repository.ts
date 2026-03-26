@@ -65,6 +65,22 @@ export const timeSessionsRepository = {
 		return session ?? null
 	},
 
+	abandon: async (id: string, userId: string) => {
+		const [session] = await db
+			.update(timeSessions)
+			.set({ abandonedAt: new Date() })
+			.where(
+				and(
+					eq(timeSessions.id, id),
+					eq(timeSessions.userId, userId),
+					isNull(timeSessions.endedAt),
+					isNull(timeSessions.abandonedAt),
+				),
+			)
+			.returning()
+		return session ?? null
+	},
+
 	abandonStale: async (userId: string, olderThan: Date) => {
 		await db
 			.update(timeSessions)

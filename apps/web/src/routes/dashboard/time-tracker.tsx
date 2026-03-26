@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { SessionResponse, TodaySummaryResponse } from 'contracts'
 import { differenceInSeconds, format } from 'date-fns'
+import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { api } from '@/shared/lib/api'
 import { cn } from '@/shared/lib/cn'
 
@@ -101,6 +103,16 @@ function TimeTrackerPage() {
 		setSubmitting(false)
 	}
 
+	const deleteSession = async () => {
+		if (!activeSession || submitting) return
+		setSubmitting(true)
+		await api['time-tracker']({ id: activeSession.id }).delete()
+		setActiveSession(null)
+		const { data: today } = await api['time-tracker'].today.get()
+		setTodaySummary(today ?? null)
+		setSubmitting(false)
+	}
+
 	return (
 		<div className="h-full flex flex-col">
 			<div className="h-14 flex items-center px-8 border-b border-border shrink-0">
@@ -175,15 +187,34 @@ function TimeTrackerPage() {
 								</div>
 
 								{activeSession ? (
-									<Button
-										variant="outline"
-										size="lg"
-										onClick={stopWork}
-										isLoading={submitting}
-										className="w-36"
-									>
-										Stop Work
-									</Button>
+									<div className="flex items-center gap-2">
+										<Button
+											variant="outline"
+											size="lg"
+											onClick={stopWork}
+											isLoading={submitting}
+											className="w-36"
+										>
+											Stop Work
+										</Button>
+										<ConfirmDialog
+											trigger={
+												<Button
+													variant="ghost"
+													size="icon"
+													className="text-muted-foreground hover:text-destructive"
+													disabled={submitting}
+												>
+													<Trash2 className="size-4" />
+												</Button>
+											}
+											title="Delete session?"
+											description="This session will be discarded and won't count toward your totals. Use this if you forgot to stop tracking."
+											confirmLabel="Delete"
+											variant="destructive"
+											onConfirm={deleteSession}
+										/>
+									</div>
 								) : (
 									<Button
 										size="lg"

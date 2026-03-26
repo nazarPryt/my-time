@@ -1,7 +1,7 @@
 import { index, pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
-export const sessionTypeEnum = pgEnum('session_type', ['work', 'break'])
+export const sessionTypeEnum = pgEnum('session_type', ['work'])
 
 export const timeSessions = pgTable(
 	'time_sessions',

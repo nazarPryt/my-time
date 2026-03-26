@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const SessionTypeSchema = z.enum(['work', 'break'])
+export const SessionTypeSchema = z.enum(['work'])
 export type SessionType = z.infer<typeof SessionTypeSchema>
 
 export const StartSessionRequestSchema = z.object({
@@ -26,7 +26,7 @@ export const TodaySummaryResponseSchema = z.object({
 export type TodaySummaryResponse = z.infer<typeof TodaySummaryResponseSchema>
 
 export const DailySummarySchema = z.object({
-	date: z.string(),
+	date: z.coerce.date(),
 	totalWorkSeconds: z.number(),
 	sessionsCompleted: z.number(),
 })

@@ -119,6 +119,14 @@ export const timeTrackerService = {
 		return session ? toSessionResponse(session) : null
 	},
 
+	abandonSession: async (
+		userId: string,
+		sessionId: string,
+	): Promise<SessionResponse | null> => {
+		const session = await timeSessionsRepository.abandon(sessionId, userId)
+		return session ? toSessionResponse(session) : null
+	},
+
 	getWeeklySummary: async (userId: string): Promise<WeeklySummaryResponse> => {
 		const now = new Date()
 		const start = startOfDay(subDays(now, SUMMARY_DAYS - 1))

@@ -23,18 +23,12 @@ export function useTimeProgress() {
 				// API returns most-recent-first; reverse for chronological display
 				const sorted = [...res.days].reverse()
 				setData(
-					sorted.map((d) => {
-						const dateStr =
-							d.date instanceof Date
-								? format(d.date, 'yyyy-MM-dd')
-								: String(d.date).slice(0, 10)
-						return {
-							date: dateStr,
-							label: format(new Date(dateStr), 'MMM d'),
-							hours: +(d.totalWorkSeconds / 3600).toFixed(2),
-							totalWorkSeconds: d.totalWorkSeconds,
-						}
-					}),
+					sorted.map((d) => ({
+						date: format(d.date, 'yyyy-MM-dd'),
+						label: format(d.date, 'MMM d'),
+						hours: +(d.totalWorkSeconds / 3600).toFixed(2),
+						totalWorkSeconds: d.totalWorkSeconds,
+					})),
 				)
 			})
 			.finally(() => {

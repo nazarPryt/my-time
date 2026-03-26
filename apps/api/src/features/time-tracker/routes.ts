@@ -25,5 +25,16 @@ export const timeTrackerPlugin = new Elysia({ prefix: '/time-tracker' })
 			)
 			.patch('/:id/end', async ({ userId, params }) => {
 				return timeTrackerService.endSession(userId, params.id)
+			})
+			.delete('/:id', async ({ userId, params, set }) => {
+				const session = await timeTrackerService.abandonSession(
+					userId,
+					params.id,
+				)
+				if (!session) {
+					set.status = 404
+					return { message: 'Session not found or already ended' }
+				}
+				return session
 			}),
 	)
