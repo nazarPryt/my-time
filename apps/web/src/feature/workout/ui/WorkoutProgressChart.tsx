@@ -1,4 +1,6 @@
+import { format } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useEffect } from 'react'
 import {
 	Bar,
 	BarChart,
@@ -9,20 +11,32 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
-import type { ChartEntry } from '../useWorkoutProgress'
-import { useWorkoutProgress } from '../useWorkoutProgress'
+import type { ChartEntry } from '../store'
+import { useWorkoutStore } from '../store'
 
 export function WorkoutProgressChart() {
 	const {
-		data,
-		loading,
+		progressData: data,
+		progressLoading: loading,
 		goalReps,
-		monthLabel,
-		todayDay,
-		isCurrentMonth,
+		cursor,
 		prevMonth,
 		nextMonth,
-	} = useWorkoutProgress()
+		loadProgress,
+	} = useWorkoutStore()
+
+	const now = new Date()
+	const year = cursor.getFullYear()
+	const month = cursor.getMonth() + 1
+	const monthLabel = format(cursor, 'MMMM yyyy')
+	const isCurrentMonth =
+		cursor.getFullYear() === now.getFullYear() &&
+		cursor.getMonth() === now.getMonth()
+	const todayDay = isCurrentMonth ? String(now.getDate()) : null
+
+	useEffect(() => {
+		void loadProgress(year, month)
+	}, [loadProgress, year, month])
 
 	return (
 		<div className="rounded-xl border border-border bg-card p-5">

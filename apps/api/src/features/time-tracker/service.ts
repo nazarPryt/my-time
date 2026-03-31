@@ -156,8 +156,9 @@ export const timeTrackerService = {
 
 		// Build last N days array (most recent first)
 		const days = Array.from({ length: SUMMARY_DAYS }, (_, i) => {
-			const date = format(subDays(now, i), 'yyyy-MM-dd')
-			return { date, ...(byDay.get(date) ?? EMPTY_DAY_STATS) }
+			const day = subDays(now, i)
+			const dateKey = format(day, 'yyyy-MM-dd')
+			return { date: day, ...(byDay.get(dateKey) ?? EMPTY_DAY_STATS) }
 		})
 
 		// Consecutive days with >= 1 completed session, starting from today

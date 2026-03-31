@@ -1,12 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
-import { api } from '@/shared/lib/api'
 import { tokenStorage } from '@/shared/lib/token-storage'
+import { logoutUser } from './api'
 
 export function useLogout() {
 	const navigate = useNavigate()
 
 	async function logout() {
-		await api.auth.logout.post({})
+		await logoutUser()
 		tokenStorage.clear()
 		await navigate({ to: '/auth/login' })
 	}

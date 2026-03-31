@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useWorkout } from '@/feature/workout'
+import { useEffect } from 'react'
+import { useWorkoutStore } from '@/feature/workout/store'
 import {
 	HeroCounter,
 	QuickAddButtons,
@@ -12,8 +13,22 @@ export const Route = createFileRoute('/dashboard/workout')({
 })
 
 function WorkoutPage() {
-	const { data, loading, submitting, addSet, deleteSet, resetDay, updateGoal } =
-		useWorkout()
+	const {
+		data,
+		loading,
+		submitting,
+		addSet,
+		deleteSet,
+		resetDay,
+		updateGoal,
+		load,
+	} = useWorkoutStore()
+
+	useEffect(() => {
+		const controller = new AbortController()
+		void load(controller.signal)
+		return () => controller.abort()
+	}, [load])
 
 	return (
 		<div className="h-full flex flex-col">

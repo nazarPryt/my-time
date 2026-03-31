@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import {
 	Bar,
 	BarChart,
@@ -8,8 +9,8 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
-import type { TimeChartEntry } from '../useTimeProgress'
-import { useTimeProgress } from '../useTimeProgress'
+import type { TimeChartEntry } from '../store'
+import { useTimeTrackerStore } from '../store'
 
 function formatDuration(seconds: number): string {
 	const h = Math.floor(seconds / 3600)
@@ -19,7 +20,15 @@ function formatDuration(seconds: number): string {
 }
 
 export function TimeProgressChart() {
-	const { data, loading } = useTimeProgress()
+	const data = useTimeTrackerStore((s) => s.weeklyData)
+	const loading = useTimeTrackerStore((s) => s.weeklyLoading)
+	const loadWeekly = useTimeTrackerStore((s) => s.loadWeekly)
+
+	useEffect(() => {
+		const controller = new AbortController()
+		void loadWeekly(controller.signal)
+		return () => controller.abort()
+	}, [loadWeekly])
 
 	const todayLabel = data.at(-1)?.label ?? null
 

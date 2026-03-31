@@ -8,14 +8,14 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { Dumbbell, Home, Settings, Timer } from 'lucide-react'
 import { NotFoundScreen } from '@/components/not-found-screen'
+import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
-import { api } from '@/shared/lib/api'
 import { cn } from '@/shared/lib/cn'
 import { tokenStorage } from '@/shared/lib/token-storage'
 
 export const Route = createFileRoute('/dashboard')({
 	beforeLoad: async () => {
-		const { error } = await api.auth.me.get()
+		const { error } = await fetchMe()
 		if (error) {
 			tokenStorage.clear()
 			throw redirect({ to: '/auth/login' })

@@ -2,9 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { type RegisterRequest, RegisterRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
-import { api } from '@/shared/lib/api.ts'
 import { tokenStorage } from '@/shared/lib/token-storage'
 import { getAuthErrorMessage } from '../authErrorHandler'
+import { registerUser } from './api'
 
 export function useRegister() {
 	const navigate = useNavigate()
@@ -13,7 +13,7 @@ export function useRegister() {
 	})
 
 	async function onSubmit(data: RegisterRequest) {
-		const { data: res, error } = await api.auth.register.post(data)
+		const { data: res, error } = await registerUser(data)
 		if (error) {
 			console.error('Register error:', error.value)
 			form.setError('email', { message: getAuthErrorMessage(error.value) })
