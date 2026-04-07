@@ -50,6 +50,13 @@
 			"when": 1774467097918,
 			"tag": "0006_thankful_reptil",
 			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1775560268090,
+			"tag": "0007_fat_warbound",
+			"breakpoints": true
 		}
 	]
 }

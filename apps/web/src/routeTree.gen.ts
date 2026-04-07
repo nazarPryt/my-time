@@ -16,6 +16,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as TestErrorRouteImport } from './routes/test/error'
 import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout'
 import { Route as DashboardTimeTrackerRouteImport } from './routes/dashboard/time-tracker'
+import { Route as DashboardSiteBlockingRouteImport } from './routes/dashboard/site-blocking'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -55,6 +56,11 @@ const DashboardTimeTrackerRoute = DashboardTimeTrackerRouteImport.update({
   path: '/time-tracker',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSiteBlockingRoute = DashboardSiteBlockingRouteImport.update({
+  id: '/site-blocking',
+  path: '/site-blocking',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
   '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
   '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
   '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/dashboard/settings'
+    | '/dashboard/site-blocking'
     | '/dashboard/time-tracker'
     | '/dashboard/workout'
     | '/test/error'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/dashboard/settings'
+    | '/dashboard/site-blocking'
     | '/dashboard/time-tracker'
     | '/dashboard/workout'
     | '/test/error'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/dashboard/settings'
+    | '/dashboard/site-blocking'
     | '/dashboard/time-tracker'
     | '/dashboard/workout'
     | '/test/error'
@@ -203,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTimeTrackerRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/site-blocking': {
+      id: '/dashboard/site-blocking'
+      path: '/site-blocking'
+      fullPath: '/dashboard/site-blocking'
+      preLoaderRoute: typeof DashboardSiteBlockingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/settings': {
       id: '/dashboard/settings'
       path: '/settings'
@@ -241,6 +260,7 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardSiteBlockingRoute: typeof DashboardSiteBlockingRoute
   DashboardTimeTrackerRoute: typeof DashboardTimeTrackerRoute
   DashboardWorkoutRoute: typeof DashboardWorkoutRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -248,6 +268,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardSiteBlockingRoute: DashboardSiteBlockingRoute,
   DashboardTimeTrackerRoute: DashboardTimeTrackerRoute,
   DashboardWorkoutRoute: DashboardWorkoutRoute,
   DashboardIndexRoute: DashboardIndexRoute,

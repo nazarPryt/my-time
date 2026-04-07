@@ -6,7 +6,7 @@ import {
 	redirect,
 } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
-import { Dumbbell, Home, Settings, Timer } from 'lucide-react'
+import { Dumbbell, Home, Settings, ShieldOff, Timer } from 'lucide-react'
 import { NotFoundScreen } from '@/components/not-found-screen'
 import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
@@ -43,6 +43,12 @@ const NAV_ITEMS: NavItemType[] = [
 		to: '/dashboard/time-tracker',
 		label: 'Time tracker',
 		icon: Timer,
+		exact: false,
+	},
+	{
+		to: '/dashboard/site-blocking',
+		label: 'Site Blocking',
+		icon: ShieldOff,
 		exact: false,
 	},
 	{
