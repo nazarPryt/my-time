@@ -67,3 +67,21 @@ export async function fetchBlockedSites(): Promise<{
 }> {
 	return apiFetch<BlockedSite[]>('/site-blocking')
 }
+
+export interface ExtensionAuthTokens {
+	accessToken: string
+	refreshToken: string
+}
+
+export async function exchangeExtensionToken(token: string): Promise<{
+	data: ExtensionAuthTokens | null
+	error: string | null
+}> {
+	const res = await fetch(`${API_BASE}/auth/exchange-extension-token`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ token }),
+	})
+	if (!res.ok) return { data: null, error: `HTTP ${res.status}` }
+	return { data: (await res.json()) as ExtensionAuthTokens, error: null }
+}

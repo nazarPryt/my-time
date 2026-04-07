@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { login } from '../../utils/api'
-import { clearTokens, getTokens, setTokens } from '../../utils/auth'
+import { login } from '@/utils/api'
+import { clearTokens, getTokens, setTokens } from '@/utils/auth'
 
 const WEB_APP_URL = import.meta.env.VITE_WEB_URL ?? 'http://localhost:5173'
 

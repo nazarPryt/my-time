@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
-import { ShieldOff, Trash2 } from 'lucide-react'
+import { PuzzleIcon, ShieldOff, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,8 +11,17 @@ export const Route = createFileRoute('/dashboard/site-blocking')({
 })
 
 function SiteBlockingPage() {
-	const { sites, loading, submitting, error, loadSites, addSite, removeSite } =
-		useSiteBlockingStore()
+	const {
+		sites,
+		loading,
+		submitting,
+		error,
+		connectingExtension,
+		loadSites,
+		addSite,
+		removeSite,
+		connectExtension,
+	} = useSiteBlockingStore()
 	const [input, setInput] = useState('')
 
 	useEffect(() => {
@@ -29,8 +38,18 @@ function SiteBlockingPage() {
 
 	return (
 		<div className="h-full flex flex-col">
-			<header className="h-14 flex items-center px-8 border-b border-border shrink-0">
+			<header className="h-14 flex items-center justify-between px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground">Site Blocking</h1>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={connectExtension}
+					disabled={connectingExtension}
+					className="gap-2"
+				>
+					<PuzzleIcon size={14} />
+					{connectingExtension ? 'Connecting…' : 'Connect Extension'}
+				</Button>
 			</header>
 
 			<div className="flex-1 overflow-auto p-8">

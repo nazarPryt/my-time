@@ -11,3 +11,7 @@ export async function addBlockedSite(domain: string) {
 export async function removeBlockedSite(id: string) {
 	return api['site-blocking']({ id }).delete()
 }
+
+export async function generateExtensionToken() {
+	return api.auth['extension-token'].post()
+}

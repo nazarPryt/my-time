@@ -5,6 +5,7 @@
 		"jsx": "react-jsx",
 		"baseUrl": ".",
 		"paths": {
+			"@/*": ["./src/*"],
 			"@contracts": ["../../shared/contracts/index.ts"],
 			"@contracts/*": ["../../shared/contracts/*"]
 		}

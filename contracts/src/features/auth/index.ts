@@ -1,4 +1,5 @@
 export * from './errors'
+export * from './extension-token'
 export * from './login'
 export * from './me'
 export * from './register'

@@ -4,13 +4,14 @@ import {
 	AUTH_ERRORS,
 	AuthErrorSchema,
 	AuthResponseSchema,
+	ExchangeExtensionTokenRequestSchema,
 	LoginRequestSchema,
 	MeResponseSchema,
 	RegisterRequestSchema,
 } from 'contracts'
 import { Elysia, t } from 'elysia'
 import { REFRESH_TOKEN } from './constants'
-import { refreshTokenRepository } from './repository'
+import { extensionTokenRepository, refreshTokenRepository } from './repository'
 import { authService } from './service'
 import { generateTokens } from './token'
 
@@ -126,6 +127,42 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 			return MeResponseSchema.parse(user)
 		},
 		{
+			response: { Unauthorized: AuthErrorSchema },
+		},
+	)
+	// Generates a short-lived one-time token for passwordless extension auth.
+	// Requires a valid Bearer access token (user must be logged in on the web).
+	.post(
+		'/extension-token',
+		async ({ headers, jwt, status }) => {
+			const auth = headers.authorization
+			const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
+			const payload = token ? await jwt.verify(token) : null
+			if (!payload || typeof payload.sub !== 'string') {
+				return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
+			}
+			const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+			const row = await extensionTokenRepository.create(payload.sub, expiresAt)
+			return { token: row.token }
+		},
+		{
+			response: { Unauthorized: AuthErrorSchema },
+		},
+	)
+	// Exchanges a one-time extension token for a JWT access + refresh token pair.
+	// Returns tokens in the response body (not cookies) for extension storage.
+	.post(
+		'/exchange-extension-token',
+		async ({ body, jwt, status }) => {
+			const consumed = await extensionTokenRepository.consume(body.token)
+			if (!consumed) {
+				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
+			}
+			const tokens = await generateTokens(jwt, consumed.userId)
+			return tokens
+		},
+		{
+			body: ExchangeExtensionTokenRequestSchema,
 			response: { Unauthorized: AuthErrorSchema },
 		},
 	)

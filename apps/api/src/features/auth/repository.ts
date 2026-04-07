@@ -1,6 +1,6 @@
 import { db } from '@db'
-import { refreshTokens, users } from '@db/schema'
-import { eq, lt } from 'drizzle-orm'
+import { extensionTokens, refreshTokens, users } from '@db/schema'
+import { and, eq, gt, lt } from 'drizzle-orm'
 
 export const authRepository = {
 	findByEmail: async (email: string) => {
@@ -47,5 +47,29 @@ export const refreshTokenRepository = {
 		await db
 			.delete(refreshTokens)
 			.where(lt(refreshTokens.expiresAt, new Date()))
+	},
+}
+
+export const extensionTokenRepository = {
+	create: async (userId: string, expiresAt: Date) => {
+		const [row] = await db
+			.insert(extensionTokens)
+			.values({ userId, expiresAt })
+			.returning()
+		return row
+	},
+
+	// Atomically consume a valid (non-expired) token and return its userId.
+	consume: async (token: string) => {
+		const [row] = await db
+			.delete(extensionTokens)
+			.where(
+				and(
+					eq(extensionTokens.token, token),
+					gt(extensionTokens.expiresAt, new Date()),
+				),
+			)
+			.returning()
+		return row ?? null
 	},
 }

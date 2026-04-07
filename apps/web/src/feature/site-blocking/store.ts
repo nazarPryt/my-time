@@ -2,6 +2,7 @@ import type { BlockedSiteResponse } from 'contracts'
 import { create } from 'zustand'
 import {
 	addBlockedSite as dalAdd,
+	generateExtensionToken,
 	removeBlockedSite as dalRemove,
 	fetchBlockedSites,
 } from './api'
@@ -11,9 +12,11 @@ interface SiteBlockingState {
 	loading: boolean
 	submitting: boolean
 	error: string | null
+	connectingExtension: boolean
 	loadSites: () => Promise<void>
 	addSite: (domain: string) => Promise<void>
 	removeSite: (id: string) => Promise<void>
+	connectExtension: () => Promise<void>
 }
 
 export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
@@ -21,6 +24,7 @@ export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 	loading: true,
 	submitting: false,
 	error: null,
+	connectingExtension: false,
 
 	loadSites: async () => {
 		set({ loading: true, error: null })
@@ -51,5 +55,17 @@ export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 		if (err) {
 			set({ sites: prev, error: 'Failed to remove site' })
 		}
+	},
+
+	connectExtension: async () => {
+		if (get().connectingExtension) return
+		set({ connectingExtension: true, error: null })
+		const { data, error: err } = await generateExtensionToken()
+		if (err || !data) {
+			set({ connectingExtension: false, error: 'Failed to generate connection token' })
+			return
+		}
+		window.postMessage({ type: 'MY_TIME_CONNECT', token: data.token }, window.location.origin)
+		set({ connectingExtension: false })
 	},
 }))
