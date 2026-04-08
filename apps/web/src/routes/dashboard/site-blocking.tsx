@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { PuzzleIcon, ShieldOff, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { useSiteBlockingStore } from '@/feature/site-blocking/store'
 
@@ -98,14 +99,22 @@ function SiteBlockingPage() {
 												Added {format(new Date(site.createdAt), 'MMM d, yyyy')}
 											</p>
 										</div>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="text-muted-foreground hover:text-destructive"
-											onClick={() => removeSite(site.id)}
-										>
-											<Trash2 size={15} />
-										</Button>
+										<ConfirmDialog
+											trigger={
+												<Button
+													variant="ghost"
+													size="icon"
+													className="text-muted-foreground hover:text-destructive"
+												>
+													<Trash2 size={15} />
+												</Button>
+											}
+											title="Remove blocked site"
+											description={`Are you sure you want to unblock "${site.domain}"?`}
+											confirmLabel="Remove"
+											variant="destructive"
+											onConfirm={() => removeSite(site.id)}
+										/>
 									</li>
 								))}
 							</ul>
