@@ -5,6 +5,7 @@ import {
 	AuthErrorSchema,
 	AuthResponseSchema,
 	ExchangeExtensionTokenRequestSchema,
+	ExtensionRefreshRequestSchema,
 	LoginRequestSchema,
 	MeResponseSchema,
 	RegisterRequestSchema,
@@ -163,6 +164,54 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 		{
 			body: ExchangeExtensionTokenRequestSchema,
+			response: { Unauthorized: AuthErrorSchema },
+		},
+	)
+	// Extension-specific login: returns both tokens in body (no cookies) so the
+	// extension can store them in browser.storage.local.
+	.post(
+		'/login-extension',
+		async ({ body, jwt, status }) => {
+			try {
+				const user = await authService.login(body)
+				const tokens = await generateTokens(jwt, user.id)
+				return {
+					accessToken: tokens.accessToken,
+					refreshToken: tokens.refreshToken,
+				}
+			} catch {
+				return status('Unauthorized', AUTH_ERRORS.INVALID_CREDENTIALS)
+			}
+		},
+		{
+			body: LoginRequestSchema,
+			response: { Unauthorized: AuthErrorSchema },
+		},
+	)
+	// Extension-specific token refresh: accepts the refresh token in the request
+	// body and returns new tokens in the body (no cookies) for extension storage.
+	.post(
+		'/refresh-extension',
+		async ({ body, jwt, status }) => {
+			const consumed = await refreshTokenRepository.consume(body.refreshToken)
+			if (!consumed) {
+				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
+			}
+			const payload = await jwt.verify(body.refreshToken)
+			if (!payload || typeof payload.sub !== 'string') {
+				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
+			}
+			await refreshTokenRepository.deleteExpired().catch((err) => {
+				console.error('Failed to purge expired tokens:', err)
+			})
+			const tokens = await generateTokens(jwt, payload.sub)
+			return {
+				accessToken: tokens.accessToken,
+				refreshToken: tokens.refreshToken,
+			}
+		},
+		{
+			body: ExtensionRefreshRequestSchema,
 			response: { Unauthorized: AuthErrorSchema },
 		},
 	)

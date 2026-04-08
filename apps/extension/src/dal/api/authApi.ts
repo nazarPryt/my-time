@@ -11,7 +11,7 @@ export interface LoginTokens {
 export async function loginRequest(
 	body: LoginRequest,
 ): Promise<{ data: LoginTokens | null; error: string | null }> {
-	return apiFetch<LoginTokens>('/auth/login', {
+	return apiFetch<LoginTokens>('/auth/login-extension', {
 		method: 'POST',
 		body: JSON.stringify(body),
 	})

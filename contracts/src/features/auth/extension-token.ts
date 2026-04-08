@@ -21,3 +21,10 @@ export const ExchangeExtensionTokenResponseSchema = z.object({
 export type ExchangeExtensionTokenResponse = z.infer<
 	typeof ExchangeExtensionTokenResponseSchema
 >
+
+export const ExtensionRefreshRequestSchema = z.object({
+	refreshToken: z.string(),
+})
+export type ExtensionRefreshRequest = z.infer<
+	typeof ExtensionRefreshRequestSchema
+>

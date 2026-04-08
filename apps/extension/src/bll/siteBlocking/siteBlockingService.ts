@@ -18,7 +18,7 @@ import { getTokens } from '@/dal/storage/tokenRepository'
  */
 export async function syncBlockedSites(): Promise<number> {
 	const tokens = await getTokens()
-	if (!tokens) return 0
+	if (!tokens?.accessToken) return 0
 
 	const { data, error } = await fetchBlockedSitesRequest()
 	if (error || !data) return 0

@@ -23,7 +23,7 @@ export async function apiFetch<T>(
 
 	// Attempt token refresh on 401
 	if (res.status === 401 && tokens?.refreshToken) {
-		const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+		const refreshRes = await fetch(`${API_BASE}/auth/refresh-extension`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ refreshToken: tokens.refreshToken }),

@@ -11,7 +11,7 @@ import {
 
 export async function isAuthenticated(): Promise<boolean> {
 	const tokens = await getTokens()
-	return tokens !== null
+	return !!tokens?.accessToken
 }
 
 export async function login(
