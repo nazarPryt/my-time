@@ -1,75 +1,42 @@
-import { useEffect, useState } from 'react'
-import { login } from '@/utils/api'
-import { clearTokens, getTokens, setTokens } from '@/utils/auth'
+import { useRef, useState } from 'react'
+import { clearSiteBlocking } from '@/bll/siteBlocking/siteBlockingService'
+import { useAuth } from '@/features/auth/useAuth'
+import { useSiteBlocking } from '@/features/siteBlocking/useSiteBlocking'
+import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 
-const WEB_APP_URL = import.meta.env.VITE_WEB_URL ?? 'http://localhost:5173'
-
-type View = 'loading' | 'login' | 'dashboard'
+const WEB_APP_URL = EXTENSION_CONFIG.WEB_URL
 
 function App() {
-	const [view, setView] = useState<View>('loading')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
-	const [loginError, setLoginError] = useState('')
-	const [submitting, setSubmitting] = useState(false)
-	const [blockedCount, setBlockedCount] = useState<number | null>(null)
-	const [syncing, setSyncing] = useState(false)
 
-	useEffect(() => {
-		getTokens().then((tokens) => {
-			setView(tokens ? 'dashboard' : 'login')
-		})
-	}, [])
+	// syncRef lets useAuth.onLoginSuccess call the sync function from
+	// useSiteBlocking without a circular hook dependency.
+	const syncRef = useRef<() => Promise<void>>(async () => {})
 
-	useEffect(() => {
-		if (view === 'dashboard') {
-			browser.storage.local.get('blocked_sites').then((result) => {
-				const sites = result.blocked_sites as unknown[]
-				setBlockedCount(Array.isArray(sites) ? sites.length : 0)
-			})
-		}
-	}, [view])
+	const { status, loginError, submitting, handleLogin, handleLogout } = useAuth(
+		() => void syncRef.current(),
+	)
 
-	async function handleLogin(e: React.FormEvent) {
+	const { blockedCount, syncing, sync } = useSiteBlocking(
+		status === 'authenticated',
+	)
+	// Keep the ref current on every render
+	syncRef.current = sync
+
+	async function onLoginSubmit(e: React.FormEvent) {
 		e.preventDefault()
-		setSubmitting(true)
-		setLoginError('')
-		const { data, error } = await login(email, password)
-		if (error || !data) {
-			setLoginError('Invalid email or password')
-			setSubmitting(false)
-			return
-		}
-		await setTokens(data.accessToken, data.refreshToken)
-		setSubmitting(false)
-		setView('dashboard')
-		void handleSync()
+		await handleLogin(email, password)
 	}
 
-	async function handleSync() {
-		setSyncing(true)
-		const response = await browser.runtime.sendMessage({ type: 'SYNC' })
-		const count = (response as { count?: number })?.count ?? 0
-		setBlockedCount(count)
-		setSyncing(false)
-	}
-
-	async function handleSignOut() {
-		await clearTokens()
-		await chrome.declarativeNetRequest.updateDynamicRules({
-			removeRuleIds: (await chrome.declarativeNetRequest.getDynamicRules()).map(
-				(r) => r.id,
-			),
-			addRules: [],
-		})
-		await browser.storage.local.remove('blocked_sites')
-		setView('login')
+	async function onSignOut() {
+		await clearSiteBlocking()
+		await handleLogout()
 		setEmail('')
 		setPassword('')
-		setBlockedCount(null)
 	}
 
-	if (view === 'loading') {
+	if (status === 'loading') {
 		return (
 			<div className="popup">
 				<p className="popup-subtitle">Loading…</p>
@@ -77,7 +44,7 @@ function App() {
 		)
 	}
 
-	if (view === 'login') {
+	if (status === 'unauthenticated') {
 		return (
 			<div className="popup">
 				<div>
@@ -85,7 +52,7 @@ function App() {
 					<p className="popup-subtitle">Sign in to enable site blocking</p>
 				</div>
 				<form
-					onSubmit={handleLogin}
+					onSubmit={onLoginSubmit}
 					style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
 				>
 					<input
@@ -132,7 +99,7 @@ function App() {
 				<button
 					type="button"
 					className="btn btn-primary"
-					onClick={handleSync}
+					onClick={sync}
 					disabled={syncing}
 				>
 					{syncing ? 'Syncing…' : 'Sync now'}
@@ -141,14 +108,14 @@ function App() {
 					type="button"
 					className="btn btn-secondary"
 					onClick={() =>
-						chrome.tabs.create({
+						browser.tabs.create({
 							url: `${WEB_APP_URL}/dashboard/site-blocking`,
 						})
 					}
 				>
 					Manage in dashboard
 				</button>
-				<button type="button" className="btn btn-ghost" onClick={handleSignOut}>
+				<button type="button" className="btn btn-ghost" onClick={onSignOut}>
 					Sign out
 				</button>
 			</div>

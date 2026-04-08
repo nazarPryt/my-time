@@ -1,8 +1,12 @@
-import { getTokens, setTokens } from './auth'
+// DAL — generic authenticated fetch with automatic 401/refresh retry.
+// Only this file is allowed to call fetch() directly.
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'
+import { getTokens, setTokens } from '@/dal/storage/tokenRepository'
+import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 
-async function apiFetch<T>(
+const API_BASE = EXTENSION_CONFIG.API_URL
+
+export async function apiFetch<T>(
 	path: string,
 	options: RequestInit = {},
 ): Promise<{ data: T | null; error: string | null }> {
@@ -17,7 +21,7 @@ async function apiFetch<T>(
 
 	const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
 
-	// Try token refresh on 401
+	// Attempt token refresh on 401
 	if (res.status === 401 && tokens?.refreshToken) {
 		const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
 			method: 'POST',
@@ -25,7 +29,10 @@ async function apiFetch<T>(
 			body: JSON.stringify({ refreshToken: tokens.refreshToken }),
 		})
 		if (refreshRes.ok) {
-			const refreshed = await refreshRes.json()
+			const refreshed = (await refreshRes.json()) as {
+				accessToken: string
+				refreshToken: string
+			}
 			await setTokens(refreshed.accessToken, refreshed.refreshToken)
 			headers.Authorization = `Bearer ${refreshed.accessToken}`
 			const retried = await fetch(`${API_BASE}${path}`, { ...options, headers })
@@ -40,48 +47,16 @@ async function apiFetch<T>(
 	return { data: (await res.json()) as T, error: null }
 }
 
-export interface LoginResult {
-	accessToken: string
-	refreshToken: string
-}
-
-export async function login(
-	email: string,
-	password: string,
-): Promise<{ data: LoginResult | null; error: string | null }> {
-	return apiFetch<LoginResult>('/auth/login', {
-		method: 'POST',
-		body: JSON.stringify({ email, password }),
-	})
-}
-
-export interface BlockedSite {
-	id: string
-	domain: string
-	createdAt: string
-}
-
-export async function fetchBlockedSites(): Promise<{
-	data: BlockedSite[] | null
-	error: string | null
-}> {
-	return apiFetch<BlockedSite[]>('/site-blocking')
-}
-
-export interface ExtensionAuthTokens {
-	accessToken: string
-	refreshToken: string
-}
-
-export async function exchangeExtensionToken(token: string): Promise<{
-	data: ExtensionAuthTokens | null
-	error: string | null
-}> {
-	const res = await fetch(`${API_BASE}/auth/exchange-extension-token`, {
+/** One-off unauthenticated POST — used for token exchange which has no bearer token yet. */
+export async function publicPost<T>(
+	path: string,
+	body: unknown,
+): Promise<{ data: T | null; error: string | null }> {
+	const res = await fetch(`${API_BASE}${path}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ token }),
+		body: JSON.stringify(body),
 	})
 	if (!res.ok) return { data: null, error: `HTTP ${res.status}` }
-	return { data: (await res.json()) as ExtensionAuthTokens, error: null }
+	return { data: (await res.json()) as T, error: null }
 }

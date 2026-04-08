@@ -6,8 +6,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
-			"@contracts": ["../../shared/contracts/index.ts"],
-			"@contracts/*": ["../../shared/contracts/*"]
+			"contracts": ["../../contracts/src/index.ts"],
+			"contracts/*": ["../../contracts/src/*"]
 		}
 	}
 }

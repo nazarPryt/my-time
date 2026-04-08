@@ -1,13 +1,15 @@
+// DAL — sole owner of chrome.storage.local for auth tokens.
+
 const STORAGE_KEY = 'my_time_tokens'
 
-interface Tokens {
+export interface StoredTokens {
 	accessToken: string
 	refreshToken: string
 }
 
-export async function getTokens(): Promise<Tokens | null> {
+export async function getTokens(): Promise<StoredTokens | null> {
 	const result = await browser.storage.local.get(STORAGE_KEY)
-	return (result[STORAGE_KEY] as Tokens) ?? null
+	return (result[STORAGE_KEY] as StoredTokens) ?? null
 }
 
 export async function setTokens(

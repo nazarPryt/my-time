@@ -1,10 +1,10 @@
 import type { BlockedSiteResponse } from 'contracts'
 import { create } from 'zustand'
 import {
-	addBlockedSite as dalAdd,
-	generateExtensionToken,
-	removeBlockedSite as dalRemove,
+	addBlockedSite,
 	fetchBlockedSites,
+	generateExtensionToken,
+	removeBlockedSite,
 } from './api'
 
 interface SiteBlockingState {
@@ -40,8 +40,8 @@ export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 		const { submitting } = get()
 		if (submitting) return
 		set({ submitting: true, error: null })
-		const { data, error: err } = await dalAdd(domain)
-		if (err || !data) {
+		const { data, error: err } = await addBlockedSite(domain)
+		if (err || !data || 'message' in data) {
 			set({ submitting: false, error: 'Failed to block site' })
 		} else {
 			set((s) => ({ submitting: false, sites: [...s.sites, data] }))
@@ -51,7 +51,7 @@ export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 	removeSite: async (id) => {
 		const prev = get().sites
 		set((s) => ({ sites: s.sites.filter((s) => s.id !== id) }))
-		const { error: err } = await dalRemove(id)
+		const { error: err } = await removeBlockedSite(id)
 		if (err) {
 			set({ sites: prev, error: 'Failed to remove site' })
 		}
@@ -62,10 +62,16 @@ export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 		set({ connectingExtension: true, error: null })
 		const { data, error: err } = await generateExtensionToken()
 		if (err || !data) {
-			set({ connectingExtension: false, error: 'Failed to generate connection token' })
+			set({
+				connectingExtension: false,
+				error: 'Failed to generate connection token',
+			})
 			return
 		}
-		window.postMessage({ type: 'MY_TIME_CONNECT', token: data.token }, window.location.origin)
+		window.postMessage(
+			{ type: 'MY_TIME_CONNECT', token: data.token },
+			window.location.origin,
+		)
 		set({ connectingExtension: false })
 	},
 }))
