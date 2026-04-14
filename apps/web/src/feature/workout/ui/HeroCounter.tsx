@@ -31,7 +31,10 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 	}
 
 	return (
-		<div data-testid="hero-counter" className="rounded-xl border border-border bg-card p-7 flex flex-col items-center gap-5">
+		<div
+			data-testid="hero-counter"
+			className="rounded-xl border border-border bg-card p-7 flex flex-col items-center gap-5"
+		>
 			<span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground/60">
 				Push-ups today
 			</span>
@@ -59,7 +62,10 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 				<div className="flex items-center justify-between">
 					<span className="text-xs text-muted-foreground tabular-nums">
 						{done ? (
-							<span data-testid="goal-reached" className="text-foreground font-medium">
+							<span
+								data-testid="goal-reached"
+								className="text-foreground font-medium"
+							>
 								Goal reached ✓
 							</span>
 						) : (

@@ -6,13 +6,12 @@ import {
 	API_WORKOUT_SET_BY_ID,
 	API_WORKOUT_SETS,
 	API_WORKOUT_TODAY,
+	LOGIN_PATH,
+	MOCK_PROGRESS,
 	MOCK_SET_1,
 	MOCK_SET_2,
 	MOCK_TODAY_EMPTY,
-	MOCK_TODAY_WITH_SETS,
-	MOCK_PROGRESS,
 	WORKOUT_PATH,
-	LOGIN_PATH,
 	WorkoutPage,
 } from './pages/WorkoutPage'
 
@@ -118,7 +117,9 @@ test.describe('Workout page', () => {
 		})
 
 		for (const reps of [5, 10, 15, 20] as const) {
-			test(`clicking +${reps} adds ${reps} reps optimistically`, async ({ page }) => {
+			test(`clicking +${reps} adds ${reps} reps optimistically`, async ({
+				page,
+			}) => {
 				const newSet = {
 					id: `new-set-${reps}`,
 					exerciseType: 'pushups',
@@ -145,11 +146,15 @@ test.describe('Workout page', () => {
 
 				// A set row appears in the log
 				await expect(workout.setRows).toHaveCount(1)
-				await expect(workout.setRows.first().getByTestId('set-reps')).toHaveText(`+${reps}`)
+				await expect(
+					workout.setRows.first().getByTestId('set-reps'),
+				).toHaveText(`+${reps}`)
 			})
 		}
 
-		test('quick-add buttons are disabled while submitting', async ({ page }) => {
+		test('quick-add buttons are disabled while submitting', async ({
+			page,
+		}) => {
 			// Delay the API response to observe the disabled state
 			await page.route(API_WORKOUT_SETS, async (route) => {
 				await new Promise((r) => setTimeout(r, 300))
@@ -185,7 +190,9 @@ test.describe('Workout page', () => {
 			await firstRow.getByTestId('delete-set-trigger').click()
 
 			await expect(workout.page.getByRole('alertdialog')).toBeVisible()
-			await expect(workout.page.getByRole('alertdialog')).toContainText('Remove this set?')
+			await expect(workout.page.getByRole('alertdialog')).toContainText(
+				'Remove this set?',
+			)
 		})
 
 		test('cancel closes dialog without deleting', async () => {
@@ -201,7 +208,11 @@ test.describe('Workout page', () => {
 		test('confirm removes the set from the list', async ({ page }) => {
 			await page.route(API_WORKOUT_SET_BY_ID, (route) => {
 				if (route.request().method() === 'DELETE') {
-					route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+					route.fulfill({
+						status: 200,
+						contentType: 'application/json',
+						body: '{}',
+					})
 				} else {
 					route.continue()
 				}
@@ -251,7 +262,11 @@ test.describe('Workout page', () => {
 		test('confirm clears all sets and re-fetches today', async ({ page }) => {
 			await page.route(API_WORKOUT_SETS, (route) => {
 				if (route.request().method() === 'DELETE') {
-					route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+					route.fulfill({
+						status: 200,
+						contentType: 'application/json',
+						body: '{}',
+					})
 				} else {
 					route.continue()
 				}
@@ -368,7 +383,9 @@ test.describe('Workout page', () => {
 			expect(goalApiCalled).toBe(false)
 		})
 
-		test('shows "Goal reached" when total meets or exceeds goal', async ({ page }) => {
+		test('shows "Goal reached" when total meets or exceeds goal', async ({
+			page,
+		}) => {
 			// total = 25, let's set goal to 20 so it's already reached
 			workout = new WorkoutPage(page)
 			await workout.mockAuth()
@@ -441,7 +458,9 @@ test.describe('Workout progress chart', () => {
 		await expect(workout.nextMonthBtn).toBeDisabled()
 	})
 
-	test('prev-month button navigates to the previous month', async ({ page }) => {
+	test('prev-month button navigates to the previous month', async ({
+		page,
+	}) => {
 		const currentLabel = await workout.chartMonthLabel.textContent()
 
 		// Mock progress for the previous month too
@@ -459,7 +478,9 @@ test.describe('Workout progress chart', () => {
 		expect(newLabel).not.toBe(currentLabel)
 	})
 
-	test('next-month button becomes enabled after navigating back', async ({ page }) => {
+	test('next-month button becomes enabled after navigating back', async ({
+		page,
+	}) => {
 		await page.route('**/api/v1/workout/progress*', (route) =>
 			route.fulfill({
 				status: 200,

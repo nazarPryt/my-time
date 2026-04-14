@@ -12,7 +12,10 @@ interface SetsLogProps {
 export function SetsLog({ sets, onDelete, onReset }: SetsLogProps) {
 	if (sets.length === 0) {
 		return (
-			<div data-testid="sets-log-empty" className="rounded-xl border border-dashed border-border p-10 flex flex-col items-center gap-2">
+			<div
+				data-testid="sets-log-empty"
+				className="rounded-xl border border-dashed border-border p-10 flex flex-col items-center gap-2"
+			>
 				<Flame
 					size={18}
 					strokeWidth={1.5}
@@ -25,9 +28,15 @@ export function SetsLog({ sets, onDelete, onReset }: SetsLogProps) {
 		)
 	}
 	return (
-		<div data-testid="sets-log" className="rounded-xl border border-border bg-card overflow-hidden">
+		<div
+			data-testid="sets-log"
+			className="rounded-xl border border-border bg-card overflow-hidden"
+		>
 			<div className="px-5 py-3 border-b border-border flex items-center justify-between">
-				<span data-testid="sets-count" className="text-[10px] font-semibold tracking-[0.15em] uppercase text-muted-foreground/60">
+				<span
+					data-testid="sets-count"
+					className="text-[10px] font-semibold tracking-[0.15em] uppercase text-muted-foreground/60"
+				>
 					Sets · {sets.length}
 				</span>
 				<ConfirmDialog
