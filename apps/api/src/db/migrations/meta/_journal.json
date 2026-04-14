@@ -1,69 +1,69 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1773483782838,
-      "tag": "0000_parallel_naoko",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1773488763295,
-      "tag": "0001_lumpy_ser_duncan",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1773868282000,
-      "tag": "0002_bouncy_texas_twister",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1774370698056,
-      "tag": "0003_light_maestro",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1774443529283,
-      "tag": "0004_brief_lord_tyger",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1774459673254,
-      "tag": "0005_past_nehzno",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1774467097918,
-      "tag": "0006_thankful_reptil",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1775560268090,
-      "tag": "0007_fat_warbound",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1775563404173,
-      "tag": "0008_typical_blur",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1773483782838,
+			"tag": "0000_parallel_naoko",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1773488763295,
+			"tag": "0001_lumpy_ser_duncan",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1773868282000,
+			"tag": "0002_bouncy_texas_twister",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1774370698056,
+			"tag": "0003_light_maestro",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1774443529283,
+			"tag": "0004_brief_lord_tyger",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1774459673254,
+			"tag": "0005_past_nehzno",
+			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1774467097918,
+			"tag": "0006_thankful_reptil",
+			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1775560268090,
+			"tag": "0007_fat_warbound",
+			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1775563404173,
+			"tag": "0008_typical_blur",
+			"breakpoints": true
+		}
+	]
 }

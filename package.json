@@ -7,12 +7,14 @@
 		"contracts"
 	],
 	"scripts": {
+		"dev": "bun --filter api dev & bun --filter web dev & wait",
 		"web:dev": "bun --filter web dev",
 		"web:build": "bun --filter web build",
 		"api:dev": "bun --filter api dev",
 		"extension:dev": "bun --filter extension dev",
-		"lint": "biome check .",
-		"check": "biome check --write --unsafe . && biome format --write .",
+		"extension:build": "bun --filter extension build",
+		"lint:check": "biome check .",
+		"lint:fix": "biome check --write --unsafe . && biome format --write .",
 		"docker:build": "docker compose --env-file ./apps/api/.env build",
 		"docker:up": "docker compose --env-file ./apps/api/.env up -d",
 		"docker:down": "docker compose --env-file ./apps/api/.env down",
