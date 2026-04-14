@@ -1,24 +1,29 @@
-import type { Page, Locator } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import type {
 	MeResponse,
+	ProgressResponse,
 	SetResponse,
 	TodayResponse,
-	ProgressResponse,
 } from 'contracts'
-import { Route as WorkoutRoute } from '../../src/routes/dashboard/workout'
-import { Route as DashboardIndexRoute } from '../../src/routes/dashboard/index'
-import { Route as LoginRoute } from '../../src/routes/auth/login'
+import { API_PREFIX, AUTH_ROUTES, WORKOUT_ROUTES } from 'contracts'
 
-export const WORKOUT_PATH = WorkoutRoute.fullPath
-export const DASHBOARD_PATH = DashboardIndexRoute.fullPath
-export const LOGIN_PATH = LoginRoute.fullPath
+export const WORKOUT_PATH = '/dashboard/workout' //todo check tanstack router for those path constants
+export const DASHBOARD_PATH = '/dashboard/'
+export const LOGIN_PATH = '/auth/login'
 
-export const API_ME = '**/api/v1/auth/me'
-export const API_WORKOUT_TODAY = '**/api/v1/workout/today*'
-export const API_WORKOUT_SETS = '**/api/v1/workout/sets'
-export const API_WORKOUT_SET_BY_ID = '**/api/v1/workout/sets/*'
-export const API_WORKOUT_GOAL = '**/api/v1/workout/goal'
-export const API_WORKOUT_PROGRESS = '**/api/v1/workout/progress*'
+/** Convert Elysia route params (`:id`) to Playwright glob wildcards (`*`). */
+const glob = (route: string) => route.replace(/:[^/]+/g, '*')
+
+const base = `**${API_PREFIX}`
+const auth = `${base}${AUTH_ROUTES.prefix}`
+const workout = `${base}${WORKOUT_ROUTES.prefix}`
+
+export const API_ME = `${auth}${AUTH_ROUTES.me}`
+export const API_WORKOUT_TODAY = `${workout}${WORKOUT_ROUTES.today}*`
+export const API_WORKOUT_SETS = `${workout}${WORKOUT_ROUTES.sets}`
+export const API_WORKOUT_SET_BY_ID = glob(`${workout}${WORKOUT_ROUTES.setById}`)
+export const API_WORKOUT_GOAL = `${workout}${WORKOUT_ROUTES.goal}`
+export const API_WORKOUT_PROGRESS = `${workout}${WORKOUT_ROUTES.progress}*`
 
 export const MOCK_USER: MeResponse = {
 	id: 'user-1',
@@ -63,9 +68,10 @@ export const MOCK_PROGRESS: ProgressResponse = {
 export class WorkoutPage {
 	readonly page: Page
 
-	// Page container
+	// Page containers
 	readonly workoutPage: Locator
 	readonly workoutLoading: Locator
+	readonly dashboardHome: Locator
 
 	// Header
 	readonly header: Locator
@@ -102,37 +108,38 @@ export class WorkoutPage {
 		this.page = page
 
 		this.workoutPage = page.getByTestId('workout-page')
-		this.workoutLoading = page.getByTestId('workout-loading')
+		this.workoutLoading = this.workoutPage.getByTestId('workout-loading')
+		this.dashboardHome = page.getByTestId('dashboard-home')
 
-		this.header = page.getByTestId('workout-header')
-		this.dateLabel = page.getByTestId('workout-date')
+		this.header = this.workoutPage.getByTestId('workout-header')
+		this.dateLabel = this.header.getByTestId('workout-date')
 
-		this.heroCounter = page.getByTestId('hero-counter')
-		this.totalReps = page.getByTestId('total-reps')
-		this.progressBarFill = page.getByTestId('progress-bar-fill')
-		this.repsLeft = page.getByTestId('reps-left')
-		this.goalReached = page.getByTestId('goal-reached')
-		this.goalDisplayBtn = page.getByTestId('goal-display-btn')
-		this.goalInput = page.getByTestId('goal-input')
-		this.goalSetBtn = page.getByTestId('goal-set-btn')
+		this.heroCounter = this.workoutPage.getByTestId('hero-counter')
+		this.totalReps = this.heroCounter.getByTestId('total-reps')
+		this.progressBarFill = this.heroCounter.getByTestId('progress-bar-fill')
+		this.repsLeft = this.heroCounter.getByTestId('reps-left')
+		this.goalReached = this.heroCounter.getByTestId('goal-reached')
+		this.goalDisplayBtn = this.heroCounter.getByTestId('goal-display-btn')
+		this.goalInput = this.heroCounter.getByTestId('goal-input')
+		this.goalSetBtn = this.heroCounter.getByTestId('goal-set-btn')
 
-		this.quickAddButtons = page.getByTestId('quick-add-buttons')
+		this.quickAddButtons = this.workoutPage.getByTestId('quick-add-buttons')
 
-		this.setsLogEmpty = page.getByTestId('sets-log-empty')
-		this.setsLog = page.getByTestId('sets-log')
-		this.setsCount = page.getByTestId('sets-count')
-		this.resetDayTrigger = page.getByTestId('reset-day-trigger')
-		this.setRows = page.getByTestId('set-row')
+		this.setsLogEmpty = this.workoutPage.getByTestId('sets-log-empty')
+		this.setsLog = this.workoutPage.getByTestId('sets-log')
+		this.setsCount = this.setsLog.getByTestId('sets-count')
+		this.resetDayTrigger = this.setsLog.getByTestId('reset-day-trigger')
+		this.setRows = this.setsLog.getByTestId('set-row')
 
-		this.progressChart = page.getByTestId('progress-chart')
-		this.chartMonthLabel = page.getByTestId('chart-month-label')
-		this.prevMonthBtn = page.getByTestId('prev-month-btn')
-		this.nextMonthBtn = page.getByTestId('next-month-btn')
-		this.chartLoading = page.getByTestId('chart-loading')
+		this.progressChart = this.dashboardHome.getByTestId('progress-chart')
+		this.chartMonthLabel = this.progressChart.getByTestId('chart-month-label')
+		this.prevMonthBtn = this.progressChart.getByTestId('prev-month-btn')
+		this.nextMonthBtn = this.progressChart.getByTestId('next-month-btn')
+		this.chartLoading = this.progressChart.getByTestId('chart-loading')
 	}
 
 	quickAddBtn(reps: number) {
-		return this.page.getByTestId(`quick-add-${reps}`)
+		return this.quickAddButtons.getByTestId(`quick-add-${reps}`)
 	}
 
 	async mockAuth() {
