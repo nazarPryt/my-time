@@ -4,9 +4,8 @@ import { siteBlockingPlugin } from '@features/site-blocking/routes'
 import { timeTrackerPlugin } from '@features/time-tracker/routes'
 import { workoutPlugin } from '@features/workout/routes'
 import { API_CONFIG } from '@shared/api-config'
+import { API_PREFIX } from 'contracts'
 import { Elysia } from 'elysia'
-
-export const API_PREFIX = '/api/v1'
 
 export const app = new Elysia({ prefix: API_PREFIX })
 	.use(cors({ origin: API_CONFIG.FRONTEND_WEB_URL, credentials: true }))

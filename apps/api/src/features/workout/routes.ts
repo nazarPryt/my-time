@@ -4,6 +4,7 @@ import {
 	ExerciseTypeSchema,
 	ProgressQuerySchema,
 	UpdateGoalRequestSchema,
+	WORKOUT_ROUTES,
 } from 'contracts'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
@@ -13,36 +14,36 @@ const exerciseTypeQuery = z.object({
 	exerciseType: ExerciseTypeSchema.default('pushups'),
 })
 
-export const workoutPlugin = new Elysia({ prefix: '/workout' })
+export const workoutPlugin = new Elysia({ prefix: WORKOUT_ROUTES.prefix })
 	.use(authMacro)
 	.guard({ auth: true }, (app) =>
 		app
 			.get(
-				'/today',
+				WORKOUT_ROUTES.today,
 				async ({ userId, query }) => {
 					return workoutService.getToday(userId, query.exerciseType)
 				},
 				{ query: exerciseTypeQuery },
 			)
 			.post(
-				'/sets',
+				WORKOUT_ROUTES.sets,
 				async ({ userId, body }) => {
 					return workoutService.addSet(userId, body.exerciseType, body.reps)
 				},
 				{ body: CreateSetRequestSchema },
 			)
-			.delete('/sets/:id', async ({ userId, params }) => {
+			.delete(WORKOUT_ROUTES.setById, async ({ userId, params }) => {
 				await workoutService.deleteSet(userId, params.id)
 			})
 			.delete(
-				'/sets',
+				WORKOUT_ROUTES.sets,
 				async ({ userId, query }) => {
 					await workoutService.resetToday(userId, query.exerciseType)
 				},
 				{ query: exerciseTypeQuery },
 			)
 			.put(
-				'/goal',
+				WORKOUT_ROUTES.goal,
 				async ({ userId, body }) => {
 					return workoutService.updateGoal(
 						userId,
@@ -53,7 +54,7 @@ export const workoutPlugin = new Elysia({ prefix: '/workout' })
 				{ body: UpdateGoalRequestSchema },
 			)
 			.get(
-				'/progress',
+				WORKOUT_ROUTES.progress,
 				async ({ userId, query }) => {
 					return workoutService.getProgress(
 						userId,

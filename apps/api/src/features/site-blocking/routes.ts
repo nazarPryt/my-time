@@ -1,17 +1,19 @@
 import { authMacro } from '@shared/auth-macro'
-import { CreateBlockedSiteRequestSchema } from 'contracts'
+import { CreateBlockedSiteRequestSchema, SITE_BLOCKING_ROUTES } from 'contracts'
 import { Elysia } from 'elysia'
 import { blockedSitesService } from './service'
 
-export const siteBlockingPlugin = new Elysia({ prefix: '/site-blocking' })
+export const siteBlockingPlugin = new Elysia({
+	prefix: SITE_BLOCKING_ROUTES.prefix,
+})
 	.use(authMacro)
 	.guard({ auth: true }, (app) =>
 		app
-			.get('/', async ({ userId }) => {
+			.get(SITE_BLOCKING_ROUTES.root, async ({ userId }) => {
 				return blockedSitesService.listSites(userId)
 			})
 			.post(
-				'/',
+				SITE_BLOCKING_ROUTES.root,
 				async ({ userId, body, set }) => {
 					const site = await blockedSitesService.addSite(userId, body.domain)
 					if (!site) {
@@ -23,7 +25,7 @@ export const siteBlockingPlugin = new Elysia({ prefix: '/site-blocking' })
 				},
 				{ body: CreateBlockedSiteRequestSchema },
 			)
-			.delete('/:id', async ({ userId, params }) => {
+			.delete(SITE_BLOCKING_ROUTES.deleteById, async ({ userId, params }) => {
 				await blockedSitesService.removeSite(userId, params.id)
 			}),
 	)

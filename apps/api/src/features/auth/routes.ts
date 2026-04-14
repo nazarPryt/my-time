@@ -2,6 +2,7 @@ import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
 import {
 	AUTH_ERRORS,
+	AUTH_ROUTES,
 	AuthErrorSchema,
 	AuthResponseSchema,
 	ExchangeExtensionTokenRequestSchema,
@@ -28,10 +29,10 @@ const COOKIE_OPTIONS: CookieOptions = {
 	path: '/',
 }
 
-export const authPlugin = new Elysia({ prefix: '/auth' })
+export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 	.use(jwtPlugin)
 	.post(
-		'/register',
+		AUTH_ROUTES.register,
 		async ({ body, jwt, status, cookie }) => {
 			try {
 				const user = await authService.register(body)
@@ -57,7 +58,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 	)
 	.post(
-		'/login',
+		AUTH_ROUTES.login,
 		async ({ body, jwt, status, cookie }) => {
 			try {
 				const user = await authService.login(body)
@@ -77,7 +78,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 	)
 	.post(
-		'/refresh',
+		AUTH_ROUTES.refresh,
 		async ({ jwt, status, cookie: { refreshToken: refreshCookie } }) => {
 			const token = refreshCookie.value
 			if (!token) {
@@ -105,7 +106,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		},
 	)
 	.post(
-		'/logout',
+		AUTH_ROUTES.logout,
 		async ({ cookie: { refreshToken: refreshCookie } }) => {
 			const token = refreshCookie.value
 			if (token) {
@@ -116,7 +117,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 		{ cookie: t.Cookie({ refreshToken: t.Optional(t.String()) }) },
 	)
 	.get(
-		'/me',
+		AUTH_ROUTES.me,
 		async ({ headers, jwt, status }) => {
 			const auth = headers.authorization
 			const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
@@ -134,7 +135,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 	// Generates a short-lived one-time token for passwordless extension auth.
 	// Requires a valid Bearer access token (user must be logged in on the web).
 	.post(
-		'/extension-token',
+		AUTH_ROUTES.extensionToken,
 		async ({ headers, jwt, status }) => {
 			const auth = headers.authorization
 			const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
@@ -153,7 +154,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 	// Exchanges a one-time extension token for a JWT access + refresh token pair.
 	// Returns tokens in the response body (not cookies) for extension storage.
 	.post(
-		'/exchange-extension-token',
+		AUTH_ROUTES.exchangeExtensionToken,
 		async ({ body, jwt, status }) => {
 			const consumed = await extensionTokenRepository.consume(body.token)
 			if (!consumed) {
@@ -170,7 +171,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 	// Extension-specific login: returns both tokens in body (no cookies) so the
 	// extension can store them in browser.storage.local.
 	.post(
-		'/login-extension',
+		AUTH_ROUTES.loginExtension,
 		async ({ body, jwt, status }) => {
 			try {
 				const user = await authService.login(body)
@@ -191,7 +192,7 @@ export const authPlugin = new Elysia({ prefix: '/auth' })
 	// Extension-specific token refresh: accepts the refresh token in the request
 	// body and returns new tokens in the body (no cookies) for extension storage.
 	.post(
-		'/refresh-extension',
+		AUTH_ROUTES.refreshExtension,
 		async ({ body, jwt, status }) => {
 			const consumed = await refreshTokenRepository.consume(body.refreshToken)
 			if (!consumed) {
