@@ -31,13 +31,13 @@ function WorkoutPage() {
 	}, [load])
 
 	return (
-		<div className="h-full flex flex-col">
+		<div data-testid="workout-page" className="h-full flex flex-col">
 			<WorkoutHeader />
 
 			<div className="flex-1 overflow-auto p-8">
 				<div className="max-w-sm mx-auto space-y-4">
 					{loading || !data ? (
-						<div className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-48">
+						<div data-testid="workout-loading" className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-48">
 							<span className="text-xs text-muted-foreground">Loading…</span>
 						</div>
 					) : (

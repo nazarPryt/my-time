@@ -12,18 +12,20 @@ interface SetRowProps {
 export function SetRow({ set, animate, onDelete }: SetRowProps) {
 	return (
 		<div
+			data-testid="set-row"
 			className={`group flex items-center justify-between px-5 py-2.5 ${animate ? 'row-in' : ''}`}
 		>
-			<span className="text-xs text-muted-foreground/70 tabular-nums">
+			<span data-testid="set-time" className="text-xs text-muted-foreground/70 tabular-nums">
 				{format(new Date(set.createdAt), 'HH:mm')}
 			</span>
 			<div className="flex items-center gap-3">
-				<span className="text-sm font-semibold tabular-nums text-foreground">
+				<span data-testid="set-reps" className="text-sm font-semibold tabular-nums text-foreground">
 					+{set.reps}
 				</span>
 				<ConfirmDialog
 					trigger={
 						<button
+							data-testid="delete-set-trigger"
 							type="button"
 							className="text-muted-foreground/50 hover:text-destructive cursor-pointer"
 						>

@@ -39,19 +39,20 @@ export function WorkoutProgressChart() {
 	}, [loadProgress, year, month])
 
 	return (
-		<div className="rounded-xl border border-border bg-card p-5">
+		<div data-testid="progress-chart" className="rounded-xl border border-border bg-card p-5">
 			{/* Header */}
 			<div className="flex items-center justify-between mb-4">
 				<div>
 					<p className="text-xs font-medium tracking-wide uppercase text-muted-foreground/70">
 						Push-ups
 					</p>
-					<p className="text-sm font-semibold text-foreground mt-0.5">
+					<p data-testid="chart-month-label" className="text-sm font-semibold text-foreground mt-0.5">
 						{monthLabel}
 					</p>
 				</div>
 				<div className="flex items-center gap-1">
 					<button
+						data-testid="prev-month-btn"
 						type="button"
 						onClick={prevMonth}
 						className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
@@ -59,6 +60,7 @@ export function WorkoutProgressChart() {
 						<ChevronLeft size={16} />
 					</button>
 					<button
+						data-testid="next-month-btn"
 						type="button"
 						onClick={nextMonth}
 						disabled={isCurrentMonth}
@@ -72,7 +74,7 @@ export function WorkoutProgressChart() {
 			{/* Chart */}
 			<div className="h-40">
 				{loading ? (
-					<div className="h-full flex items-center justify-center">
+					<div data-testid="chart-loading" className="h-full flex items-center justify-center">
 						<span className="text-xs text-muted-foreground">Loading…</span>
 					</div>
 				) : (

@@ -1,15 +1,20 @@
 {
-	"version": 1,
-	"skills": {
-		"elysia": {
-			"source": "EpicenterHQ/epicenter",
-			"sourceType": "github",
-			"computedHash": "120b926c847cde9441125eb417768ea3040be7150c60e038fe046995a0481d89"
-		},
-		"frontend-design": {
-			"source": "EpicenterHQ/epicenter",
-			"sourceType": "github",
-			"computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
-		}
-	}
+  "version": 1,
+  "skills": {
+    "e2e-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "b66c5a5415f07b48472049d5301e8327fe39cb23b706f7969668a2d823f62d11"
+    },
+    "elysia": {
+      "source": "EpicenterHQ/epicenter",
+      "sourceType": "github",
+      "computedHash": "120b926c847cde9441125eb417768ea3040be7150c60e038fe046995a0481d89"
+    },
+    "frontend-design": {
+      "source": "EpicenterHQ/epicenter",
+      "sourceType": "github",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    }
+  }
 }
