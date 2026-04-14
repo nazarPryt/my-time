@@ -10,7 +10,7 @@ import {
 	MeResponseSchema,
 	RegisterRequestSchema,
 } from 'contracts'
-import { Elysia, t } from 'elysia'
+import { type CookieOptions, Elysia, t } from 'elysia'
 import { REFRESH_TOKEN } from './constants'
 import { extensionTokenRepository, refreshTokenRepository } from './repository'
 import { authService } from './service'
@@ -20,13 +20,13 @@ const jwtPlugin = jwt({
 	name: 'jwt',
 	secret: API_CONFIG.JWT_SECRET,
 })
-const COOKIE_OPTIONS = {
+const COOKIE_OPTIONS: CookieOptions = {
 	httpOnly: true,
 	secure: true,
 	sameSite: 'strict',
 	maxAge: 7 * 24 * 60 * 60, // 7 days
 	path: '/',
-} as const
+}
 
 export const authPlugin = new Elysia({ prefix: '/auth' })
 	.use(jwtPlugin)
