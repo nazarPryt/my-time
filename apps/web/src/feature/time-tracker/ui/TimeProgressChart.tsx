@@ -65,7 +65,7 @@ export function TimeProgressChart() {
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
 								axisLine={false}
 								tickLine={false}
-								interval={4}
+								interval={0}
 							/>
 							<YAxis
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}

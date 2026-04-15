@@ -34,7 +34,7 @@ function DashboardHome() {
 					<StatCard label="Projects" value="0" sub="None active" />
 				</div>
 
-				<div className="max-w-xl flex flex-col gap-6">
+				<div className="w-full flex flex-col gap-6">
 					<TimeProgressChart />
 					<WorkoutProgressChart />
 				</div>
