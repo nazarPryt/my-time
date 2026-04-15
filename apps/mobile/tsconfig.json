@@ -3,8 +3,14 @@
 	"compilerOptions": {
 		"strict": true,
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./*"],
+			"api": ["../../apps/api/src/public.ts"],
+			"contracts": ["../../contracts/src/index.ts"]
 		}
 	},
+	"references": [
+		{ "path": "../../apps/api" },
+		{ "path": "../../contracts" }
+	],
 	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
