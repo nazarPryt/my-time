@@ -40,20 +40,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
-    try {
-      const { data, error } = await api.auth.login.post({ email, password })
-      if (error || !data) {
-        throw new Error(
-          error?.value && typeof error.value === 'object' && 'message' in error.value
-            ? String(error.value.message)
-            : 'Invalid email or password',
-        )
-      }
-      await tokenStorage.save(data.tokens.accessToken)
-      setUser(data.user)
-    } finally {
-      setIsLoading(false)
+    const { data, error } = await api.auth.login.post({ email, password })
+    if (error || !data) {
+      throw new Error(
+        error?.value && typeof error.value === 'object' && 'message' in error.value
+          ? String(error.value.message)
+          : 'Invalid email or password',
+      )
     }
+    await tokenStorage.save(data.tokens.accessToken)
+    setUser(data.user)
   }, [])
 
   const logout = useCallback(async () => {

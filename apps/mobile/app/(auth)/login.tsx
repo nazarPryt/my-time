@@ -76,9 +76,9 @@ export default function LoginScreen() {
         </View>
 
         <Pressable
-          style={[styles.button, isSubmitting && styles.buttonDisabled]}
+          style={[styles.button, (isSubmitting || !email || !password) && styles.buttonDisabled]}
           onPress={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !email || !password}
         >
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
