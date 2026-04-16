@@ -8,9 +8,6 @@
 			"contracts": ["../../contracts/src/index.ts"]
 		}
 	},
-	"references": [
-		{ "path": "../../apps/api" },
-		{ "path": "../../contracts" }
-	],
+	"references": [{ "path": "../../apps/api" }, { "path": "../../contracts" }],
 	"include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
