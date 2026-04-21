@@ -29,10 +29,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			try {
 				const token = await tokenStorage.get()
 				if (!token) return
-				const { data } = await api.auth.me.get()
-				if (data) setUser(data)
+				const { data, error } = await api.auth.me.get()
+				if (data) {
+					setUser(data)
+				} else if (error?.status === 401 || error?.status === 403) {
+					await tokenStorage.clear()
+				}
 			} catch {
-				await tokenStorage.clear()
+				// Network error — keep tokens so the user can retry on next launch
 			} finally {
 				setIsLoading(false)
 			}
@@ -41,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	}, [])
 
 	const login = useCallback(async (email: string, password: string) => {
-		const { data, error } = await api.auth.login.post({ email, password })
+		const { data, error } = await api.auth['login-extension'].post({ email, password })
 		if (error || !data) {
 			throw new Error(
 				error?.value &&
@@ -51,8 +55,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					: 'Invalid email or password',
 			)
 		}
-		await tokenStorage.save(data.tokens.accessToken)
-		setUser(data.user)
+		await tokenStorage.save(data.accessToken)
+		await tokenStorage.saveRefreshToken(data.refreshToken)
+		// login-extension doesn't return user — fetch profile separately
+		const { data: me } = await api.auth.me.get()
+		if (me) setUser(me)
 	}, [])
 
 	const logout = useCallback(async () => {
