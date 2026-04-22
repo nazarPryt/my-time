@@ -12,7 +12,9 @@
 	"dependencies": {
 		"@elysiajs/eden": "^1.4.9",
 		"api": "workspace:*",
-		"contracts": "workspace:*",
+		"contracts": "workspace:*"
+	},
+	"peerDependencies": {
 		"date-fns": "^4.1.0",
 		"zustand": "^5.0.12"
 	}

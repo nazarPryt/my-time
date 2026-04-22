@@ -1,8 +1,14 @@
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
-import { useAuth } from '@/shared/lib/auth-context'
+import {
+	ActivityIndicator,
+	Pressable,
+	StyleSheet,
+	Text,
+	View,
+} from 'react-native'
 import { api } from '@/shared/lib/api-client'
+import { useAuth } from '@/shared/lib/auth-context'
 
 type FetchStatus = 'idle' | 'loading' | 'ok' | 'error'
 
@@ -32,7 +38,7 @@ export default function DashboardScreen() {
 
 	useEffect(() => {
 		void fetchToday()
-	}, [])
+	}, [fetchToday])
 
 	async function handleLogout() {
 		setIsLoggingOut(true)
@@ -77,7 +83,10 @@ export default function DashboardScreen() {
 					<Text style={styles.cardError}>{fetchError}</Text>
 				)}
 				<Pressable
-					style={[styles.refetchButton, fetchStatus === 'loading' && styles.logoutButtonDisabled]}
+					style={[
+						styles.refetchButton,
+						fetchStatus === 'loading' && styles.logoutButtonDisabled,
+					]}
 					onPress={() => void fetchToday()}
 					disabled={fetchStatus === 'loading'}
 				>
@@ -116,7 +125,12 @@ const styles = StyleSheet.create({
 		padding: 20,
 		gap: 8,
 	},
-	cardLabel: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8 },
+	cardLabel: {
+		fontSize: 12,
+		color: '#64748b',
+		textTransform: 'uppercase',
+		letterSpacing: 0.8,
+	},
 	cardValue: { fontSize: 36, fontWeight: '700', color: '#f1f5f9' },
 	cardError: { fontSize: 13, color: '#f87171' },
 	refetchButton: {

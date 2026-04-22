@@ -26,6 +26,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
+			"api": ["../../apps/api/src/public.ts"],
 			"@my-time/api": ["../../apps/api/src/public.ts"],
 			"contracts": ["../../contracts/src/index.ts"],
 			"features": ["../../packages/features/src/index.ts"],

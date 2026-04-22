@@ -21,6 +21,10 @@ export default function ProtectedLayout() {
 				name="index"
 				options={{ title: 'Dashboard', tabBarLabel: 'Dashboard' }}
 			/>
+			<Tabs.Screen
+				name="workout"
+				options={{ title: 'Workout', tabBarLabel: 'Workout' }}
+			/>
 		</Tabs>
 	)
 }

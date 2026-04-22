@@ -45,7 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	}, [])
 
 	const login = useCallback(async (email: string, password: string) => {
-		const { data, error } = await api.auth['login-extension'].post({ email, password })
+		const { data, error } = await api.auth['login-extension'].post({
+			email,
+			password,
+		})
 		if (error || !data) {
 			throw new Error(
 				error?.value &&

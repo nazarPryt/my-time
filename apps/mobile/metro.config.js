@@ -19,6 +19,15 @@ config.resolver.nodeModulesPaths = [
 // TypeScript gets the real types via tsconfig.json paths (compile-time only).
 const _resolveRequest = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+	// Force zustand to always resolve from mobile's node_modules.
+	// packages/features has its own bun-managed zustand symlink that points to a
+	// different physical copy — two zustand instances → two React instances → hooks crash.
+	if (moduleName === 'zustand' || moduleName.startsWith('zustand/')) {
+		return {
+			filePath: require.resolve(moduleName, { paths: [projectRoot] }),
+			type: 'sourceFile',
+		}
+	}
 	if (moduleName === 'api') {
 		return {
 			filePath: path.resolve(projectRoot, 'shims/api-shim.js'),
