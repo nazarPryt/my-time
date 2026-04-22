@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "paths": {
+      "api": ["../../apps/api/src/public.ts"],
+      "contracts": ["../../contracts/src/index.ts"]
+    }
+  },
+  "references": [
+    { "path": "../../apps/api" },
+    { "path": "../../contracts" }
+  ]
+}

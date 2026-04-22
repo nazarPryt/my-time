@@ -4,7 +4,8 @@
 	"private": true,
 	"workspaces": [
 		"apps/*",
-		"contracts"
+		"contracts",
+		"packages/*"
 	],
 	"scripts": {
 		"dev": "bun --filter api dev & bun --filter web dev & wait",
