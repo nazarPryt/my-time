@@ -1,17 +1,17 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-    "paths": {
-      "api": ["../../apps/api/src/public.ts"],
-      "contracts": ["../../contracts/src/index.ts"]
-    }
-  },
-  "references": [
-    { "path": "../../apps/api" },
-    { "path": "../../contracts" }
-  ]
+	"compilerOptions": {
+		"strict": true,
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"paths": {
+			"api": ["../../apps/api/src/public.ts"],
+			"contracts": ["../../contracts/src/index.ts"]
+		}
+	},
+	"include": ["src"],
+	"references": [{ "path": "../../apps/api" }, { "path": "../../contracts" }]
 }

@@ -25,6 +25,21 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
 			type: 'sourceFile',
 		}
 	}
+	if (moduleName === 'features') {
+		return {
+			filePath: path.resolve(monorepoRoot, 'packages/features/src/index.ts'),
+			type: 'sourceFile',
+		}
+	}
+	if (moduleName === 'features/workout') {
+		return {
+			filePath: path.resolve(
+				monorepoRoot,
+				'packages/features/src/workout/index.ts',
+			),
+			type: 'sourceFile',
+		}
+	}
 	return (_resolveRequest ?? context.resolveRequest)(
 		context,
 		moduleName,

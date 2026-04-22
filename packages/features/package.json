@@ -1,18 +1,19 @@
 {
-  "name": "features",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "main": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./workout": "./src/workout/index.ts"
-  },
-  "dependencies": {
-    "@elysiajs/eden": "^1.4.9",
-    "api": "workspace:*",
-    "contracts": "workspace:*",
-    "date-fns": "^4.1.0",
-    "zustand": "^5.0.12"
-  }
+	"name": "features",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./workout": "./src/workout/index.ts"
+	},
+	"dependencies": {
+		"@elysiajs/eden": "^1.4.9",
+		"api": "workspace:*",
+		"contracts": "workspace:*",
+		"date-fns": "^4.1.0",
+		"zustand": "^5.0.12"
+	}
 }

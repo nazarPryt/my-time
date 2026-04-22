@@ -5,7 +5,9 @@
 		"paths": {
 			"@/*": ["./*"],
 			"api": ["../../apps/api/src/public.ts"],
-			"contracts": ["../../contracts/src/index.ts"]
+			"contracts": ["../../contracts/src/index.ts"],
+			"features": ["../../packages/features/src/index.ts"],
+			"features/workout": ["../../packages/features/src/workout/index.ts"]
 		}
 	},
 	"references": [{ "path": "../../apps/api" }, { "path": "../../contracts" }],
