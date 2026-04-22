@@ -89,13 +89,18 @@ Bun.spawn([openCmd, `http://localhost:${server.port}`], {
 await reparse()
 
 chokidar
-	.watch(['apps', 'contracts', 'packages'], {
+	.watch(['apps/web', 'apps/api', 'apps/extension', 'contracts', 'packages'], {
 		cwd: ROOT,
-		ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/.wxt/**'],
+		ignored: (filePath: string) =>
+			filePath.includes('/node_modules/') ||
+			filePath.includes('/.git/') ||
+			filePath.includes('/dist/') ||
+			filePath.includes('/.wxt/'),
 		ignoreInitial: true,
 	})
 	.on('change', debouncedReparse)
 	.on('add', debouncedReparse)
 	.on('unlink', debouncedReparse)
+	.on('error', (err: Error) => console.warn('[graph] watcher error:', err.message))
 
 console.log('[graph] watching for changes...')
