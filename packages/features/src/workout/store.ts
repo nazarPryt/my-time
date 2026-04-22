@@ -5,6 +5,13 @@ import type { WorkoutApiActions } from './api'
 
 export type ChartEntry = { day: string; total: number; date: string }
 
+function generateTempId(): string {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+		const r = (Math.random() * 16) | 0
+		return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+	})
+}
+
 function toDateStr(value: unknown): string {
 	return value instanceof Date
 		? format(value, 'yyyy-MM-dd')
@@ -57,7 +64,7 @@ export function createWorkoutStore(workoutApi: WorkoutApiActions) {
 			const { data, submitting, exerciseType } = get()
 			if (!data || submitting) return
 			set({ submitting: true })
-			const tempId = crypto.randomUUID()
+			const tempId = generateTempId()
 			const optimistic: SetResponse = {
 				id: tempId,
 				exerciseType,

@@ -1,8 +1,9 @@
-import { RefreshResponseSchema } from 'contracts'
+import { API_PREFIX, AUTH_ROUTES, RefreshResponseSchema } from 'contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { tokenStorage } from './token-storage'
 
 const TIMEOUT_MS = 15_000
+const REFRESH_URL = `${WEB_CONFIG.API_URL}${API_PREFIX}${AUTH_ROUTES.prefix}${AUTH_ROUTES.refresh}`
 
 function timeoutSignal(existing?: AbortSignal | null): AbortSignal {
 	const timeout = AbortSignal.timeout(TIMEOUT_MS)
@@ -13,7 +14,7 @@ function timeoutSignal(existing?: AbortSignal | null): AbortSignal {
 let refreshPromise: Promise<boolean> | null = null
 
 async function refreshTokens(): Promise<boolean> {
-	const response = await fetch(`${WEB_CONFIG.API_URL}/api/v1/auth/refresh`, {
+	const response = await fetch(REFRESH_URL, {
 		method: 'POST',
 		credentials: 'include',
 		signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -44,7 +45,7 @@ export async function fetchWithRefresh(
 
 	// Don't intercept the refresh endpoint itself — would cause infinite loop
 	const url = input instanceof Request ? input.url : input.toString()
-	if (url.includes('/auth/refresh')) return response
+	if (url.includes(REFRESH_URL)) return response
 
 	// Deduplicate: reuse in-flight refresh if one is already running
 	refreshPromise ??= refreshTokens()

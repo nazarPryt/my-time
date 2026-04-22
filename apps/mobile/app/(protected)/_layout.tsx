@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons'
 import { Redirect, Tabs } from 'expo-router'
 import { useAuth } from '@/shared/lib/auth-context'
 
@@ -19,11 +20,23 @@ export default function ProtectedLayout() {
 		>
 			<Tabs.Screen
 				name="index"
-				options={{ title: 'Dashboard', tabBarLabel: 'Dashboard' }}
+				options={{
+					title: 'Dashboard',
+					tabBarLabel: 'Dashboard',
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="home-outline" color={color} size={size} />
+					),
+				}}
 			/>
 			<Tabs.Screen
 				name="workout"
-				options={{ title: 'Workout', tabBarLabel: 'Workout' }}
+				options={{
+					title: 'Workout',
+					tabBarLabel: 'Workout',
+					tabBarIcon: ({ color, size }) => (
+						<Ionicons name="barbell-outline" color={color} size={size} />
+					),
+				}}
 			/>
 		</Tabs>
 	)
