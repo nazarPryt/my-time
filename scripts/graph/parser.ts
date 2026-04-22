@@ -68,9 +68,15 @@ export async function parse(root: string): Promise<GraphData> {
 
 				addNode(targetNode)
 
+				// File-level edge
 				const srcFileNode = fNode ?? ownerNode
-				const tgtFileNode = fileNodeForFile(targetPath, root) ?? targetNode
-				addEdge(srcFileNode.id, tgtFileNode.id)
+				const tgtFileNode = fileNodeForFile(targetPath, root)
+				if (tgtFileNode) {
+					addNode(tgtFileNode)
+					addEdge(srcFileNode.id, tgtFileNode.id)
+				} else {
+					addEdge(srcFileNode.id, targetNode.id)
+				}
 			}
 		}
 	}
