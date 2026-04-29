@@ -1,5 +1,6 @@
 export { HeroCounter } from './HeroCounter'
 export { QuickAddButtons } from './QuickAddButtons'
+export { RestTimer } from './RestTimer'
 export { SetsLog } from './SetsLog'
 export { WorkoutHeader } from './WorkoutHeader'
 export { WorkoutProgressChart } from './WorkoutProgressChart'

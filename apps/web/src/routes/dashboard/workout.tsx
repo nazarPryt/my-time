@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useWorkoutStore } from '@/feature/workout/store'
+import { useRestTimer } from '@/feature/workout/useRestTimer'
 import {
 	HeroCounter,
 	QuickAddButtons,
+	RestTimer,
 	SetsLog,
 	WorkoutHeader,
 } from '@/feature/workout/ui'
@@ -13,22 +15,21 @@ export const Route = createFileRoute('/dashboard/workout')({
 })
 
 function WorkoutPage() {
-	const {
-		data,
-		loading,
-		submitting,
-		addSet,
-		deleteSet,
-		resetDay,
-		updateGoal,
-		load,
-	} = useWorkoutStore()
+	const { data, loading, submitting, addSet, deleteSet, resetDay, updateGoal, load } =
+		useWorkoutStore()
+
+	const restTimer = useRestTimer()
 
 	useEffect(() => {
 		const controller = new AbortController()
 		void load(controller.signal)
 		return () => controller.abort()
 	}, [load])
+
+	const handleAddSet = (reps: number) => {
+		void addSet(reps)
+		restTimer.start()
+	}
 
 	return (
 		<div data-testid="workout-page" className="h-full flex flex-col">
@@ -50,12 +51,16 @@ function WorkoutPage() {
 								goal={data.goal.targetReps}
 								onGoalChange={updateGoal}
 							/>
-							<QuickAddButtons onAdd={addSet} disabled={submitting} />
-							<SetsLog
-								sets={data.sets}
-								onDelete={deleteSet}
-								onReset={resetDay}
+							<QuickAddButtons onAdd={handleAddSet} disabled={submitting} />
+							<RestTimer
+								active={restTimer.active}
+								done={restTimer.done}
+								elapsed={restTimer.elapsed}
+								progress={restTimer.progress}
+								targetSeconds={restTimer.targetSeconds}
+								onTargetChange={restTimer.changeTarget}
 							/>
+							<SetsLog sets={data.sets} onDelete={deleteSet} onReset={resetDay} />
 						</>
 					)}
 				</div>
