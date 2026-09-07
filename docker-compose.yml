@@ -27,7 +27,7 @@ services:
       - ./apps/api/.env
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/my_time
-      API_URL: http://0.0.0.0:3000
+      API_URL: http://localhost:3000
       FRONTEND_WEB_URL: http://localhost:8080
     depends_on:
       db:
