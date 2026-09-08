@@ -64,23 +64,31 @@ services:
   # container's Docker logs, Grafana is where you actually read them. All
   # free/self-hosted — see observability/ for their configs. ---
 
+  # loki/promtail/grafana configs are COPYed in at build time (rather than
+  # bind-mounted from the host) — a bind-mount source that isn't present
+  # exactly where the deploy tool expects gets silently auto-created by
+  # Docker as an empty directory, which then fails to mount onto the file
+  # it's supposed to replace. Baking the config into the image sidesteps
+  # that entirely, using the same build mechanism as the api/web services.
   loki:
-    image: grafana/loki:3.3.2
+    build:
+      context: ./observability
+      dockerfile: loki.Dockerfile
     restart: unless-stopped
     logging: *default-logging
     expose:
       - "3100"
     volumes:
-      - ./observability/loki-config.yaml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
 
   promtail:
-    image: grafana/promtail:3.3.2
+    build:
+      context: ./observability
+      dockerfile: promtail.Dockerfile
     restart: unless-stopped
     logging: *default-logging
     volumes:
-      - ./observability/promtail-config.yaml:/etc/promtail/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command: -config.file=/etc/promtail/config.yaml
@@ -88,7 +96,9 @@ services:
       - loki
 
   grafana:
-    image: grafana/grafana:11.4.0
+    build:
+      context: ./observability
+      dockerfile: grafana.Dockerfile
     restart: unless-stopped
     logging: *default-logging
     expose:
@@ -99,7 +109,6 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - loki
 
