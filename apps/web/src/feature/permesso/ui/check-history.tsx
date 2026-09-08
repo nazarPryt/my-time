@@ -1,6 +1,7 @@
 import type { PermessoCheckHistoryResponse } from 'contracts'
 import { format } from 'date-fns'
 import { CheckCircle2, History, XCircle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 type Props = {
 	history: PermessoCheckHistoryResponse
@@ -42,6 +43,12 @@ export function CheckHistory({ history, loading }: Props) {
 							{format(new Date(entry.checkedAt), 'PPp')}
 						</p>
 					</div>
+					<Badge
+						variant={entry.triggeredBy === 'scheduled' ? 'warning' : 'info'}
+						className="shrink-0"
+					>
+						{entry.triggeredBy === 'scheduled' ? 'Scheduled' : 'Manual'}
+					</Badge>
 				</li>
 			))}
 		</ul>

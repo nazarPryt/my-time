@@ -82,13 +82,13 @@ export function TelegramCard({
 				</CardHeader>
 				<CardContent className="space-y-2">
 					{status.telegramConnected ? (
-						<Badge>Connected</Badge>
+						<Badge variant="success">Connected</Badge>
 					) : connecting ? (
 						<p className="text-sm text-muted-foreground">
 							Opened Telegram — tap "Start" in the chat to finish connecting.
 						</p>
 					) : (
-						<p className="text-sm text-muted-foreground">Not connected.</p>
+						<Badge variant="destructive">Not connected</Badge>
 					)}
 					{error && <p className="text-sm text-destructive">{error}</p>}
 				</CardContent>

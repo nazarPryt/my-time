@@ -18,9 +18,17 @@ async function runScheduledChecks() {
 		due.map((subscription) =>
 			limit(async () => {
 				const result = await checkPermessoStatus(subscription.practiceNumber)
-				await permessoRepository.recordCheckResult(subscription.userId, result)
+				await permessoRepository.recordCheckResult(
+					subscription.userId,
+					result,
+					'scheduled',
+				)
 				if (subscription.telegramChatId) {
-					await sendTelegramCheckResult(subscription.telegramChatId, result)
+					await sendTelegramCheckResult(
+						subscription.userId,
+						subscription.telegramChatId,
+						result,
+					)
 				}
 			}),
 		),

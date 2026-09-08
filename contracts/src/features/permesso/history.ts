@@ -5,6 +5,7 @@ export const PermessoCheckHistoryItemSchema = z.object({
 	success: z.boolean(),
 	status: z.string().nullable(),
 	error: z.string().nullable(),
+	triggeredBy: z.enum(['manual', 'scheduled']),
 	checkedAt: z.string(),
 })
 export type PermessoCheckHistoryItem = z.infer<

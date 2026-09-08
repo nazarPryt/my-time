@@ -67,7 +67,10 @@ export function RestTimer({
 						</svg>
 						<div className="absolute inset-0 flex items-center justify-center">
 							{done ? (
-								<span key="go" className="go-flash text-2xl font-bold text-primary select-none">
+								<span
+									key="go"
+									className="go-flash text-2xl font-bold text-primary select-none"
+								>
 									GO!!!
 								</span>
 							) : (
@@ -80,7 +83,9 @@ export function RestTimer({
 				</div>
 			)}
 
-			<div className={`flex gap-1.5 justify-center flex-wrap ${active ? '' : 'mt-3'}`}>
+			<div
+				className={`flex gap-1.5 justify-center flex-wrap ${active ? '' : 'mt-3'}`}
+			>
 				{PRESETS.map((s) => (
 					<button
 						key={s}

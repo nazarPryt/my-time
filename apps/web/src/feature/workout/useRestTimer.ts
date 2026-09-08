@@ -32,5 +32,14 @@ export function useRestTimer() {
 		localStorage.setItem(STORAGE_KEY, String(s))
 	}
 
-	return { startedAt, elapsed, active, done, progress, targetSeconds, start, changeTarget }
+	return {
+		startedAt,
+		elapsed,
+		active,
+		done,
+		progress,
+		targetSeconds,
+		start,
+		changeTarget,
+	}
 }

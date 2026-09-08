@@ -60,10 +60,10 @@ export const permessoService = {
 		if (!row) return { ok: false, reason: 'no_practice_number' }
 
 		const outcome = await checkPermessoStatus(row.practiceNumber)
-		await permessoRepository.recordCheckResult(userId, outcome)
+		await permessoRepository.recordCheckResult(userId, outcome, 'manual')
 
 		if (row.telegramChatId) {
-			await sendTelegramCheckResult(row.telegramChatId, outcome)
+			await sendTelegramCheckResult(userId, row.telegramChatId, outcome)
 		}
 
 		return {
@@ -104,6 +104,7 @@ export const permessoService = {
 			success: row.success,
 			status: row.status,
 			error: row.error,
+			triggeredBy: row.triggeredBy,
 			checkedAt: row.checkedAt.toISOString(),
 		}))
 	},

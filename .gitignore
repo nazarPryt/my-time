@@ -2,7 +2,6 @@
 
 # dependencies
 node_modules
-checker-old
 
 # testing
 /coverage

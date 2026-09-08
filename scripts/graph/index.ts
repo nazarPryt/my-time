@@ -101,6 +101,8 @@ chokidar
 	.on('change', debouncedReparse)
 	.on('add', debouncedReparse)
 	.on('unlink', debouncedReparse)
-	.on('error', (err: Error) => console.warn('[graph] watcher error:', err.message))
+	.on('error', (err: Error) =>
+		console.warn('[graph] watcher error:', err.message),
+	)
 
 console.log('[graph] watching for changes...')

@@ -1,0 +1,59 @@
+import { EventEmitter } from 'node:events'
+import { client } from '@db'
+import { API_CONFIG } from '@shared/api-config'
+
+const CHANNEL = 'telegram_linked'
+
+// One process-wide emitter keyed by userId, fed by this process's own
+// Postgres LISTEN connection (see startTelegramLinkListener). Publishing via
+// NOTIFY instead of emitting directly means linking works even when the
+// Telegram bot's /start handler and the SSE route waiting on it land on
+// different API instances — Postgres fans NOTIFY out to every replica
+// listening on the channel, and each replica re-emits locally to wake up
+// only its own in-flight SSE requests.
+const emitter = new EventEmitter()
+emitter.setMaxListeners(0)
+
+let listening: Promise<unknown> | undefined
+
+/**
+ * Opens this process's LISTEN connection. Must be awaited once at API
+ * startup, before accepting requests — a NOTIFY fired before this resolves
+ * would otherwise be missed. A no-op when Telegram isn't configured, since
+ * linking can never happen without a bot.
+ */
+export function startTelegramLinkListener(): Promise<unknown> {
+	if (!API_CONFIG.TELEGRAM_BOT_TOKEN) return Promise.resolve()
+	listening ??= client.listen(CHANNEL, (userId) => {
+		emitter.emit(userId)
+	})
+	return listening
+}
+
+export function notifyTelegramLinked(userId: string): void {
+	client.notify(CHANNEL, userId).catch((error) => {
+		console.error('Failed to publish telegram-linked notification:', error)
+	})
+}
+
+/**
+ * Resolves 'linked' as soon as notifyTelegramLinked(userId) fires, or
+ * 'heartbeat' after heartbeatMs — whichever comes first. Always cleans up
+ * its own listener/timer, so callers can loop this without leaking either.
+ */
+export function waitForTelegramLinkOrHeartbeat(
+	userId: string,
+	heartbeatMs: number,
+): Promise<'linked' | 'heartbeat'> {
+	return new Promise((resolve) => {
+		const onLinked = () => {
+			clearTimeout(timer)
+			resolve('linked')
+		}
+		const timer = setTimeout(() => {
+			emitter.off(userId, onLinked)
+			resolve('heartbeat')
+		}, heartbeatMs)
+		emitter.once(userId, onLinked)
+	})
+}

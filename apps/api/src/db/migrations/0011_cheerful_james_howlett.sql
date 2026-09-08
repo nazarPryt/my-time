@@ -1,0 +1,2 @@
+CREATE TYPE "public"."permesso_check_trigger" AS ENUM('manual', 'scheduled');--> statement-breakpoint
+ALTER TABLE "permesso_checks" ADD COLUMN "triggered_by" "permesso_check_trigger" DEFAULT 'manual' NOT NULL;

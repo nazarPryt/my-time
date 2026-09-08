@@ -1,6 +1,9 @@
 import { ZodError, z } from 'zod'
 
 const EnvSchema = z.object({
+	NODE_ENV: z
+		.enum(['development', 'test', 'production'])
+		.default('development'),
 	API_URL: z.url().default('http://localhost:3000'),
 	FRONTEND_WEB_URL: z.url().default('http://localhost:5173'),
 	JWT_SECRET: z.string().min(1),
@@ -9,6 +12,7 @@ const EnvSchema = z.object({
 	PORT: z.coerce.number().default(3000),
 	PERMESSO_WEBSITE_URL: z.string().optional(),
 	TELEGRAM_BOT_TOKEN: z.string().optional(),
+	TELEGRAM_WEBHOOK_SECRET: z.string().optional(),
 })
 
 function parseEnv() {
@@ -31,6 +35,7 @@ function parseEnv() {
 const env = parseEnv()
 
 export const API_CONFIG = {
+	NODE_ENV: env.NODE_ENV,
 	API_HOST: env.HOST,
 	API_PORT: env.PORT,
 	API_URL: new URL(env.API_URL).toString(),
@@ -39,4 +44,5 @@ export const API_CONFIG = {
 	DATABASE_URL: env.DATABASE_URL,
 	PERMESSO_WEBSITE_URL: env.PERMESSO_WEBSITE_URL,
 	TELEGRAM_BOT_TOKEN: env.TELEGRAM_BOT_TOKEN,
+	TELEGRAM_WEBHOOK_SECRET: env.TELEGRAM_WEBHOOK_SECRET,
 }

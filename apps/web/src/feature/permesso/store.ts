@@ -13,9 +13,9 @@ import {
 	setPermessoPracticeNumber,
 	updatePermessoCheckHours,
 } from './api'
+import { watchTelegramLink } from './telegram-link-stream'
 
-const TELEGRAM_POLL_INTERVAL_MS = 2000
-const TELEGRAM_POLL_TIMEOUT_MS = 60_000
+const TELEGRAM_LINK_ABORT_MS = 70_000
 
 interface PermessoState {
 	status: PermessoStatusResponse | null
@@ -122,16 +122,24 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 
 		window.open(data.deepLink, '_blank', 'noopener,noreferrer')
 
-		const deadline = Date.now() + TELEGRAM_POLL_TIMEOUT_MS
-		while (Date.now() < deadline) {
-			await new Promise((resolve) =>
-				setTimeout(resolve, TELEGRAM_POLL_INTERVAL_MS),
-			)
-			const { data: statusData } = await fetchPermessoStatus()
-			if (statusData?.telegramConnected) {
-				set({ connectingTelegram: false, status: statusData })
+		const controller = new AbortController()
+		const abortTimer = setTimeout(
+			() => controller.abort(),
+			TELEGRAM_LINK_ABORT_MS,
+		)
+
+		try {
+			const outcome = await watchTelegramLink(controller.signal)
+			if (outcome === 'connected') {
+				const { data: statusData } = await fetchPermessoStatus()
+				set({ connectingTelegram: false, status: statusData ?? get().status })
 				return
 			}
+		} catch {
+			// aborted or dropped connection — fall through and give up quietly,
+			// same as a timeout
+		} finally {
+			clearTimeout(abortTimer)
 		}
 
 		set({ connectingTelegram: false })

@@ -30,7 +30,11 @@ export const permessoRepository = {
 		return row
 	},
 
-	recordCheckResult: async (userId: string, result: PermessoCheckResult) => {
+	recordCheckResult: async (
+		userId: string,
+		result: PermessoCheckResult,
+		triggeredBy: 'manual' | 'scheduled',
+	) => {
 		const checkedAt = new Date()
 
 		await db
@@ -48,6 +52,7 @@ export const permessoRepository = {
 			success: result.success,
 			status: result.success ? result.status : null,
 			error: result.success ? null : result.error,
+			triggeredBy,
 			checkedAt,
 		})
 	},
@@ -82,6 +87,14 @@ export const permessoRepository = {
 			.set({ telegramLinkToken: linkToken, updatedAt: new Date() })
 			.where(eq(permessoSubscriptions.userId, userId))
 			.returning()
+		return row ?? null
+	},
+
+	getByTelegramChatId: async (chatId: string) => {
+		const [row] = await db
+			.select()
+			.from(permessoSubscriptions)
+			.where(eq(permessoSubscriptions.telegramChatId, chatId))
 		return row ?? null
 	},
 

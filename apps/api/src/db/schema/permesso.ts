@@ -1,12 +1,18 @@
 import {
 	boolean,
 	integer,
+	pgEnum,
 	pgTable,
 	text,
 	timestamp,
 	uuid,
 } from 'drizzle-orm/pg-core'
 import { users } from './users'
+
+export const permessoCheckTriggerEnum = pgEnum('permesso_check_trigger', [
+	'manual',
+	'scheduled',
+])
 
 export const permessoSubscriptions = pgTable('permesso_subscriptions', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -39,5 +45,8 @@ export const permessoChecks = pgTable('permesso_checks', {
 	success: boolean('success').notNull(),
 	status: text('status'),
 	error: text('error'),
+	triggeredBy: permessoCheckTriggerEnum('triggered_by')
+		.notNull()
+		.default('manual'),
 	checkedAt: timestamp('checked_at').notNull().defaultNow(),
 })
