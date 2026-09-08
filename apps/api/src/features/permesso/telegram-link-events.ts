@@ -1,6 +1,5 @@
 import { EventEmitter } from 'node:events'
 import { client } from '@db'
-import { API_CONFIG } from '@shared/api-config'
 
 const CHANNEL = 'telegram_linked'
 
@@ -19,11 +18,9 @@ let listening: Promise<unknown> | undefined
 /**
  * Opens this process's LISTEN connection. Must be awaited once at API
  * startup, before accepting requests — a NOTIFY fired before this resolves
- * would otherwise be missed. A no-op when Telegram isn't configured, since
- * linking can never happen without a bot.
+ * would otherwise be missed.
  */
 export function startTelegramLinkListener(): Promise<unknown> {
-	if (!API_CONFIG.TELEGRAM_BOT_TOKEN) return Promise.resolve()
 	listening ??= client.listen(CHANNEL, (userId) => {
 		emitter.emit(userId)
 	})

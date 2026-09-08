@@ -19,13 +19,6 @@ function formatCheckMessage(result: PermessoCheckResult): string {
 // Must be awaited before the server starts accepting requests — buildTelegramDeepLink()
 // needs botUsername, which getMe() below resolves.
 export async function startTelegramBot() {
-	if (!API_CONFIG.TELEGRAM_BOT_TOKEN) {
-		console.warn(
-			'⚠️ TELEGRAM_BOT_TOKEN not set — Telegram notifications disabled',
-		)
-		return
-	}
-
 	bot = new Bot(API_CONFIG.TELEGRAM_BOT_TOKEN)
 
 	try {

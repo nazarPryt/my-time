@@ -22,13 +22,6 @@ function readableTimestamp(): string {
 export async function checkPermessoStatus(
 	practiceNumber: string,
 ): Promise<PermessoCheckResult> {
-	if (!API_CONFIG.PERMESSO_WEBSITE_URL) {
-		return {
-			success: false,
-			error: 'Missing PERMESSO_WEBSITE_URL in environment',
-		}
-	}
-
 	let browser: Browser | undefined
 	try {
 		browser = await puppeteer.launch({

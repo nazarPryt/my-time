@@ -10,9 +10,17 @@ const EnvSchema = z.object({
 	DATABASE_URL: z.string().min(1),
 	HOST: z.string().default('0.0.0.0'),
 	PORT: z.coerce.number().default(3000),
-	PERMESSO_WEBSITE_URL: z.string().optional(),
-	TELEGRAM_BOT_TOKEN: z.string().optional(),
-	TELEGRAM_WEBHOOK_SECRET: z.string().optional(),
+	PERMESSO_WEBSITE_URL: z.string().min(1),
+	TELEGRAM_BOT_TOKEN: z.string().min(1),
+	// Must satisfy Telegram's setWebhook secret_token constraint — validating
+	// here surfaces a bad value at boot instead of a stack trace deep inside
+	// the Telegram bot library.
+	TELEGRAM_WEBHOOK_SECRET: z
+		.string()
+		.regex(
+			/^[A-Za-z0-9_-]{1,256}$/,
+			'must be 1-256 characters of A-Z, a-z, 0-9, _ or - (Telegram secret_token constraint)',
+		),
 })
 
 function parseEnv() {

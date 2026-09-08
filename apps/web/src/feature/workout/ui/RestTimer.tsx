@@ -43,7 +43,12 @@ export function RestTimer({
 			{active && (
 				<div className="flex justify-center mt-4 mb-3">
 					<div className="relative w-28 h-28">
-						<svg width="112" height="112" viewBox="0 0 112 112">
+						<svg
+							width="112"
+							height="112"
+							viewBox="0 0 112 112"
+							aria-hidden="true"
+						>
 							<circle
 								cx="56"
 								cy="56"
