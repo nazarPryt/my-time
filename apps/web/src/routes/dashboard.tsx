@@ -6,7 +6,14 @@ import {
 	redirect,
 } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
-import { Dumbbell, Home, Settings, ShieldOff, Timer } from 'lucide-react'
+import {
+	Dumbbell,
+	FileCheck2,
+	Home,
+	Settings,
+	ShieldOff,
+	Timer,
+} from 'lucide-react'
 import { NotFoundScreen } from '@/components/not-found-screen'
 import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
@@ -49,6 +56,12 @@ const NAV_ITEMS: NavItemType[] = [
 		to: '/dashboard/site-blocking',
 		label: 'Site Blocking',
 		icon: ShieldOff,
+		exact: false,
+	},
+	{
+		to: '/dashboard/permesso-status',
+		label: 'Permesso Status',
+		icon: FileCheck2,
 		exact: false,
 	},
 	{

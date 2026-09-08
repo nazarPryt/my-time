@@ -2,9 +2,13 @@
 
 # dependencies
 node_modules
+checker-old
 
 # testing
 /coverage
+
+# permesso checker debug screenshots
+apps/api/screenshots/
 
 out
 .idea

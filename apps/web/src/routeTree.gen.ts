@@ -18,6 +18,7 @@ import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout
 import { Route as DashboardTimeTrackerRouteImport } from './routes/dashboard/time-tracker'
 import { Route as DashboardSiteBlockingRouteImport } from './routes/dashboard/site-blocking'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardPermessoStatusRouteImport } from './routes/dashboard/permesso-status'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 
@@ -66,6 +67,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPermessoStatusRoute = DashboardPermessoStatusRouteImport.update({
+  id: '/permesso-status',
+  path: '/permesso-status',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/permesso-status': typeof DashboardPermessoStatusRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
   '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/permesso-status': typeof DashboardPermessoStatusRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
   '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/permesso-status': typeof DashboardPermessoStatusRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
   '/dashboard/time-tracker': typeof DashboardTimeTrackerRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/permesso-status'
     | '/dashboard/settings'
     | '/dashboard/site-blocking'
     | '/dashboard/time-tracker'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/permesso-status'
     | '/dashboard/settings'
     | '/dashboard/site-blocking'
     | '/dashboard/time-tracker'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/permesso-status'
     | '/dashboard/settings'
     | '/dashboard/site-blocking'
     | '/dashboard/time-tracker'
@@ -229,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/permesso-status': {
+      id: '/dashboard/permesso-status'
+      path: '/permesso-status'
+      fullPath: '/dashboard/permesso-status'
+      preLoaderRoute: typeof DashboardPermessoStatusRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/auth/register': {
       id: '/auth/register'
       path: '/register'
@@ -259,6 +278,7 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
+  DashboardPermessoStatusRoute: typeof DashboardPermessoStatusRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardSiteBlockingRoute: typeof DashboardSiteBlockingRoute
   DashboardTimeTrackerRoute: typeof DashboardTimeTrackerRoute
@@ -267,6 +287,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardPermessoStatusRoute: DashboardPermessoStatusRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardSiteBlockingRoute: DashboardSiteBlockingRoute,
   DashboardTimeTrackerRoute: DashboardTimeTrackerRoute,

@@ -1,5 +1,6 @@
 export * from './blocked-sites'
 export * from './extension-tokens'
+export * from './permesso'
 export * from './refresh-tokens'
 export * from './time-sessions'
 export * from './users'

@@ -7,6 +7,7 @@ const EnvSchema = z.object({
 	DATABASE_URL: z.string().min(1),
 	HOST: z.string().default('0.0.0.0'),
 	PORT: z.coerce.number().default(3000),
+	PERMESSO_WEBSITE_URL: z.string().optional(),
 })
 
 function parseEnv() {
@@ -35,4 +36,5 @@ export const API_CONFIG = {
 	FRONTEND_WEB_URL: env.FRONTEND_WEB_URL,
 	JWT_SECRET: env.JWT_SECRET,
 	DATABASE_URL: env.DATABASE_URL,
+	PERMESSO_WEBSITE_URL: env.PERMESSO_WEBSITE_URL,
 }

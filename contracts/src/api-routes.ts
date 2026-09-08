@@ -37,3 +37,11 @@ export const SITE_BLOCKING_ROUTES = {
 	root: '/',
 	deleteById: '/:id',
 } as const
+
+export const PERMESSO_ROUTES = {
+	prefix: '/permesso',
+	root: '/',
+	check: '/check',
+	history: '/history',
+	schedule: '/schedule',
+} as const
