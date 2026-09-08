@@ -12,6 +12,7 @@ import {
 	PracticeNumberForm,
 	ScheduleEditor,
 	StatusCard,
+	TelegramCard,
 	usePermessoActions,
 	usePermessoState,
 } from '@/feature/permesso'
@@ -28,10 +29,19 @@ function PermessoStatusPage() {
 		submitting,
 		checking,
 		updatingSchedule,
+		connectingTelegram,
+		disconnectingTelegram,
 		error,
+		telegramError,
 	} = usePermessoState()
-	const { load, savePracticeNumber, updateCheckHours, check } =
-		usePermessoActions()
+	const {
+		load,
+		savePracticeNumber,
+		updateCheckHours,
+		check,
+		connectTelegram,
+		disconnectTelegram,
+	} = usePermessoActions()
 
 	useEffect(() => {
 		void load()
@@ -54,6 +64,17 @@ function PermessoStatusPage() {
 					) : (
 						<>
 							<StatusCard status={status} checking={checking} onCheck={check} />
+
+							{status.practiceNumber && (
+								<TelegramCard
+									status={status}
+									connecting={connectingTelegram}
+									disconnecting={disconnectingTelegram}
+									error={telegramError}
+									onConnect={connectTelegram}
+									onDisconnect={disconnectTelegram}
+								/>
+							)}
 
 							<Card>
 								<CardHeader>

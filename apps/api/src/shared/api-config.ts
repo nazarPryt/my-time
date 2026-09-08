@@ -8,6 +8,7 @@ const EnvSchema = z.object({
 	HOST: z.string().default('0.0.0.0'),
 	PORT: z.coerce.number().default(3000),
 	PERMESSO_WEBSITE_URL: z.string().optional(),
+	TELEGRAM_BOT_TOKEN: z.string().optional(),
 })
 
 function parseEnv() {
@@ -37,4 +38,5 @@ export const API_CONFIG = {
 	JWT_SECRET: env.JWT_SECRET,
 	DATABASE_URL: env.DATABASE_URL,
 	PERMESSO_WEBSITE_URL: env.PERMESSO_WEBSITE_URL,
+	TELEGRAM_BOT_TOKEN: env.TELEGRAM_BOT_TOKEN,
 }

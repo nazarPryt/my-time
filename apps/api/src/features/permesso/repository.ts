@@ -75,4 +75,39 @@ export const permessoRepository = {
 		// a subscription only exists once a user has entered one.
 		return db.select().from(permessoSubscriptions)
 	},
+
+	setTelegramLinkToken: async (userId: string, linkToken: string) => {
+		const [row] = await db
+			.update(permessoSubscriptions)
+			.set({ telegramLinkToken: linkToken, updatedAt: new Date() })
+			.where(eq(permessoSubscriptions.userId, userId))
+			.returning()
+		return row ?? null
+	},
+
+	linkTelegramChat: async (linkToken: string, chatId: string) => {
+		const [row] = await db
+			.update(permessoSubscriptions)
+			.set({
+				telegramChatId: chatId,
+				telegramLinkToken: null,
+				updatedAt: new Date(),
+			})
+			.where(eq(permessoSubscriptions.telegramLinkToken, linkToken))
+			.returning()
+		return row ?? null
+	},
+
+	disconnectTelegram: async (userId: string) => {
+		const [row] = await db
+			.update(permessoSubscriptions)
+			.set({
+				telegramChatId: null,
+				telegramLinkToken: null,
+				updatedAt: new Date(),
+			})
+			.where(eq(permessoSubscriptions.userId, userId))
+			.returning()
+		return row ?? null
+	},
 }

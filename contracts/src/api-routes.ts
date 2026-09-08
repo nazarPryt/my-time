@@ -44,4 +44,6 @@ export const PERMESSO_ROUTES = {
 	check: '/check',
 	history: '/history',
 	schedule: '/schedule',
+	telegramLink: '/telegram/link',
+	telegramDisconnect: '/telegram/disconnect',
 } as const

@@ -38,5 +38,21 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 			})
 			.get(PERMESSO_ROUTES.history, async ({ userId }) => {
 				return permessoService.getHistory(userId)
+			})
+			.post(PERMESSO_ROUTES.telegramLink, async ({ userId, set }) => {
+				const outcome = await permessoService.createTelegramLink(userId)
+				if (!outcome.ok) {
+					set.status = outcome.reason === 'no_practice_number' ? 409 : 503
+					return {
+						message:
+							outcome.reason === 'no_practice_number'
+								? 'Set a practice number before connecting Telegram'
+								: 'Telegram notifications are not configured on this server',
+					}
+				}
+				return outcome.link
+			})
+			.post(PERMESSO_ROUTES.telegramDisconnect, async ({ userId }) => {
+				return permessoService.disconnectTelegram(userId)
 			}),
 	)

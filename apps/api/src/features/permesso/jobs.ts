@@ -2,6 +2,7 @@ import { Cron } from 'croner'
 import pLimit from 'p-limit'
 import { checkPermessoStatus } from './checker'
 import { permessoRepository } from './repository'
+import { sendTelegramCheckResult } from './telegram-bot'
 
 const CHECK_CONCURRENCY = 2
 
@@ -18,6 +19,9 @@ async function runScheduledChecks() {
 			limit(async () => {
 				const result = await checkPermessoStatus(subscription.practiceNumber)
 				await permessoRepository.recordCheckResult(subscription.userId, result)
+				if (subscription.telegramChatId) {
+					await sendTelegramCheckResult(subscription.telegramChatId, result)
+				}
 			}),
 		),
 	)

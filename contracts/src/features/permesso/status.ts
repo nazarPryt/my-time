@@ -6,6 +6,7 @@ export const PermessoStatusResponseSchema = z.object({
 	lastStatus: z.string().nullable(),
 	lastCheckedAt: z.string().nullable(),
 	lastError: z.string().nullable(),
+	telegramConnected: z.boolean(),
 })
 export type PermessoStatusResponse = z.infer<
 	typeof PermessoStatusResponseSchema

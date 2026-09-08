@@ -5,12 +5,17 @@ import type {
 import { create } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import {
+	createPermessoTelegramLink,
+	disconnectPermessoTelegram,
 	fetchPermessoHistory,
 	fetchPermessoStatus,
 	runPermessoCheck,
 	setPermessoPracticeNumber,
 	updatePermessoCheckHours,
 } from './api'
+
+const TELEGRAM_POLL_INTERVAL_MS = 2000
+const TELEGRAM_POLL_TIMEOUT_MS = 60_000
 
 interface PermessoState {
 	status: PermessoStatusResponse | null
@@ -19,11 +24,16 @@ interface PermessoState {
 	submitting: boolean
 	checking: boolean
 	updatingSchedule: boolean
+	connectingTelegram: boolean
+	disconnectingTelegram: boolean
 	error: string | null
+	telegramError: string | null
 	load: () => Promise<void>
 	savePracticeNumber: (practiceNumber: string) => Promise<void>
 	updateCheckHours: (checkHours: number[]) => Promise<void>
 	check: () => Promise<void>
+	connectTelegram: () => Promise<void>
+	disconnectTelegram: () => Promise<void>
 }
 
 export const usePermessoStore = create<PermessoState>((set, get) => ({
@@ -33,7 +43,10 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 	submitting: false,
 	checking: false,
 	updatingSchedule: false,
+	connectingTelegram: false,
+	disconnectingTelegram: false,
 	error: null,
+	telegramError: null,
 
 	load: async () => {
 		set({ loading: true, error: null })
@@ -92,6 +105,51 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 			history: historyRes.data ?? get().history,
 		})
 	},
+
+	connectTelegram: async () => {
+		if (get().connectingTelegram) return
+		set({ connectingTelegram: true, telegramError: null })
+
+		const { data, error } = await createPermessoTelegramLink()
+		if (error || !data || 'message' in data) {
+			set({
+				connectingTelegram: false,
+				telegramError:
+					'Could not start Telegram connection — try again shortly',
+			})
+			return
+		}
+
+		window.open(data.deepLink, '_blank', 'noopener,noreferrer')
+
+		const deadline = Date.now() + TELEGRAM_POLL_TIMEOUT_MS
+		while (Date.now() < deadline) {
+			await new Promise((resolve) =>
+				setTimeout(resolve, TELEGRAM_POLL_INTERVAL_MS),
+			)
+			const { data: statusData } = await fetchPermessoStatus()
+			if (statusData?.telegramConnected) {
+				set({ connectingTelegram: false, status: statusData })
+				return
+			}
+		}
+
+		set({ connectingTelegram: false })
+	},
+
+	disconnectTelegram: async () => {
+		if (get().disconnectingTelegram) return
+		set({ disconnectingTelegram: true, telegramError: null })
+		const { data, error } = await disconnectPermessoTelegram()
+		if (error || !data) {
+			set({
+				disconnectingTelegram: false,
+				telegramError: 'Failed to disconnect Telegram',
+			})
+			return
+		}
+		set({ disconnectingTelegram: false, status: data })
+	},
 }))
 
 export const usePermessoState = () =>
@@ -103,7 +161,10 @@ export const usePermessoState = () =>
 			submitting: s.submitting,
 			checking: s.checking,
 			updatingSchedule: s.updatingSchedule,
+			connectingTelegram: s.connectingTelegram,
+			disconnectingTelegram: s.disconnectingTelegram,
 			error: s.error,
+			telegramError: s.telegramError,
 		})),
 	)
 
@@ -114,5 +175,7 @@ export const usePermessoActions = () =>
 			savePracticeNumber: s.savePracticeNumber,
 			updateCheckHours: s.updateCheckHours,
 			check: s.check,
+			connectTelegram: s.connectTelegram,
+			disconnectTelegram: s.disconnectTelegram,
 		})),
 	)

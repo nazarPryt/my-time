@@ -19,3 +19,11 @@ export async function updatePermessoCheckHours(checkHours: number[]) {
 export async function fetchPermessoHistory() {
 	return api.permesso.history.get()
 }
+
+export async function createPermessoTelegramLink() {
+	return api.permesso.telegram.link.post()
+}
+
+export async function disconnectPermessoTelegram() {
+	return api.permesso.telegram.disconnect.post()
+}
