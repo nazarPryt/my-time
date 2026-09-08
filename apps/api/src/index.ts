@@ -5,6 +5,7 @@ import { schedulePermessoJobs } from '@features/permesso/jobs'
 import { startTelegramBot } from '@features/permesso/telegram-bot'
 import { startTelegramLinkListener } from '@features/permesso/telegram-link-events'
 import { API_CONFIG } from '@shared/api-config'
+import { logger } from '@shared/logger'
 import { app } from './app'
 
 await connectToDatabase()
@@ -18,6 +19,7 @@ await startTelegramBot()
 
 app.listen({ hostname: API_CONFIG.API_HOST, port: API_CONFIG.API_PORT })
 
-console.log(
-	`🚀 Server is up and running at http://${app.server?.hostname}:${app.server?.port}`,
+logger.info(
+	{ host: app.server?.hostname, port: app.server?.port },
+	'server is up and running',
 )

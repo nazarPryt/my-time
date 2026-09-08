@@ -1,5 +1,6 @@
 import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
+import { logger } from '@shared/logger'
 import {
 	AUTH_ERRORS,
 	AUTH_ROUTES,
@@ -94,7 +95,7 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
 			await refreshTokenRepository.deleteExpired().catch((err) => {
-				console.error('Failed to purge expired tokens:', err)
+				logger.error({ err }, 'failed to purge expired tokens')
 			})
 			const tokens = await generateTokens(jwt, payload.sub)
 			refreshCookie.set({ value: tokens.refreshToken, ...COOKIE_OPTIONS })
@@ -203,7 +204,7 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
 			await refreshTokenRepository.deleteExpired().catch((err) => {
-				console.error('Failed to purge expired tokens:', err)
+				logger.error({ err }, 'failed to purge expired tokens')
 			})
 			const tokens = await generateTokens(jwt, payload.sub)
 			return {

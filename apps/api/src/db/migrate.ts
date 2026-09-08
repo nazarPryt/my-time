@@ -1,4 +1,5 @@
 import { API_CONFIG } from '@shared/api-config'
+import { logger } from '@shared/logger'
 import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
@@ -8,7 +9,7 @@ import * as schema from './schema'
 const MIGRATIONS_LOCK_ID = 7_364_182_945
 
 export async function runMigrations() {
-	console.log('📦 Running database migrations...')
+	logger.info('running database migrations')
 	const migrationClient = postgres(API_CONFIG.DATABASE_URL, {
 		max: 1,
 		onnotice: () => {},
@@ -27,5 +28,5 @@ export async function runMigrations() {
 		)
 		await migrationClient.end()
 	}
-	console.log('✅ Migrations complete.')
+	logger.info('migrations complete')
 }

@@ -39,6 +39,7 @@ bun run docker:down      # Stop full stack
 
 API environment variables (copy `apps/api/.env.example` → `apps/api/.env`):
 - `DATABASE_URL`, `JWT_SECRET`, `API_URL`, `FRONTEND_WEB_URL`, `DB_DATA_PATH`
+- `LOG_LEVEL` (optional, defaults to `info`)
 
 ## Architecture
 
@@ -58,6 +59,10 @@ Package manager: **bun** with workspaces. Linter/formatter: **Biome** (no ESLint
 ### Date & time
 
 Always use **`date-fns`** (installed in both `apps/api` and `apps/web`) for any date/time formatting, parsing, comparison, or manipulation. Never use raw `Date` methods like `toLocaleDateString` or `toLocaleTimeString`.
+
+### Logging
+
+The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` ships every container's logs into **Loki** via **Promtail**, viewable/searchable in **Grafana** (`http://<host>:3001`) — all self-hosted and free. Configs live in `observability/`.
 
 ### contracts package — the API contract layer
 

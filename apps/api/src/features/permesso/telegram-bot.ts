@@ -1,4 +1,5 @@
 import { API_CONFIG } from '@shared/api-config'
+import { logger } from '@shared/logger'
 import { API_PREFIX, PERMESSO_ROUTES } from 'contracts'
 import { Bot, TelegramApiError, webhookCallback } from 'node-telegram-bot-api'
 import type { PermessoCheckResult } from './checker'
@@ -25,9 +26,9 @@ export async function startTelegramBot() {
 		const me = await bot.api.getMe()
 		botUsername = me.username
 	} catch (error) {
-		console.error(
-			'❌ Failed to authenticate Telegram bot — check TELEGRAM_BOT_TOKEN:',
-			error,
+		logger.error(
+			{ err: error },
+			'failed to authenticate Telegram bot — check TELEGRAM_BOT_TOKEN',
 		)
 		bot = undefined
 		return
@@ -77,8 +78,8 @@ export async function startTelegramBot() {
 
 	if (API_CONFIG.NODE_ENV === 'production') {
 		if (!API_CONFIG.TELEGRAM_WEBHOOK_SECRET) {
-			console.error(
-				'❌ TELEGRAM_WEBHOOK_SECRET must be set when NODE_ENV=production — Telegram notifications disabled',
+			logger.error(
+				'TELEGRAM_WEBHOOK_SECRET must be set when NODE_ENV=production — Telegram notifications disabled',
 			)
 			bot = undefined
 			return
@@ -98,32 +99,34 @@ export async function startTelegramBot() {
 
 			const info = await bot.api.getWebhookInfo()
 			if (info.url !== webhookUrl) {
-				console.error(
-					`❌ Telegram reports webhook URL "${info.url}", expected "${webhookUrl}" — Telegram notifications disabled`,
+				logger.error(
+					{ reportedUrl: info.url, expectedUrl: webhookUrl },
+					'Telegram reports an unexpected webhook URL — Telegram notifications disabled',
 				)
 				bot = undefined
 				webhookHandler = undefined
 				return
 			}
 
-			console.log(`🤖 Telegram bot registered webhook at ${webhookUrl}`)
+			logger.info({ webhookUrl }, 'Telegram bot registered webhook')
 		} catch (error) {
 			// A transient Telegram outage here shouldn't take the whole API down
 			// with it — log and run without Telegram notifications instead.
-			console.error('❌ Failed to register Telegram webhook:', error)
+			logger.error({ err: error }, 'failed to register Telegram webhook')
 			bot = undefined
 			webhookHandler = undefined
 			return
 		}
 	} else {
-		console.warn(
-			'⚠️ NODE_ENV is not "production" — falling back to long polling for local dev/test',
+		logger.warn(
+			'NODE_ENV is not "production" — falling back to long polling for local dev/test',
 		)
 		bot.startPolling().catch((error) => {
-			console.error('Telegram bot polling stopped unexpectedly:', error)
+			logger.error({ err: error }, 'Telegram bot polling stopped unexpectedly')
 		})
-		console.log(
-			`🤖 Telegram bot is polling for updates (${API_CONFIG.NODE_ENV})`,
+		logger.info(
+			{ nodeEnv: API_CONFIG.NODE_ENV },
+			'Telegram bot is polling for updates',
 		)
 	}
 }
@@ -150,13 +153,14 @@ export async function sendTelegramCheckResult(
 		// permanent, so without this we'd keep silently failing to send every
 		// hour forever while the UI still reported "Connected".
 		if (error instanceof TelegramApiError && error.errorCode === 403) {
-			console.warn(
-				`⚠️ Telegram chat ${chatId} blocked the bot — disconnecting user ${userId}`,
+			logger.warn(
+				{ chatId, userId },
+				'Telegram chat blocked the bot — disconnecting user',
 			)
 			await permessoRepository.disconnectTelegram(userId)
 			return
 		}
-		console.error('Failed to send Telegram notification:', error)
+		logger.error({ err: error, userId }, 'failed to send Telegram notification')
 	}
 }
 

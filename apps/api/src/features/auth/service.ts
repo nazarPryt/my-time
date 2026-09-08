@@ -1,4 +1,5 @@
 import type { users } from '@db/schema'
+import { logger } from '@shared/logger'
 import type { LoginRequest, RegisterRequest } from 'contracts'
 import { MeResponseSchema } from 'contracts'
 import { authRepository } from './repository'
@@ -20,6 +21,8 @@ export const authService = {
 			passwordHash,
 		})
 
+		logger.info({ userId: user.id }, 'user registered')
+
 		return toPublicUser(user)
 	},
 
@@ -29,6 +32,8 @@ export const authService = {
 
 		const valid = await Bun.password.verify(password, user.passwordHash)
 		if (!valid) throw new Error('INVALID_CREDENTIALS')
+
+		logger.info({ userId: user.id }, 'user logged in')
 
 		return toPublicUser(user)
 	},

@@ -10,6 +10,9 @@ const EnvSchema = z.object({
 	DATABASE_URL: z.string().min(1),
 	HOST: z.string().default('0.0.0.0'),
 	PORT: z.coerce.number().default(3000),
+	LOG_LEVEL: z
+		.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
+		.default('info'),
 	PERMESSO_WEBSITE_URL: z.string().min(1),
 	TELEGRAM_BOT_TOKEN: z.string().min(1),
 	// Must satisfy Telegram's setWebhook secret_token constraint — validating
@@ -46,6 +49,7 @@ export const API_CONFIG = {
 	NODE_ENV: env.NODE_ENV,
 	API_HOST: env.HOST,
 	API_PORT: env.PORT,
+	LOG_LEVEL: env.LOG_LEVEL,
 	API_URL: new URL(env.API_URL).toString(),
 	FRONTEND_WEB_URL: env.FRONTEND_WEB_URL,
 	JWT_SECRET: env.JWT_SECRET,

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { client } from '@db'
+import { logger } from '@shared/logger'
 
 const CHANNEL = 'telegram_linked'
 
@@ -29,7 +30,10 @@ export function startTelegramLinkListener(): Promise<unknown> {
 
 export function notifyTelegramLinked(userId: string): void {
 	client.notify(CHANNEL, userId).catch((error) => {
-		console.error('Failed to publish telegram-linked notification:', error)
+		logger.error(
+			{ err: error, userId },
+			'failed to publish telegram-linked notification',
+		)
 	})
 }
 
