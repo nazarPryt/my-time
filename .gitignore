@@ -28,3 +28,4 @@ derby.log
 # playwright
 apps/web/playwright-report/
 apps/web/test-results/
+.playwright-mcp
