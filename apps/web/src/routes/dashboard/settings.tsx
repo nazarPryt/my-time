@@ -15,8 +15,8 @@ function SettingsSection({
 }) {
 	return (
 		<section className="py-6 border-b border-border last:border-0">
-			<div className="flex gap-8">
-				<div className="w-52 shrink-0">
+			<div className="flex flex-col sm:flex-row gap-3 sm:gap-8">
+				<div className="sm:w-52 shrink-0">
 					<h2 className="text-sm font-semibold text-foreground">{title}</h2>
 					{description && (
 						<p className="mt-1 text-xs text-muted-foreground leading-relaxed">
@@ -42,14 +42,14 @@ function SettingsPage() {
 	return (
 		<div className="h-full flex flex-col">
 			{/* Page header */}
-			<header className="h-14 flex items-center px-8 border-b border-border shrink-0">
+			<header className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground tracking-tight">
 					Settings
 				</h1>
 			</header>
 
 			{/* Content */}
-			<div className="flex-1 overflow-auto px-8 py-2">
+			<div className="flex-1 overflow-auto px-4 sm:px-8 py-2">
 				<div className="max-w-2xl">
 					<SettingsSection
 						title="Profile"

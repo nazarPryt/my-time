@@ -49,13 +49,13 @@ function PermessoStatusPage() {
 
 	return (
 		<div className="h-full flex flex-col">
-			<header className="h-14 flex items-center px-8 border-b border-border shrink-0">
+			<header className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground tracking-tight">
 					Permesso Status
 				</h1>
 			</header>
 
-			<div className="flex-1 overflow-auto p-8">
+			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-lg mx-auto space-y-6">
 					{loading || !status ? (
 						<div className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-32">

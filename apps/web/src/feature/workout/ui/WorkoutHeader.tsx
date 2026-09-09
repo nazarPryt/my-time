@@ -5,7 +5,7 @@ export function WorkoutHeader() {
 	return (
 		<header
 			data-testid="workout-header"
-			className="h-14 flex items-center px-8 border-b border-border shrink-0 gap-2.5"
+			className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0 gap-2.5"
 		>
 			<Dumbbell
 				size={15}

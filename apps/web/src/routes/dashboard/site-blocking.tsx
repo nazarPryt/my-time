@@ -38,12 +38,12 @@ function SiteBlockingPage() {
 
 	return (
 		<div className="h-full flex flex-col">
-			<header className="h-14 flex items-center justify-between px-8 border-b border-border shrink-0">
+			<header className="h-14 flex items-center justify-between px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground">Site Blocking</h1>
 				<ExtensionConnectButton />
 			</header>
 
-			<div className="flex-1 overflow-auto p-8">
+			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-lg mx-auto space-y-6">
 					<form onSubmit={handleSubmit(handleAdd)} className="flex gap-2">
 						<Input

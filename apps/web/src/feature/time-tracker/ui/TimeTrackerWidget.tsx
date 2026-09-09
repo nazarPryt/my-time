@@ -34,11 +34,11 @@ export function TimeTrackerWidget() {
 
 	return (
 		<div className="h-full flex flex-col">
-			<div className="h-14 flex items-center px-8 border-b border-border shrink-0">
+			<div className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-medium text-foreground">Time Tracker</h1>
 			</div>
 
-			<div className="flex-1 overflow-auto p-8">
+			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-105 mx-auto space-y-4">
 					{loading ? (
 						<div className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-64">
@@ -46,7 +46,7 @@ export function TimeTrackerWidget() {
 						</div>
 					) : (
 						<>
-							<div className="rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-6">
+							<div className="rounded-xl border border-border bg-card p-4 sm:p-8 flex flex-col items-center gap-6">
 								<Badge
 									variant={activeSession ? 'default' : 'outline'}
 									className={cn(

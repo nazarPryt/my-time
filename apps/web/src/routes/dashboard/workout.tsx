@@ -43,7 +43,7 @@ function WorkoutPage() {
 		<div data-testid="workout-page" className="h-full flex flex-col">
 			<WorkoutHeader />
 
-			<div className="flex-1 overflow-auto p-8">
+			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-sm mx-auto space-y-4">
 					{loading || !data ? (
 						<div

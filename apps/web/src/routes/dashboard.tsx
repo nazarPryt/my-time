@@ -10,11 +10,15 @@ import {
 	Dumbbell,
 	FileCheck2,
 	Home,
+	Menu,
 	Settings,
 	ShieldOff,
 	Timer,
 } from 'lucide-react'
+import { useState } from 'react'
 import { NotFoundScreen } from '@/components/not-found-screen'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
 import { cn } from '@/shared/lib/cn'
@@ -73,9 +77,26 @@ const NAV_ITEMS: NavItemType[] = [
 ] as const
 
 function DashboardLayout() {
+	const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+
 	return (
-		<div className="flex h-screen bg-background overflow-hidden">
-			<Sidebar />
+		<div className="flex flex-col md:flex-row h-screen bg-background overflow-hidden">
+			<header className="flex md:hidden items-center gap-2 h-14 px-3 border-b border-sidebar-border bg-sidebar shrink-0">
+				<Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
+					<SheetTrigger asChild>
+						<Button variant="ghost" size="icon" aria-label="Open menu">
+							<Menu size={20} strokeWidth={1.75} />
+						</Button>
+					</SheetTrigger>
+					<SheetContent side="left" className="p-0" title="Navigation">
+						<SidebarContent onNavigate={() => setIsMobileNavOpen(false)} />
+					</SheetContent>
+				</Sheet>
+				<Wordmark />
+			</header>
+			<aside className="hidden md:flex w-55 shrink-0 flex-col bg-sidebar border-r border-sidebar-border">
+				<SidebarContent />
+			</aside>
 			<main className="flex-1 overflow-auto min-w-0">
 				<Outlet />
 			</main>
@@ -83,26 +104,33 @@ function DashboardLayout() {
 	)
 }
 
-function Sidebar() {
+function Wordmark() {
 	return (
-		<aside className="w-55 shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
+		<span
+			className="text-[17px] font-bold text-sidebar-foreground"
+			style={{ letterSpacing: '-0.04em' }}
+		>
+			my·time
+		</span>
+	)
+}
+
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+	return (
+		<>
 			{/* Wordmark */}
-			<div className="h-14 flex items-center px-5 border-b border-sidebar-border shrink-0">
-				<span
-					className="text-[17px] font-bold text-sidebar-foreground"
-					style={{ letterSpacing: '-0.04em' }}
-				>
-					my·time
-				</span>
+			<div className="hidden md:flex h-14 items-center px-5 border-b border-sidebar-border shrink-0">
+				<Wordmark />
 			</div>
 
 			{/* Navigation */}
-			<nav className="flex-1 p-2 pt-3 space-y-0.5">
+			<nav className="flex-1 p-2 pt-3 space-y-0.5 overflow-y-auto">
 				{NAV_ITEMS.map(({ to, label, icon: Icon, exact }) => (
 					<Link
 						key={to}
 						to={to}
 						activeOptions={{ exact }}
+						onClick={onNavigate}
 						className={cn(
 							'relative flex items-center gap-2.5 px-3 py-2 rounded-md',
 							'text-sm text-sidebar-foreground/55 transition-colors duration-150',
@@ -135,6 +163,6 @@ function Sidebar() {
 				</span>
 				<SignOutButton />
 			</div>
-		</aside>
+		</>
 	)
 }
