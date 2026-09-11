@@ -3,7 +3,9 @@ import { refreshTokenRepository } from './repository'
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60 // 15 minutes
 const REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60 // 7 days
 
-type JwtSigner = { sign: (payload: Record<string, unknown>) => Promise<string> }
+type JwtSigner = {
+	sign: (payload: { sub: string; exp: number; jti: string }) => Promise<string>
+}
 
 export async function generateTokens(jwt: JwtSigner, userId: string) {
 	const now = Math.floor(Date.now() / 1000)

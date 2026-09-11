@@ -9,22 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as TestErrorRouteImport } from './routes/test/error'
-import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout'
-import { Route as DashboardTimeTrackerRouteImport } from './routes/dashboard/time-tracker'
-import { Route as DashboardSiteBlockingRouteImport } from './routes/dashboard/site-blocking'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
-import { Route as DashboardPermessoStatusRouteImport } from './routes/dashboard/permesso-status'
-import { Route as AuthRegisterRouteImport } from './routes/auth/register'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthRegisterRouteImport } from './routes/auth/register'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardPermessoStatusRouteImport } from './routes/dashboard/permesso-status'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardSiteBlockingRouteImport } from './routes/dashboard/site-blocking'
+import { Route as DashboardTimeTrackerRouteImport } from './routes/dashboard/time-tracker'
+import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout'
+import { Route as TestErrorRouteImport } from './routes/test/error'
 
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -32,39 +32,24 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const TestErrorRoute = TestErrorRouteImport.update({
-  id: '/test/error',
-  path: '/test/error',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardWorkoutRoute = DashboardWorkoutRouteImport.update({
-  id: '/workout',
-  path: '/workout',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardTimeTrackerRoute = DashboardTimeTrackerRouteImport.update({
-  id: '/time-tracker',
-  path: '/time-tracker',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardSiteBlockingRoute = DashboardSiteBlockingRouteImport.update({
-  id: '/site-blocking',
-  path: '/site-blocking',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPermessoStatusRoute = DashboardPermessoStatusRouteImport.update({
@@ -72,15 +57,30 @@ const DashboardPermessoStatusRoute = DashboardPermessoStatusRouteImport.update({
   path: '/permesso-status',
   getParentRoute: () => DashboardRoute,
 } as any)
-const AuthRegisterRoute = AuthRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => AuthRoute,
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => AuthRoute,
+const DashboardSiteBlockingRoute = DashboardSiteBlockingRouteImport.update({
+  id: '/site-blocking',
+  path: '/site-blocking',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTimeTrackerRoute = DashboardTimeTrackerRouteImport.update({
+  id: '/time-tracker',
+  path: '/time-tracker',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardWorkoutRoute = DashboardWorkoutRouteImport.update({
+  id: '/workout',
+  path: '/workout',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const TestErrorRoute = TestErrorRouteImport.update({
+  id: '/test/error',
+  path: '/test/error',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -178,11 +178,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -192,53 +192,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/test/error': {
-      id: '/test/error'
-      path: '/test/error'
-      fullPath: '/test/error'
-      preLoaderRoute: typeof TestErrorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/workout': {
-      id: '/dashboard/workout'
-      path: '/workout'
-      fullPath: '/dashboard/workout'
-      preLoaderRoute: typeof DashboardWorkoutRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/time-tracker': {
-      id: '/dashboard/time-tracker'
-      path: '/time-tracker'
-      fullPath: '/dashboard/time-tracker'
-      preLoaderRoute: typeof DashboardTimeTrackerRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/site-blocking': {
-      id: '/dashboard/site-blocking'
-      path: '/site-blocking'
-      fullPath: '/dashboard/site-blocking'
-      preLoaderRoute: typeof DashboardSiteBlockingRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/permesso-status': {
@@ -248,19 +227,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPermessoStatusRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/auth/register': {
-      id: '/auth/register'
-      path: '/register'
-      fullPath: '/auth/register'
-      preLoaderRoute: typeof AuthRegisterRouteImport
-      parentRoute: typeof AuthRoute
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRoute
+    '/dashboard/site-blocking': {
+      id: '/dashboard/site-blocking'
+      path: '/site-blocking'
+      fullPath: '/dashboard/site-blocking'
+      preLoaderRoute: typeof DashboardSiteBlockingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/time-tracker': {
+      id: '/dashboard/time-tracker'
+      path: '/time-tracker'
+      fullPath: '/dashboard/time-tracker'
+      preLoaderRoute: typeof DashboardTimeTrackerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/workout': {
+      id: '/dashboard/workout'
+      path: '/workout'
+      fullPath: '/dashboard/workout'
+      preLoaderRoute: typeof DashboardWorkoutRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/test/error': {
+      id: '/test/error'
+      path: '/test/error'
+      fullPath: '/test/error'
+      preLoaderRoute: typeof TestErrorRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
