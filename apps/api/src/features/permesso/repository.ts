@@ -57,10 +57,14 @@ export const permessoRepository = {
 		})
 	},
 
-	updateCheckHours: async (userId: string, checkHours: number[]) => {
+	updateCheckHours: async (
+		userId: string,
+		checkHours: number[],
+		timezone: string,
+	) => {
 		const [row] = await db
 			.update(permessoSubscriptions)
-			.set({ checkHours, updatedAt: new Date() })
+			.set({ checkHours, timezone, updatedAt: new Date() })
 			.where(eq(permessoSubscriptions.userId, userId))
 			.returning()
 		return row ?? null

@@ -13,7 +13,8 @@ export async function runPermessoCheck() {
 }
 
 export async function updatePermessoCheckHours(checkHours: number[]) {
-	return api.permesso.schedule.put({ checkHours })
+	const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	return api.permesso.schedule.put({ checkHours, timezone })
 }
 
 export async function fetchPermessoHistory() {

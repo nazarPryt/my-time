@@ -6,10 +6,26 @@ import { sendTelegramCheckResult } from './telegram-bot'
 
 const CHECK_CONCURRENCY = 2
 
+export function getHourInTimeZone(date: Date, timeZone: string): number {
+	try {
+		return Number(
+			new Intl.DateTimeFormat('en-US', {
+				timeZone,
+				hour: 'numeric',
+				hourCycle: 'h23',
+			}).format(date),
+		)
+	} catch {
+		return date.getUTCHours()
+	}
+}
+
 async function runScheduledChecks() {
-	const currentHour = new Date().getHours()
+	const now = new Date()
 	const subscriptions = await permessoRepository.listAll()
-	const due = subscriptions.filter((s) => s.checkHours.includes(currentHour))
+	const due = subscriptions.filter((s) =>
+		s.checkHours.includes(getHourInTimeZone(now, s.timezone)),
+	)
 	if (due.length === 0) return
 
 	const limit = pLimit(CHECK_CONCURRENCY)
@@ -35,8 +51,8 @@ async function runScheduledChecks() {
 	)
 }
 
-// Fires every hour on the hour (server local time) and checks only the
-// subscriptions whose user-configured checkHours include the current hour —
+// Fires every hour on the hour and checks only the subscriptions whose
+// current local hour (per-subscription timezone) is in their checkHours —
 // each user picks their own check times from the Permesso Status page.
 export function schedulePermessoJobs() {
 	new Cron('0 * * * *', runScheduledChecks)

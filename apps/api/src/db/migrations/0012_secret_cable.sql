@@ -1,0 +1,1 @@
+ALTER TABLE "permesso_subscriptions" ADD COLUMN "timezone" text DEFAULT 'UTC' NOT NULL;

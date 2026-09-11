@@ -9,7 +9,7 @@ export function ScheduleSummary({ checkHours }: Props) {
 				? 'Automatic checks are off — use "Check now" instead.'
 				: `Checked automatically at ${checkHours
 						.map((h) => `${String(h).padStart(2, '0')}:00`)
-						.join(', ')} (server time).`}
+						.join(', ')} (your local time).`}
 		</p>
 	)
 }

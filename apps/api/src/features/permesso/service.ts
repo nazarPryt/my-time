@@ -49,9 +49,14 @@ export const permessoService = {
 	updateCheckHours: async (
 		userId: string,
 		checkHours: number[],
+		timezone: string,
 	): Promise<PermessoStatusResponse> => {
 		const unique = [...new Set(checkHours)].sort((a, b) => a - b)
-		const row = await permessoRepository.updateCheckHours(userId, unique)
+		const row = await permessoRepository.updateCheckHours(
+			userId,
+			unique,
+			timezone,
+		)
 		return toStatusResponse(row)
 	},
 

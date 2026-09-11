@@ -35,7 +35,11 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 			.put(
 				PERMESSO_ROUTES.schedule,
 				async ({ userId, body }) => {
-					return permessoService.updateCheckHours(userId, body.checkHours)
+					return permessoService.updateCheckHours(
+						userId,
+						body.checkHours,
+						body.timezone,
+					)
 				},
 				{ body: UpdateCheckHoursRequestSchema },
 			)
