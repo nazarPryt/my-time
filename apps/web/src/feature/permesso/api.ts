@@ -28,3 +28,7 @@ export async function createPermessoTelegramLink() {
 export async function disconnectPermessoTelegram() {
 	return api.permesso.telegram.disconnect.post()
 }
+
+export async function resetPermesso() {
+	return api.permesso.reset.post()
+}

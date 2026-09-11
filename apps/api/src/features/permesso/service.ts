@@ -6,7 +6,11 @@ import type {
 } from 'contracts'
 import { checkPermessoStatus } from './checker'
 import { permessoRepository } from './repository'
-import { buildTelegramDeepLink, sendTelegramCheckResult } from './telegram-bot'
+import {
+	buildTelegramDeepLink,
+	sendTelegramCheckResult,
+	sendTelegramUnsubscribedNotice,
+} from './telegram-bot'
 
 export type RunCheckResult =
 	| { ok: true; result: CheckResultResponse }
@@ -17,7 +21,7 @@ export type TelegramLinkResult =
 	| { ok: false; reason: 'no_practice_number' | 'bot_not_configured' }
 
 function toStatusResponse(
-	row: Awaited<ReturnType<typeof permessoRepository.getByUserId>>,
+	row: Awaited<ReturnType<typeof permessoRepository.getByUserId>> | null,
 ): PermessoStatusResponse {
 	return {
 		practiceNumber: row?.practiceNumber ?? null,
@@ -100,6 +104,15 @@ export const permessoService = {
 	): Promise<PermessoStatusResponse> => {
 		const row = await permessoRepository.disconnectTelegram(userId)
 		return toStatusResponse(row)
+	},
+
+	resetAll: async (userId: string): Promise<PermessoStatusResponse> => {
+		const row = await permessoRepository.getByUserId(userId)
+		if (row?.telegramChatId) {
+			await sendTelegramUnsubscribedNotice(row.telegramChatId)
+		}
+		await permessoRepository.deleteAllForUser(userId)
+		return toStatusResponse(null)
 	},
 
 	getHistory: async (userId: string): Promise<PermessoCheckHistoryResponse> => {

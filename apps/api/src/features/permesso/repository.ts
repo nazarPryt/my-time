@@ -127,4 +127,11 @@ export const permessoRepository = {
 			.returning()
 		return row ?? null
 	},
+
+	deleteAllForUser: async (userId: string) => {
+		await db.delete(permessoChecks).where(eq(permessoChecks.userId, userId))
+		await db
+			.delete(permessoSubscriptions)
+			.where(eq(permessoSubscriptions.userId, userId))
+	},
 }

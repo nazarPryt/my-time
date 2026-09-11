@@ -1,9 +1,13 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { db } from '@db'
-import { permessoSubscriptions } from '@db/schema'
+import { permessoChecks, permessoSubscriptions } from '@db/schema'
 import { treaty } from '@elysiajs/eden'
 import type { RegisterRequest } from 'contracts'
-import { AuthResponseSchema, PermessoStatusResponseSchema } from 'contracts'
+import {
+	AuthResponseSchema,
+	PermessoCheckHistoryResponseSchema,
+	PermessoStatusResponseSchema,
+} from 'contracts'
 import { parseISO } from 'date-fns'
 import { eq } from 'drizzle-orm'
 import { app } from '@/app'
@@ -199,5 +203,107 @@ describe('PUT /permesso/schedule', () => {
 
 		const row = await getSubscriptionRow(userId)
 		expect(row?.checkHours).toEqual([9, 18])
+	})
+})
+
+// ---------------------------------------------------------------------------
+// POST /permesso/reset
+// ---------------------------------------------------------------------------
+
+describe('POST /permesso/reset', () => {
+	it('returns 401 when unauthenticated', async () => {
+		const { status } = await api.permesso.reset.post()
+		expect(status).toBe(401)
+	})
+
+	it('wipes practice number, schedule, telegram link, and history, returning the empty status', async () => {
+		const { token, userId } = await registerAndGetToken(VALID_USER)
+
+		await api.permesso.put(
+			{ practiceNumber: 'AB12345678' },
+			{ headers: authHeaders(token) },
+		)
+		await api.permesso.schedule.put(
+			{ checkHours: [9, 18], timezone: 'Europe/Rome' },
+			{ headers: authHeaders(token) },
+		)
+		// Seed a check history row directly — POST /permesso/check would hit the
+		// real government portal, which is not something a test should depend on.
+		await db.insert(permessoChecks).values({
+			userId,
+			success: true,
+			status: 'In lavorazione',
+			triggeredBy: 'manual',
+		})
+
+		const { data, status } = await api.permesso.reset.post(undefined, {
+			headers: authHeaders(token),
+		})
+		expect(status).toBe(200)
+		const parsed = PermessoStatusResponseSchema.parse(data)
+		expect(parsed).toEqual({
+			practiceNumber: null,
+			checkHours: [],
+			lastStatus: null,
+			lastCheckedAt: null,
+			lastError: null,
+			telegramConnected: false,
+		})
+	})
+
+	it('leaves no trace behind — GET /permesso and GET /permesso/history both come back empty', async () => {
+		const { token, userId } = await registerAndGetToken(VALID_USER)
+
+		await api.permesso.put(
+			{ practiceNumber: 'AB12345678' },
+			{ headers: authHeaders(token) },
+		)
+		await db.insert(permessoChecks).values({
+			userId,
+			success: false,
+			error: 'timeout',
+			triggeredBy: 'scheduled',
+		})
+
+		await api.permesso.reset.post(undefined, { headers: authHeaders(token) })
+
+		const { data: statusData, status: statusCode } = await api.permesso.get({
+			headers: authHeaders(token),
+		})
+		expect(statusCode).toBe(200)
+		expect(PermessoStatusResponseSchema.parse(statusData)).toEqual({
+			practiceNumber: null,
+			checkHours: [],
+			lastStatus: null,
+			lastCheckedAt: null,
+			lastError: null,
+			telegramConnected: false,
+		})
+
+		const { data: historyData, status: historyCode } =
+			await api.permesso.history.get({ headers: authHeaders(token) })
+		expect(historyCode).toBe(200)
+		expect(PermessoCheckHistoryResponseSchema.parse(historyData)).toEqual([])
+
+		// The row is actually deleted, not just filtered out of the response.
+		const row = await getSubscriptionRow(userId)
+		expect(row).toBeNull()
+	})
+
+	it('is a no-op that still returns the empty status when the user has no subscription row', async () => {
+		const { token } = await registerAndGetToken(VALID_USER)
+
+		const { data, status } = await api.permesso.reset.post(undefined, {
+			headers: authHeaders(token),
+		})
+		expect(status).toBe(200)
+		expect(PermessoStatusResponseSchema.parse(data)).toEqual({
+			practiceNumber: null,
+			checkHours: [],
+			lastStatus: null,
+			lastCheckedAt: null,
+			lastError: null,
+			telegramConnected: false,
+		})
 	})
 })

@@ -95,5 +95,8 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 			})
 			.post(PERMESSO_ROUTES.telegramDisconnect, async ({ userId }) => {
 				return permessoService.disconnectTelegram(userId)
+			})
+			.post(PERMESSO_ROUTES.reset, async ({ userId }) => {
+				return permessoService.resetAll(userId)
 			}),
 	)

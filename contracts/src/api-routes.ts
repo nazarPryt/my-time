@@ -48,4 +48,5 @@ export const PERMESSO_ROUTES = {
 	telegramLinkEvents: '/telegram/link/events',
 	telegramDisconnect: '/telegram/disconnect',
 	telegramWebhook: '/telegram/webhook',
+	reset: '/reset',
 } as const

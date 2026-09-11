@@ -10,6 +10,10 @@ let bot: Bot | undefined
 let botUsername: string | undefined
 let webhookHandler: ((request: Request) => Promise<Response>) | undefined
 
+// TODO: send a distinct congratulations message when the check result indicates
+// the permesso is actually ready (vs. still being processed) — needs a way to
+// tell those two states apart from `result.status`'s free-text content.
+
 function formatCheckMessage(result: PermessoCheckResult): string {
 	if (result.success) {
 		return `✅ *Permesso check complete*\n\n📄 Status: ${result.status || 'No status available'}`
@@ -161,6 +165,23 @@ export async function sendTelegramCheckResult(
 			return
 		}
 		logger.error({ err: error, userId }, 'failed to send Telegram notification')
+	}
+}
+
+export async function sendTelegramUnsubscribedNotice(
+	chatId: string,
+): Promise<void> {
+	if (!bot) return
+	try {
+		await bot.api.sendMessage({
+			chat_id: Number(chatId),
+			text: "👋 Thanks for using the permesso checker. Your data has been deleted and you're unsubscribed — you won't receive any more messages here. Reconnect anytime from the Permesso Status page.",
+		})
+	} catch (error) {
+		logger.error(
+			{ err: error, chatId },
+			'failed to send Telegram unsubscribe notice',
+		)
 	}
 }
 

@@ -9,6 +9,7 @@ import {
 	disconnectPermessoTelegram,
 	fetchPermessoHistory,
 	fetchPermessoStatus,
+	resetPermesso,
 	runPermessoCheck,
 	setPermessoPracticeNumber,
 	updatePermessoCheckHours,
@@ -27,6 +28,7 @@ interface PermessoState {
 	pendingCheckHour: number | null
 	connectingTelegram: boolean
 	disconnectingTelegram: boolean
+	resettingAll: boolean
 	error: string | null
 	telegramError: string | null
 	load: () => Promise<void>
@@ -35,6 +37,7 @@ interface PermessoState {
 	check: () => Promise<void>
 	connectTelegram: () => Promise<void>
 	disconnectTelegram: () => Promise<void>
+	resetAll: () => Promise<void>
 }
 
 export const usePermessoStore = create<PermessoState>((set, get) => ({
@@ -47,6 +50,7 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 	pendingCheckHour: null,
 	connectingTelegram: false,
 	disconnectingTelegram: false,
+	resettingAll: false,
 	error: null,
 	telegramError: null,
 
@@ -164,6 +168,20 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 		}
 		set({ disconnectingTelegram: false, status: data })
 	},
+
+	resetAll: async () => {
+		if (get().resettingAll) return
+		set({ resettingAll: true, error: null })
+		const { data, error } = await resetPermesso()
+		if (error || !data) {
+			set({
+				resettingAll: false,
+				error: 'Failed to delete permesso data',
+			})
+			return
+		}
+		set({ resettingAll: false, status: data, history: [] })
+	},
 }))
 
 export const usePermessoState = () =>
@@ -178,6 +196,7 @@ export const usePermessoState = () =>
 			pendingCheckHour: s.pendingCheckHour,
 			connectingTelegram: s.connectingTelegram,
 			disconnectingTelegram: s.disconnectingTelegram,
+			resettingAll: s.resettingAll,
 			error: s.error,
 			telegramError: s.telegramError,
 		})),
@@ -192,5 +211,6 @@ export const usePermessoActions = () =>
 			check: s.check,
 			connectTelegram: s.connectTelegram,
 			disconnectTelegram: s.disconnectTelegram,
+			resetAll: s.resetAll,
 		})),
 	)

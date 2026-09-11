@@ -12,7 +12,11 @@ import {
 } from '@/components/ui/alert-dialog'
 
 interface ConfirmDialogProps {
-	trigger: React.ReactNode
+	/** Omit when the dialog is opened programmatically via `open`/`onOpenChange` instead of a click. */
+	trigger?: React.ReactNode
+	/** Controls the dialog externally — for chaining multiple confirmations. Uncontrolled (trigger-only) when omitted. */
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
 	title: string
 	description?: React.ReactNode
 	confirmLabel?: string
@@ -23,6 +27,8 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({
 	trigger,
+	open,
+	onOpenChange,
 	title,
 	description,
 	confirmLabel = 'Confirm',
@@ -31,8 +37,8 @@ export function ConfirmDialog({
 	onConfirm,
 }: ConfirmDialogProps) {
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			{trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
 			<AlertDialogContent size="sm">
 				<AlertDialogHeader>
 					<AlertDialogTitle>{title}</AlertDialogTitle>

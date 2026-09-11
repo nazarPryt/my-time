@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card'
 import {
 	CheckHistory,
+	DangerZone,
 	PracticeNumberForm,
 	ScheduleEditor,
 	StatusCard,
@@ -32,6 +33,7 @@ function PermessoStatusPage() {
 		pendingCheckHour,
 		connectingTelegram,
 		disconnectingTelegram,
+		resettingAll,
 		error,
 		telegramError,
 	} = usePermessoState()
@@ -42,6 +44,7 @@ function PermessoStatusPage() {
 		check,
 		connectTelegram,
 		disconnectTelegram,
+		resetAll,
 	} = usePermessoActions()
 
 	useEffect(() => {
@@ -110,6 +113,10 @@ function PermessoStatusPage() {
 										/>
 									</CardContent>
 								</Card>
+							)}
+
+							{status.practiceNumber && (
+								<DangerZone resetting={resettingAll} onReset={resetAll} />
 							)}
 						</>
 					)}
