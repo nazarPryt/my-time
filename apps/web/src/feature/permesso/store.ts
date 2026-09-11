@@ -24,13 +24,14 @@ interface PermessoState {
 	submitting: boolean
 	checking: boolean
 	updatingSchedule: boolean
+	pendingCheckHour: number | null
 	connectingTelegram: boolean
 	disconnectingTelegram: boolean
 	error: string | null
 	telegramError: string | null
 	load: () => Promise<void>
 	savePracticeNumber: (practiceNumber: string) => Promise<void>
-	updateCheckHours: (checkHours: number[]) => Promise<void>
+	updateCheckHours: (checkHours: number[], hour: number) => Promise<void>
 	check: () => Promise<void>
 	connectTelegram: () => Promise<void>
 	disconnectTelegram: () => Promise<void>
@@ -43,6 +44,7 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 	submitting: false,
 	checking: false,
 	updatingSchedule: false,
+	pendingCheckHour: null,
 	connectingTelegram: false,
 	disconnectingTelegram: false,
 	error: null,
@@ -76,14 +78,18 @@ export const usePermessoStore = create<PermessoState>((set, get) => ({
 		}
 	},
 
-	updateCheckHours: async (checkHours) => {
+	updateCheckHours: async (checkHours, hour) => {
 		if (get().updatingSchedule) return
-		set({ updatingSchedule: true, error: null })
+		set({ updatingSchedule: true, pendingCheckHour: hour, error: null })
 		const { data, error } = await updatePermessoCheckHours(checkHours)
 		if (error || !data) {
-			set({ updatingSchedule: false, error: 'Failed to update schedule' })
+			set({
+				updatingSchedule: false,
+				pendingCheckHour: null,
+				error: 'Failed to update schedule',
+			})
 		} else {
-			set({ updatingSchedule: false, status: data })
+			set({ updatingSchedule: false, pendingCheckHour: null, status: data })
 		}
 	},
 
@@ -169,6 +175,7 @@ export const usePermessoState = () =>
 			submitting: s.submitting,
 			checking: s.checking,
 			updatingSchedule: s.updatingSchedule,
+			pendingCheckHour: s.pendingCheckHour,
 			connectingTelegram: s.connectingTelegram,
 			disconnectingTelegram: s.disconnectingTelegram,
 			error: s.error,

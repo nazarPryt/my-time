@@ -29,6 +29,7 @@ function PermessoStatusPage() {
 		submitting,
 		checking,
 		updatingSchedule,
+		pendingCheckHour,
 		connectingTelegram,
 		disconnectingTelegram,
 		error,
@@ -104,6 +105,7 @@ function PermessoStatusPage() {
 										<ScheduleEditor
 											checkHours={status.checkHours}
 											disabled={updatingSchedule}
+											pendingHour={pendingCheckHour}
 											onChange={updateCheckHours}
 										/>
 									</CardContent>
