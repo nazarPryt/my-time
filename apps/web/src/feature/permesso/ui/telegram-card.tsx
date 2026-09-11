@@ -1,16 +1,6 @@
 import type { PermessoStatusResponse } from 'contracts'
 import { Send } from 'lucide-react'
 import { useState } from 'react'
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 type Props = {
 	status: PermessoStatusResponse
@@ -40,11 +31,6 @@ export function TelegramCard({
 	onDisconnect,
 }: Props) {
 	const [confirmingDisconnect, setConfirmingDisconnect] = useState(false)
-
-	function confirmDisconnect() {
-		setConfirmingDisconnect(false)
-		onDisconnect()
-	}
 
 	return (
 		<>
@@ -94,26 +80,14 @@ export function TelegramCard({
 				</CardContent>
 			</Card>
 
-			<AlertDialog
+			<ConfirmDialog
 				open={confirmingDisconnect}
 				onOpenChange={setConfirmingDisconnect}
-			>
-				<AlertDialogContent size="sm">
-					<AlertDialogHeader>
-						<AlertDialogTitle>Disconnect Telegram?</AlertDialogTitle>
-						<AlertDialogDescription>
-							You'll stop receiving check-result messages until you connect
-							again.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={confirmDisconnect}>
-							Disconnect
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+				title="Disconnect Telegram?"
+				description="You'll stop receiving check-result messages until you connect again."
+				confirmLabel="Disconnect"
+				onConfirm={onDisconnect}
+			/>
 		</>
 	)
 }
