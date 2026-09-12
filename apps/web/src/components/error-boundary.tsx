@@ -1,5 +1,6 @@
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { SHARED_TEST_IDS } from './testIds'
 
 interface ErrorScreenProps {
 	error?: Error
@@ -9,7 +10,7 @@ interface ErrorScreenProps {
 export function ErrorScreen({ error, onReset }: ErrorScreenProps) {
 	return (
 		<div
-			data-testid="error-screen"
+			data-testid={SHARED_TEST_IDS.errorScreen.root}
 			className="min-h-screen bg-background flex items-center justify-center p-6"
 		>
 			<div className="max-w-sm w-full rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-5 text-center">
@@ -22,14 +23,14 @@ export function ErrorScreen({ error, onReset }: ErrorScreenProps) {
 				</div>
 				<div className="space-y-1.5">
 					<h1
-						data-testid="error-screen-title"
+						data-testid={SHARED_TEST_IDS.errorScreen.title}
 						className="text-base font-semibold text-foreground"
 					>
 						Something went wrong
 					</h1>
 					{error?.message && (
 						<p
-							data-testid="error-screen-message"
+							data-testid={SHARED_TEST_IDS.errorScreen.message}
 							className="text-xs text-muted-foreground leading-relaxed"
 						>
 							{error.message}
@@ -39,7 +40,7 @@ export function ErrorScreen({ error, onReset }: ErrorScreenProps) {
 				{onReset && (
 					<button
 						type="button"
-						data-testid="error-screen-reset"
+						data-testid={SHARED_TEST_IDS.errorScreen.reset}
 						onClick={onReset}
 						className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
 					>

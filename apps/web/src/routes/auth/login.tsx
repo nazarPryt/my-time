@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react'
 import { AuthShell } from '@/components/auth-shell'
 import { Button, Input, Label } from '@/components/ui'
 import { useLogin } from '@/feature/auth/login'
+import { AUTH_TEST_IDS } from '@/feature/auth/testIds'
 
 export const Route = createFileRoute('/auth/login')({
 	component: LoginPage,
@@ -26,7 +27,7 @@ function LoginPage() {
 					<Link
 						to="/auth/register"
 						className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"
-						data-testid="login-register-link"
+						data-testid={AUTH_TEST_IDS.login.registerLink}
 					>
 						Sign up
 					</Link>
@@ -34,7 +35,7 @@ function LoginPage() {
 			}
 		>
 			<form
-				data-testid="login-form"
+				data-testid={AUTH_TEST_IDS.login.form}
 				onSubmit={handleSubmit(onSubmit)}
 				className="flex flex-col gap-5"
 			>
@@ -43,7 +44,7 @@ function LoginPage() {
 					<Label htmlFor="email">Email</Label>
 					<Input
 						id="email"
-						data-testid="login-email"
+						data-testid={AUTH_TEST_IDS.login.email}
 						type="email"
 						autoComplete="email"
 						placeholder="you@example.com"
@@ -52,7 +53,7 @@ function LoginPage() {
 					/>
 					{errors.email && (
 						<p
-							data-testid="login-email-error"
+							data-testid={AUTH_TEST_IDS.login.emailError}
 							className="text-xs text-destructive"
 						>
 							{errors.email.message}
@@ -73,7 +74,7 @@ function LoginPage() {
 					</div>
 					<Input
 						id="password"
-						data-testid="login-password"
+						data-testid={AUTH_TEST_IDS.login.password}
 						type="password"
 						autoComplete="current-password"
 						placeholder="••••••••"
@@ -82,7 +83,7 @@ function LoginPage() {
 					/>
 					{errors.password && (
 						<p
-							data-testid="login-password-error"
+							data-testid={AUTH_TEST_IDS.login.passwordError}
 							className="text-xs text-destructive"
 						>
 							{errors.password.message}
@@ -93,7 +94,7 @@ function LoginPage() {
 				{/* Submit */}
 				<div>
 					<Button
-						data-testid="login-submit"
+						data-testid={AUTH_TEST_IDS.login.submit}
 						type="submit"
 						className="w-full gap-2"
 						size="lg"

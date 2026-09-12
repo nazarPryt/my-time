@@ -1,4 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
+import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
+import { DASHBOARD_TEST_IDS } from '@/routes/dashboard/testIds'
 import { BaseLocators } from '../BaseLocators'
 
 export class HomeLocators extends BaseLocators {
@@ -12,11 +14,21 @@ export class HomeLocators extends BaseLocators {
 	constructor(page: Page) {
 		super(page)
 
-		this.dashboardHome = page.getByTestId('dashboard-home')
-		this.progressChart = this.dashboardHome.getByTestId('progress-chart')
-		this.chartMonthLabel = this.progressChart.getByTestId('chart-month-label')
-		this.prevMonthBtn = this.progressChart.getByTestId('prev-month-btn')
-		this.nextMonthBtn = this.progressChart.getByTestId('next-month-btn')
-		this.chartLoading = this.progressChart.getByTestId('chart-loading')
+		this.dashboardHome = page.getByTestId(DASHBOARD_TEST_IDS.home)
+		this.progressChart = this.dashboardHome.getByTestId(
+			WORKOUT_TEST_IDS.progressChart,
+		)
+		this.chartMonthLabel = this.progressChart.getByTestId(
+			WORKOUT_TEST_IDS.chartMonthLabel,
+		)
+		this.prevMonthBtn = this.progressChart.getByTestId(
+			WORKOUT_TEST_IDS.prevMonthBtn,
+		)
+		this.nextMonthBtn = this.progressChart.getByTestId(
+			WORKOUT_TEST_IDS.nextMonthBtn,
+		)
+		this.chartLoading = this.progressChart.getByTestId(
+			WORKOUT_TEST_IDS.chartLoading,
+		)
 	}
 }

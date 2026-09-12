@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test'
+import { AUTH_TEST_IDS } from '@/feature/auth/testIds'
 
 export class RegisterLocators {
 	readonly page: Page
@@ -16,20 +17,28 @@ export class RegisterLocators {
 	constructor(page: Page) {
 		this.page = page
 
-		this.registerForm = page.getByTestId('register-form')
-		this.registerName = this.registerForm.getByTestId('register-name')
-		this.registerEmail = this.registerForm.getByTestId('register-email')
-		this.registerPassword = this.registerForm.getByTestId('register-password')
-		this.registerSubmit = this.registerForm.getByTestId('register-submit')
+		this.registerForm = page.getByTestId(AUTH_TEST_IDS.register.form)
+		this.registerName = this.registerForm.getByTestId(
+			AUTH_TEST_IDS.register.name,
+		)
+		this.registerEmail = this.registerForm.getByTestId(
+			AUTH_TEST_IDS.register.email,
+		)
+		this.registerPassword = this.registerForm.getByTestId(
+			AUTH_TEST_IDS.register.password,
+		)
+		this.registerSubmit = this.registerForm.getByTestId(
+			AUTH_TEST_IDS.register.submit,
+		)
 		this.registerNameError = this.registerForm.getByTestId(
-			'register-name-error',
+			AUTH_TEST_IDS.register.nameError,
 		)
 		this.registerEmailError = this.registerForm.getByTestId(
-			'register-email-error',
+			AUTH_TEST_IDS.register.emailError,
 		)
 		this.registerPasswordError = this.registerForm.getByTestId(
-			'register-password-error',
+			AUTH_TEST_IDS.register.passwordError,
 		)
-		this.registerLoginLink = page.getByTestId('register-login-link')
+		this.registerLoginLink = page.getByTestId(AUTH_TEST_IDS.register.loginLink)
 	}
 }

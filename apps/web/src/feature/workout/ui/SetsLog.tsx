@@ -1,6 +1,7 @@
 import type { SetResponse } from 'contracts'
 import { Flame, RotateCcw } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { WORKOUT_TEST_IDS } from '../testIds'
 import { SetRow } from './SetRow'
 
 interface SetsLogProps {
@@ -13,7 +14,7 @@ export function SetsLog({ sets, onDelete, onReset }: SetsLogProps) {
 	if (sets.length === 0) {
 		return (
 			<div
-				data-testid="sets-log-empty"
+				data-testid={WORKOUT_TEST_IDS.setsLogEmpty}
 				className="rounded-xl border border-dashed border-border p-10 flex flex-col items-center gap-2"
 			>
 				<Flame
@@ -29,12 +30,12 @@ export function SetsLog({ sets, onDelete, onReset }: SetsLogProps) {
 	}
 	return (
 		<div
-			data-testid="sets-log"
+			data-testid={WORKOUT_TEST_IDS.setsLog}
 			className="rounded-xl border border-border bg-card overflow-hidden"
 		>
 			<div className="px-5 py-3 border-b border-border flex items-center justify-between">
 				<span
-					data-testid="sets-count"
+					data-testid={WORKOUT_TEST_IDS.setsCount}
 					className="text-[10px] font-semibold tracking-[0.15em] uppercase text-muted-foreground/60"
 				>
 					Sets · {sets.length}
@@ -42,7 +43,7 @@ export function SetsLog({ sets, onDelete, onReset }: SetsLogProps) {
 				<ConfirmDialog
 					trigger={
 						<button
-							data-testid="reset-day-trigger"
+							data-testid={WORKOUT_TEST_IDS.resetDayTrigger}
 							type="button"
 							className="cursor-pointer flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
 						>

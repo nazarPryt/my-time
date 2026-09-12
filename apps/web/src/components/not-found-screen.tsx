@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { FileQuestion } from 'lucide-react'
+import { SHARED_TEST_IDS } from './testIds'
 
 export function NotFoundScreen() {
 	return (
 		<div
-			data-testid="not-found-screen"
+			data-testid={SHARED_TEST_IDS.notFoundScreen.root}
 			className="min-h-screen bg-background flex items-center justify-center p-6"
 		>
 			<div className="max-w-sm w-full rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-5 text-center">
@@ -25,6 +26,7 @@ export function NotFoundScreen() {
 				</div>
 				<Link
 					to="/"
+					data-testid={SHARED_TEST_IDS.notFoundScreen.homeLink}
 					className="text-xs text-muted-foreground hover:text-foreground transition-colors"
 				>
 					Go home

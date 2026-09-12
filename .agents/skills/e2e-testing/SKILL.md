@@ -49,6 +49,19 @@ Rules for adding a new page/tab:
 - A test that isn't about one page's content (routing guards, global error boundary, 404) → `shared/`, plain `@playwright/test` imports, no page object.
 - Something more than one feature's spec needs (e.g. a second widget embedded in another tab's page, like the workout chart on dashboard home) → import the *other* feature's `mocks.ts` rather than duplicating its fixture data. The consuming spec still lives under the page it actually renders on.
 
+## Locator strategy: always `getByTestId`
+
+Use `page.getByTestId(...)` for every locator in this project, full stop —
+never `getByRole`, `getByText`, `getByLabel`, or a CSS/XPath selector, even
+for things that look like they have a good accessible role (buttons, links,
+dialogs). If the element you need doesn't have a `data-testid` yet, add one
+to the component rather than falling back to a role/text selector — that
+includes shared components (e.g. `ConfirmDialog` exposes
+`confirm-dialog`/`confirm-dialog-cancel`/`confirm-dialog-confirm` on its
+content and buttons precisely so every confirm-dialog flow in the app can
+target it the same way). Text and roles change with copy edits and
+redesigns; test ids don't.
+
 ## Page Object Model (POM): four files, one responsibility each
 
 Don't put locators, mock data, and page actions in one class. Split into

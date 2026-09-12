@@ -1,4 +1,5 @@
 import { AUTH_ERRORS } from 'contracts'
+import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
 import { API_ME } from '../../support/auth.mocks'
 import { WORKOUT_PATH } from './WorkoutPage'
 import { expect, test } from './workout.fixtures'
@@ -66,8 +67,12 @@ test.describe('Workout page', () => {
 			await expect(rows).toHaveCount(2)
 
 			// Rows are reversed (newest first) — MOCK_SET_2 is at index 0
-			await expect(rows.nth(0).getByTestId('set-reps')).toHaveText('+15')
-			await expect(rows.nth(1).getByTestId('set-reps')).toHaveText('+10')
+			await expect(
+				rows.nth(0).getByTestId(WORKOUT_TEST_IDS.setReps),
+			).toHaveText('+15')
+			await expect(
+				rows.nth(1).getByTestId(WORKOUT_TEST_IDS.setReps),
+			).toHaveText('+10')
 		})
 	})
 
@@ -128,7 +133,7 @@ test.describe('Workout page', () => {
 				// A set row appears in the log
 				await expect(workoutPage.setRows).toHaveCount(1)
 				await expect(
-					workoutPage.setRows.first().getByTestId('set-reps'),
+					workoutPage.setRows.first().getByTestId(WORKOUT_TEST_IDS.setReps),
 				).toHaveText(`+${reps}`)
 			})
 		}
@@ -171,21 +176,19 @@ test.describe('Workout page', () => {
 			workoutPage,
 		}) => {
 			const firstRow = workoutPage.setRows.first()
-			await firstRow.getByTestId('delete-set-trigger').click()
+			await firstRow.getByTestId(WORKOUT_TEST_IDS.deleteSetTrigger).click()
 
-			await expect(workoutPage.page.getByRole('alertdialog')).toBeVisible()
-			await expect(workoutPage.page.getByRole('alertdialog')).toContainText(
-				'Remove this set?',
-			)
+			await expect(workoutPage.confirmDialog).toBeVisible()
+			await expect(workoutPage.confirmDialog).toContainText('Remove this set?')
 		})
 
 		test('cancel closes dialog without deleting', async ({ workoutPage }) => {
 			const firstRow = workoutPage.setRows.first()
-			await firstRow.getByTestId('delete-set-trigger').click()
+			await firstRow.getByTestId(WORKOUT_TEST_IDS.deleteSetTrigger).click()
 
-			await workoutPage.page.getByRole('button', { name: 'Cancel' }).click()
+			await workoutPage.confirmDialogCancelBtn.click()
 
-			await expect(workoutPage.page.getByRole('alertdialog')).not.toBeVisible()
+			await expect(workoutPage.confirmDialog).not.toBeVisible()
 			await expect(workoutPage.setRows).toHaveCount(2)
 		})
 
@@ -206,8 +209,8 @@ test.describe('Workout page', () => {
 			})
 
 			const firstRow = workoutPage.setRows.first()
-			await firstRow.getByTestId('delete-set-trigger').click()
-			await workoutPage.page.getByRole('button', { name: 'Remove' }).click()
+			await firstRow.getByTestId(WORKOUT_TEST_IDS.deleteSetTrigger).click()
+			await workoutPage.confirmDialogConfirmBtn.click()
 
 			// Optimistic removal: row disappears immediately
 			await expect(workoutPage.setRows).toHaveCount(1)
@@ -218,10 +221,9 @@ test.describe('Workout page', () => {
 		}) => {
 			const firstRow = workoutPage.setRows.first()
 			// Newest-first: MOCK_SET_2 (+15 reps) is at index 0
-			await firstRow.getByTestId('delete-set-trigger').click()
+			await firstRow.getByTestId(WORKOUT_TEST_IDS.deleteSetTrigger).click()
 
-			const dialog = workoutPage.page.getByRole('alertdialog')
-			await expect(dialog).toContainText('+15 reps')
+			await expect(workoutPage.confirmDialog).toContainText('+15 reps')
 		})
 	})
 
@@ -237,16 +239,17 @@ test.describe('Workout page', () => {
 		}) => {
 			await workoutPage.resetDayTrigger.click()
 
-			const dialog = workoutPage.page.getByRole('alertdialog')
-			await expect(dialog).toBeVisible()
-			await expect(dialog).toContainText("Reset today's sets?")
+			await expect(workoutPage.confirmDialog).toBeVisible()
+			await expect(workoutPage.confirmDialog).toContainText(
+				"Reset today's sets?",
+			)
 		})
 
 		test('cancel closes dialog without resetting', async ({ workoutPage }) => {
 			await workoutPage.resetDayTrigger.click()
-			await workoutPage.page.getByRole('button', { name: 'Cancel' }).click()
+			await workoutPage.confirmDialogCancelBtn.click()
 
-			await expect(workoutPage.page.getByRole('alertdialog')).not.toBeVisible()
+			await expect(workoutPage.confirmDialog).not.toBeVisible()
 			await expect(workoutPage.setsLog).toBeVisible()
 		})
 
@@ -271,7 +274,7 @@ test.describe('Workout page', () => {
 			await mockWorkoutToday(page, MOCK_TODAY_EMPTY)
 
 			await workoutPage.resetDayTrigger.click()
-			await workoutPage.page.getByRole('button', { name: 'Reset' }).click()
+			await workoutPage.confirmDialogConfirmBtn.click()
 
 			await expect(workoutPage.setsLogEmpty).toBeVisible()
 			await expect(workoutPage.totalReps).toHaveText('0')
@@ -280,8 +283,7 @@ test.describe('Workout page', () => {
 		test('confirm dialog shows the set count', async ({ workoutPage }) => {
 			await workoutPage.resetDayTrigger.click()
 
-			const dialog = workoutPage.page.getByRole('alertdialog')
-			await expect(dialog).toContainText('2 sets')
+			await expect(workoutPage.confirmDialog).toContainText('2 sets')
 		})
 	})
 

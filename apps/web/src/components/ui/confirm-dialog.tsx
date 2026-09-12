@@ -1,4 +1,5 @@
 import type * as React from 'react'
+import { SHARED_TEST_IDS } from '@/components/testIds'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -39,7 +40,10 @@ export function ConfirmDialog({
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			{trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
-			<AlertDialogContent size="sm">
+			<AlertDialogContent
+				size="sm"
+				data-testid={SHARED_TEST_IDS.confirmDialog.root}
+			>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{title}</AlertDialogTitle>
 					<AlertDialogDescription
@@ -49,8 +53,14 @@ export function ConfirmDialog({
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-					<AlertDialogAction variant={variant} onClick={onConfirm}>
+					<AlertDialogCancel data-testid={SHARED_TEST_IDS.confirmDialog.cancel}>
+						{cancelLabel}
+					</AlertDialogCancel>
+					<AlertDialogAction
+						variant={variant}
+						onClick={onConfirm}
+						data-testid={SHARED_TEST_IDS.confirmDialog.confirm}
+					>
 						{confirmLabel}
 					</AlertDialogAction>
 				</AlertDialogFooter>

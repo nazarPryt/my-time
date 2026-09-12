@@ -13,6 +13,7 @@ import {
 } from 'recharts'
 import type { ChartEntry } from '../store'
 import { useWorkoutStore } from '../store'
+import { WORKOUT_TEST_IDS } from '../testIds'
 
 export function WorkoutProgressChart() {
 	const {
@@ -40,7 +41,7 @@ export function WorkoutProgressChart() {
 
 	return (
 		<div
-			data-testid="progress-chart"
+			data-testid={WORKOUT_TEST_IDS.progressChart}
 			className="rounded-xl border border-border bg-card p-5"
 		>
 			{/* Header */}
@@ -50,7 +51,7 @@ export function WorkoutProgressChart() {
 						Push-ups
 					</p>
 					<p
-						data-testid="chart-month-label"
+						data-testid={WORKOUT_TEST_IDS.chartMonthLabel}
 						className="text-sm font-semibold text-foreground mt-0.5"
 					>
 						{monthLabel}
@@ -58,7 +59,7 @@ export function WorkoutProgressChart() {
 				</div>
 				<div className="flex items-center gap-1">
 					<button
-						data-testid="prev-month-btn"
+						data-testid={WORKOUT_TEST_IDS.prevMonthBtn}
 						type="button"
 						onClick={prevMonth}
 						className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
@@ -66,7 +67,7 @@ export function WorkoutProgressChart() {
 						<ChevronLeft size={16} />
 					</button>
 					<button
-						data-testid="next-month-btn"
+						data-testid={WORKOUT_TEST_IDS.nextMonthBtn}
 						type="button"
 						onClick={nextMonth}
 						disabled={isCurrentMonth}
@@ -81,7 +82,7 @@ export function WorkoutProgressChart() {
 			<div className="h-40">
 				{loading ? (
 					<div
-						data-testid="chart-loading"
+						data-testid={WORKOUT_TEST_IDS.chartLoading}
 						className="h-full flex items-center justify-center"
 					>
 						<span className="text-xs text-muted-foreground">Loading…</span>

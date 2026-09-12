@@ -23,6 +23,7 @@ import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
 import { cn } from '@/shared/lib/cn'
 import { tokenStorage } from '@/shared/lib/token-storage'
+import { DASHBOARD_TEST_IDS } from './dashboard/testIds'
 
 export const Route = createFileRoute('/dashboard')({
 	beforeLoad: async () => {
@@ -49,42 +50,42 @@ const NAV_ITEMS: NavItemType[] = [
 		label: 'Home',
 		icon: Home,
 		exact: true,
-		testId: 'nav-home',
+		testId: DASHBOARD_TEST_IDS.navLink('home'),
 	},
 	{
 		to: '/dashboard/workout',
 		label: 'Workout',
 		icon: Dumbbell,
 		exact: false,
-		testId: 'nav-workout',
+		testId: DASHBOARD_TEST_IDS.navLink('workout'),
 	},
 	{
 		to: '/dashboard/time-tracker',
 		label: 'Time tracker',
 		icon: Timer,
 		exact: false,
-		testId: 'nav-time-tracker',
+		testId: DASHBOARD_TEST_IDS.navLink('time-tracker'),
 	},
 	{
 		to: '/dashboard/site-blocking',
 		label: 'Site Blocking',
 		icon: ShieldOff,
 		exact: false,
-		testId: 'nav-site-blocking',
+		testId: DASHBOARD_TEST_IDS.navLink('site-blocking'),
 	},
 	{
 		to: '/dashboard/permesso-status',
 		label: 'Permesso Status',
 		icon: FileCheck2,
 		exact: false,
-		testId: 'nav-permesso-status',
+		testId: DASHBOARD_TEST_IDS.navLink('permesso-status'),
 	},
 	{
 		to: '/dashboard/settings',
 		label: 'Settings',
 		icon: Settings,
 		exact: false,
-		testId: 'nav-settings',
+		testId: DASHBOARD_TEST_IDS.navLink('settings'),
 	},
 ] as const
 

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useWorkoutStore } from '@/feature/workout/store'
+import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
 import {
 	HeroCounter,
 	QuickAddButtons,
@@ -40,14 +41,14 @@ function WorkoutPage() {
 	}
 
 	return (
-		<div data-testid="workout-page" className="h-full flex flex-col">
+		<div data-testid={WORKOUT_TEST_IDS.page} className="h-full flex flex-col">
 			<WorkoutHeader />
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-sm mx-auto space-y-4">
 					{loading || !data ? (
 						<div
-							data-testid="workout-loading"
+							data-testid={WORKOUT_TEST_IDS.loading}
 							className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-48"
 						>
 							<span className="text-xs text-muted-foreground">Loading…</span>
