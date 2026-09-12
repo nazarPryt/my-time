@@ -10,12 +10,26 @@ let bot: Bot | undefined
 let botUsername: string | undefined
 let webhookHandler: ((request: Request) => Promise<Response>) | undefined
 
-// TODO: send a distinct congratulations message when the check result indicates
-// the permesso is actually ready (vs. still being processed) — needs a way to
-// tell those two states apart from `result.status`'s free-text content.
+// One of the six "quick reaction" message effects Telegram's Bot API supports
+// via `message_effect_id` on sendMessage (private chats only) — node-telegram-bot-api
+// doesn't expose these as an enum, so this is a fixed literal per Telegram's docs.
+const TELEGRAM_EFFECT_CONFETTI = '5046509860389126442'
+
+// TODO: checker.ts only scrapes the `<p>` text out of `.m-ok`, not the icon
+// class next to it that actually distinguishes a ready permesso from one
+// still being processed (see the comment in checker.ts). Once that icon
+// class is known, thread a `ready: boolean` through `PermessoCheckResult`
+// and replace this stub so it reflects the real result instead of always
+// being `false`.
+function isPermessoReady(result: PermessoCheckResult): boolean {
+	return result.success && false
+}
 
 function formatCheckMessage(result: PermessoCheckResult): string {
 	if (result.success) {
+		if (isPermessoReady(result)) {
+			return `🎉 *Your permesso is ready!*\n\n📄 Status: ${result.status || 'No status available'}`
+		}
 		return `✅ *Permesso check complete*\n\n📄 Status: ${result.status || 'No status available'}`
 	}
 	return `❌ *Permesso check failed*\n\n⚠️ Error: ${result.error}`
@@ -151,6 +165,9 @@ export async function sendTelegramCheckResult(
 			chat_id: Number(chatId),
 			text: formatCheckMessage(result),
 			parse_mode: 'Markdown',
+			message_effect_id: isPermessoReady(result)
+				? TELEGRAM_EFFECT_CONFETTI
+				: undefined,
 		})
 	} catch (error) {
 		// 403 means the user blocked the bot (or deleted the chat) — this is
