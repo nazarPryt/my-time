@@ -21,9 +21,9 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
+import { DASHBOARD_TEST_IDS } from '@/feature/dashboard/testIds'
 import { cn } from '@/shared/lib/cn'
 import { tokenStorage } from '@/shared/lib/token-storage'
-import { DASHBOARD_TEST_IDS } from './dashboard/testIds'
 
 export const Route = createFileRoute('/dashboard')({
 	beforeLoad: async () => {

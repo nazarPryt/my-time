@@ -128,13 +128,16 @@ registered wins as long as it calls `route.fulfill()`/`route.continue()`
 (not `route.fallback()`).
 
 **`WorkoutPage.ts`** — extends the locators class, adds only navigation and
-interaction helpers. No mock data, no `page.route` calls:
+interaction helpers. No mock data, no `page.route` calls. The route path
+lives here too, typed as `LinkProps['to']` (TanStack's generated route
+union) rather than a bare string, so a typo'd or renamed path fails `tsc`
+instead of surfacing as a runtime 404:
 
 ```typescript
-import type { Page } from '@playwright/test'
+import type { LinkProps } from '@tanstack/react-router'
 import { WorkoutLocators } from './workout.locators'
 
-export const WORKOUT_PATH = '/dashboard/workout'
+export const WORKOUT_PATH: LinkProps['to'] = '/dashboard/workout'
 
 export class WorkoutPage extends WorkoutLocators {
   async goto() {
@@ -143,6 +146,35 @@ export class WorkoutPage extends WorkoutLocators {
   }
 }
 ```
+
+Don't centralize route paths into a shared constants file — each Page
+Object declares the one path it owns, and any other spec that needs it
+imports it from there (e.g. `import { LOGIN_PATH } from '../login/LoginPage'`
+in a spec that asserts a redirect to login). A dedicated file was tried and
+reverted: TanStack Router's file-based codegen breaks if route files import
+each other (see the auto-code-splitting note below), and inline literals in
+app source (`redirect({ to: '/auth/login' })`, `<Link to="/auth/login">`)
+already get this same compile-time check for free via contextual typing —
+only e2e's `page.goto()`/`toHaveURL()` calls need an explicit
+`LinkProps['to']` annotation, since Playwright's own types don't know about
+your route tree.
+
+One exception: an index route's actual rendered URL (e.g. `/dashboard/`,
+with trailing slash) isn't a valid `LinkProps['to']` — TanStack normalizes
+navigating an index route to the parent path (`/dashboard`, no slash), so a
+path used only for `page.goto()`/URL assertions on an index route stays a
+plain `string` with a comment explaining why (see `HomePage.ts`'s
+`DASHBOARD_PATH`).
+
+**Never import between files in `src/routes/`.** TanStack Router's Vite
+plugin (`autoCodeSplitting: true`) statically analyzes each route file in
+isolation; one route file importing a constant from another breaks that
+analysis in a way that doesn't show up in `tsc` or lint — it surfaces as a
+runtime crash in the dev server (e.g. `import.meta.env` reading as
+`undefined` deep in an unrelated module) the next time any route loads. If
+non-route code (a hook, another route's `redirect`/`Link` target) needs a
+value from a route file, either inline the literal (it's still type-checked
+contextually) or lift the value to a non-route file like `src/shared/`.
 
 **`workout.fixtures.ts`** — a `test.extend` that builds the page object and
 applies its default mocks, so specs never repeat setup boilerplate. Chains
@@ -317,10 +349,12 @@ await browser.stopTracing()
 
 ```typescript
 // In playwright.config.ts
-use: {
-  video: 'retain-on-failure',
-  videosPath: 'artifacts/videos/'
-}
+export default defineConfig({
+  use: {
+    video: 'retain-on-failure',
+    videosPath: 'artifacts/videos/',
+  },
+})
 ```
 
 ## CI/CD Integration

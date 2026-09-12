@@ -1,5 +1,6 @@
 import { AUTH_ERRORS } from 'contracts'
 import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
+import { LOGIN_PATH } from '../../auth/login/LoginPage'
 import { API_ME } from '../../support/auth.mocks'
 import { WORKOUT_PATH } from './WorkoutPage'
 import { expect, test } from './workout.fixtures'
@@ -11,8 +12,6 @@ import {
 	MOCK_TODAY_EMPTY,
 	mockWorkoutToday,
 } from './workout.mocks'
-
-const LOGIN_PATH = '/auth/login'
 
 test.describe('Workout page', () => {
 	// ─── Page Load ──────────────────────────────────────────────────────────────
@@ -145,7 +144,7 @@ test.describe('Workout page', () => {
 			// Delay the API response to observe the disabled state
 			await page.route(API_WORKOUT_SETS, async (route) => {
 				await new Promise((r) => setTimeout(r, 300))
-				route.fulfill({
+				await route.fulfill({
 					status: 200,
 					contentType: 'application/json',
 					body: JSON.stringify({

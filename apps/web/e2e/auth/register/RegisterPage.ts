@@ -1,6 +1,7 @@
+import type { LinkProps } from '@tanstack/react-router'
 import { RegisterLocators } from './register.locators'
 
-export const REGISTER_PATH = '/auth/register'
+export const REGISTER_PATH: LinkProps['to'] = '/auth/register'
 
 export class RegisterPage extends RegisterLocators {
 	async goto() {

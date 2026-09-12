@@ -1,4 +1,5 @@
 import { AUTH_ERRORS } from 'contracts'
+import { REGISTER_PATH } from '../register/RegisterPage'
 import { expect, test } from './login.fixtures'
 import { mockLoginResponse } from './login.mocks'
 
@@ -47,6 +48,6 @@ test.describe('Login page', () => {
 
 	test('has a link to register page', async ({ page, loginPage }) => {
 		await loginPage.loginRegisterLink.click()
-		await expect(page).toHaveURL('/auth/register')
+		await expect(page).toHaveURL(REGISTER_PATH)
 	})
 })

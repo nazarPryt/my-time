@@ -1,3 +1,4 @@
+import { LOGIN_PATH } from '../login/LoginPage'
 import { expect, test } from './logout.fixtures'
 
 test.describe('Sign out', () => {
@@ -32,6 +33,6 @@ test.describe('Sign out', () => {
 		await logoutPage.signOutButton.click()
 		await logoutPage.confirmDialogConfirmBtn.click()
 
-		await expect(page).toHaveURL('/auth/login')
+		await expect(page).toHaveURL(LOGIN_PATH)
 	})
 })

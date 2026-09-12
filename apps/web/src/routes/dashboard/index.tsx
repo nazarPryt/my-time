@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import { DASHBOARD_TEST_IDS } from '@/feature/dashboard/testIds'
 import { LiveClock, StatCard } from '@/feature/dashboard/ui'
 import { TimeProgressChart } from '@/feature/time-tracker/ui'
 import { WorkoutProgressChart } from '@/feature/workout/ui'
-import { DASHBOARD_TEST_IDS } from './testIds'
 
 export const Route = createFileRoute('/dashboard/')({
 	component: DashboardHome,

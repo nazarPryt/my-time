@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
+import { DASHBOARD_TEST_IDS } from '@/feature/dashboard/testIds'
 import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
-import { DASHBOARD_TEST_IDS } from '@/routes/dashboard/testIds'
 import { BaseLocators } from '../BaseLocators'
 
 export class HomeLocators extends BaseLocators {

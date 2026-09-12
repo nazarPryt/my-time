@@ -1,6 +1,7 @@
+import type { LinkProps } from '@tanstack/react-router'
 import { LoginLocators } from './login.locators'
 
-export const LOGIN_PATH = '/auth/login'
+export const LOGIN_PATH: LinkProps['to'] = '/auth/login'
 
 export class LoginPage extends LoginLocators {
 	async goto() {
