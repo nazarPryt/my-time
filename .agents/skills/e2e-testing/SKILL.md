@@ -10,89 +10,177 @@ Comprehensive Playwright patterns for building stable, fast, and maintainable E2
 
 ## Test File Organization
 
+This project's actual layout (`apps/web/e2e/`) — one folder per dashboard
+tab / auth flow, not one flat directory of specs:
+
 ```
-tests/
-├── e2e/
-│   ├── auth/
-│   │   ├── login.spec.ts
-│   │   ├── logout.spec.ts
-│   │   └── register.spec.ts
-│   ├── features/
-│   │   ├── browse.spec.ts
-│   │   ├── search.spec.ts
-│   │   └── create.spec.ts
-│   └── api/
-│       └── endpoints.spec.ts
-├── fixtures/
-│   ├── auth.ts
-│   └── data.ts
-└── playwright.config.ts
+apps/web/e2e/
+├── support/                        # cross-feature helpers, nothing page-specific
+│   ├── auth.mocks.ts                # API_ME, MOCK_USER, mockAuth()
+│   └── dashboard.fixtures.ts        # base fixture: overrides `page` to auto-mock auth
+├── dashboard/
+│   ├── BaseLocators.ts              # shell locators (sidebar nav, sign-out) shared by every tab
+│   ├── workout/                     # one folder per dashboard tab
+│   │   ├── workout.locators.ts      # element lookups only — extends BaseLocators
+│   │   ├── workout.mocks.ts         # API path constants + fixture data + page.route() stubs
+│   │   ├── WorkoutPage.ts           # extends WorkoutLocators — navigation/interaction only
+│   │   ├── workout.fixtures.ts      # test.extend: wires WorkoutPage + its default mocks
+│   │   └── workout.spec.ts
+│   └── home/                        # same split, plus a describe block per widget
+│       └── ...
+├── auth/
+│   ├── login/                       # same 4-file split, but no BaseLocators (pre-auth page)
+│   │   ├── login.locators.ts
+│   │   ├── login.mocks.ts
+│   │   ├── LoginPage.ts
+│   │   ├── login.fixtures.ts
+│   │   └── login.spec.ts
+│   └── register/                    # separate trio from login — different form, own file set
+│       └── ...
+├── shared/                          # cross-cutting, not tied to one tab (404, error boundary, auth guard)
+│   ├── auth-guard.spec.ts
+│   └── error-boundary.spec.ts
+└── tsconfig.json
 ```
 
-## Page Object Model (POM)
+Rules for adding a new page/tab:
+- New dashboard tab → new folder under `dashboard/`, same 5-file set (`*.locators.ts`, `*.mocks.ts`, `*Page.ts`, `*.fixtures.ts`, `*.spec.ts`).
+- New auth-adjacent flow (not behind the dashboard shell) → new folder under `auth/`, same split minus `BaseLocators`.
+- A test that isn't about one page's content (routing guards, global error boundary, 404) → `shared/`, plain `@playwright/test` imports, no page object.
+- Something more than one feature's spec needs (e.g. a second widget embedded in another tab's page, like the workout chart on dashboard home) → import the *other* feature's `mocks.ts` rather than duplicating its fixture data. The consuming spec still lives under the page it actually renders on.
+
+## Page Object Model (POM): four files, one responsibility each
+
+Don't put locators, mock data, and page actions in one class. Split into
+**locators** (what elements exist) → **mocks** (what the network returns) →
+**page object** (how you act on the page) → **fixture** (wires the other
+three together for a spec). Worked example from `dashboard/workout/`:
+
+**`workout.locators.ts`** — pure `getByTestId` lookups, no navigation, no
+`page.route`. A class (not a factory function) so the page object below can
+`extend` it and keep flat property access (`workoutPage.header`, not
+`workoutPage.locators.header`):
 
 ```typescript
-import { Page, Locator } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
+import { BaseLocators } from '../BaseLocators'
 
-export class ItemsPage {
-  readonly page: Page
-  readonly searchInput: Locator
-  readonly itemCards: Locator
-  readonly createButton: Locator
+export class WorkoutLocators extends BaseLocators {
+  readonly heroCounter: Locator
+  readonly totalReps: Locator
+  readonly quickAddButtons: Locator
+  // ...every other getByTestId lookup
 
   constructor(page: Page) {
-    this.page = page
-    this.searchInput = page.locator('[data-testid="search-input"]')
-    this.itemCards = page.locator('[data-testid="item-card"]')
-    this.createButton = page.locator('[data-testid="create-btn"]')
+    super(page)
+    this.heroCounter = page.getByTestId('hero-counter')
+    this.totalReps = this.heroCounter.getByTestId('total-reps')
+    this.quickAddButtons = page.getByTestId('quick-add-buttons')
   }
 
-  async goto() {
-    await this.page.goto('/items')
-    await this.page.waitForLoadState('networkidle')
-  }
-
-  async search(query: string) {
-    await this.searchInput.fill(query)
-    await this.page.waitForResponse(resp => resp.url().includes('/api/search'))
-    await this.page.waitForLoadState('networkidle')
-  }
-
-  async getItemCount() {
-    return await this.itemCards.count()
+  quickAddBtn(reps: number) {
+    return this.quickAddButtons.getByTestId(`quick-add-${reps}`)
   }
 }
 ```
 
-## Test Structure
+**`workout.mocks.ts`** — API path constants, fixture data, and route-stubbing
+functions. Plain functions taking `page` as an argument; they know nothing
+about locators:
 
 ```typescript
-import { test, expect } from '@playwright/test'
-import { ItemsPage } from '../../pages/ItemsPage'
+import type { Page } from '@playwright/test'
+import type { TodayResponse } from 'contracts'
+import { API_PREFIX, WORKOUT_ROUTES } from 'contracts'
 
-test.describe('Item Search', () => {
-  let itemsPage: ItemsPage
+export const API_WORKOUT_TODAY = `**${API_PREFIX}${WORKOUT_ROUTES.prefix}${WORKOUT_ROUTES.today}*`
 
-  test.beforeEach(async ({ page }) => {
-    itemsPage = new ItemsPage(page)
-    await itemsPage.goto()
+export const MOCK_TODAY_WITH_SETS: TodayResponse = {
+  sets: [/* ... */],
+  goal: { exerciseType: 'pushups', targetReps: 100 },
+  total: 25,
+}
+
+export async function mockWorkoutToday(page: Page, data = MOCK_TODAY_WITH_SETS) {
+  await page.route(API_WORKOUT_TODAY, (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data) }),
+  )
+}
+```
+
+A test overrides the default by calling the mock function again with new
+data — no `page.unroute()` needed. Playwright resolves overlapping
+`page.route()` handlers in reverse registration order, so the last one
+registered wins as long as it calls `route.fulfill()`/`route.continue()`
+(not `route.fallback()`).
+
+**`WorkoutPage.ts`** — extends the locators class, adds only navigation and
+interaction helpers. No mock data, no `page.route` calls:
+
+```typescript
+import type { Page } from '@playwright/test'
+import { WorkoutLocators } from './workout.locators'
+
+export const WORKOUT_PATH = '/dashboard/workout'
+
+export class WorkoutPage extends WorkoutLocators {
+  async goto() {
+    await this.page.goto(WORKOUT_PATH)
+    await this.heroCounter.waitFor({ state: 'visible' })
+  }
+}
+```
+
+**`workout.fixtures.ts`** — a `test.extend` that builds the page object and
+applies its default mocks, so specs never repeat setup boilerplate. Chains
+off a project-level base fixture (`support/dashboard.fixtures.ts`) that
+already mocks auth for every dashboard tab:
+
+```typescript
+import { test as base } from '../../support/dashboard.fixtures'
+import { WorkoutPage } from './WorkoutPage'
+import { mockWorkoutProgress, mockWorkoutToday } from './workout.mocks'
+
+export const test = base.extend<{ workoutPage: WorkoutPage }>({
+  workoutPage: async ({ page }, use) => {
+    await mockWorkoutToday(page)
+    await mockWorkoutProgress(page)
+    await use(new WorkoutPage(page))
+  },
+})
+
+export { expect } from '@playwright/test'
+```
+
+## Test Structure
+
+Import `test`/`expect` from the feature's own `*.fixtures.ts`, not from
+`@playwright/test` directly — that's what wires up the page object and
+default mocks:
+
+```typescript
+import { expect, test } from './workout.fixtures'
+import { MOCK_TODAY_EMPTY, mockWorkoutToday } from './workout.mocks'
+
+test.describe('Workout page', () => {
+  test.describe('Initial load', () => {
+    test.beforeEach(async ({ workoutPage }) => {
+      await workoutPage.goto()
+    })
+
+    test('shows total reps from API response', async ({ workoutPage }) => {
+      await expect(workoutPage.totalReps).toHaveText('25')
+    })
   })
 
-  test('should search by keyword', async ({ page }) => {
-    await itemsPage.search('test')
+  test.describe('Empty state (no sets today)', () => {
+    test('shows empty placeholder when no sets exist', async ({ page, workoutPage }) => {
+      // Override the fixture's default mock before navigating
+      await mockWorkoutToday(page, MOCK_TODAY_EMPTY)
+      await workoutPage.goto()
 
-    const count = await itemsPage.getItemCount()
-    expect(count).toBeGreaterThan(0)
-
-    await expect(itemsPage.itemCards.first()).toContainText(/test/i)
-    await page.screenshot({ path: 'artifacts/search-results.png' })
-  })
-
-  test('should handle no results', async ({ page }) => {
-    await itemsPage.search('xyznonexistent123')
-
-    await expect(page.locator('[data-testid="no-results"]')).toBeVisible()
-    expect(await itemsPage.getItemCount()).toBe(0)
+      await expect(workoutPage.setsLogEmpty).toBeVisible()
+    })
   })
 })
 ```
