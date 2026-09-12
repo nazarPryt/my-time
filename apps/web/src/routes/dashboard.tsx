@@ -41,38 +41,50 @@ type NavItemType = {
 	label: string
 	icon: LucideIcon
 	exact: boolean
+	testId: string
 }
 const NAV_ITEMS: NavItemType[] = [
-	{ to: '/dashboard', label: 'Home', icon: Home, exact: true },
+	{
+		to: '/dashboard',
+		label: 'Home',
+		icon: Home,
+		exact: true,
+		testId: 'nav-home',
+	},
 	{
 		to: '/dashboard/workout',
 		label: 'Workout',
 		icon: Dumbbell,
 		exact: false,
+		testId: 'nav-workout',
 	},
 	{
 		to: '/dashboard/time-tracker',
 		label: 'Time tracker',
 		icon: Timer,
 		exact: false,
+		testId: 'nav-time-tracker',
 	},
 	{
 		to: '/dashboard/site-blocking',
 		label: 'Site Blocking',
 		icon: ShieldOff,
 		exact: false,
+		testId: 'nav-site-blocking',
 	},
 	{
 		to: '/dashboard/permesso-status',
 		label: 'Permesso Status',
 		icon: FileCheck2,
 		exact: false,
+		testId: 'nav-permesso-status',
 	},
 	{
 		to: '/dashboard/settings',
 		label: 'Settings',
 		icon: Settings,
 		exact: false,
+		testId: 'nav-settings',
 	},
 ] as const
 
@@ -125,10 +137,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 			{/* Navigation */}
 			<nav className="flex-1 p-2 pt-3 space-y-0.5 overflow-y-auto">
-				{NAV_ITEMS.map(({ to, label, icon: Icon, exact }) => (
+				{NAV_ITEMS.map(({ to, label, icon: Icon, exact, testId }) => (
 					<Link
 						key={to}
 						to={to}
+						data-testid={testId}
 						activeOptions={{ exact }}
 						onClick={onNavigate}
 						className={cn(

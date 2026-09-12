@@ -12,6 +12,7 @@ export function SignOutButton() {
 			trigger={
 				<Button
 					type="button"
+					data-testid="sign-out-trigger"
 					className={cn(
 						'w-full flex items-center gap-2.5 px-3 py-2 rounded-md',
 						'text-sm text-sidebar-foreground/55 transition-colors duration-150',
