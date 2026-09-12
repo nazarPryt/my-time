@@ -165,6 +165,10 @@ export const useTimeTrackerStore = create<TimeTrackerState>((set, get) => ({
 			set({ weeklyLoading: false })
 			return
 		}
+		// TODO: `data` can be truthy with no `.days` (e.g. an unauthenticated/error
+		// response body that Eden still resolves as `data`), throwing "data.days is
+		// not iterable" — seen in e2e workout-page tests that don't mock this
+		// endpoint. Validate the shape (or narrow on `error`) before using `.days`.
 		// API returns most-recent-first; reverse for chronological display
 		const sorted = [...data.days].reverse()
 		set({ weeklyData: sorted.map(toChartEntry), weeklyLoading: false })
