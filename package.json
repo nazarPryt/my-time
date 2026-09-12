@@ -8,7 +8,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"dev": "bun --filter api dev & bun --filter web dev & wait",
+		"dev": "./scripts/ensure-docker.sh && bun run docker:db && bun --filter api dev & bun --filter web dev & wait",
 		"web:dev": "bun --filter web dev",
 		"web:build": "bun --filter web build",
 		"api:dev": "bun --filter api dev",
@@ -20,7 +20,7 @@
 		"docker:build": "docker compose --env-file ./apps/api/.env build",
 		"docker:up": "docker compose --env-file ./apps/api/.env up -d",
 		"docker:down": "docker compose --env-file ./apps/api/.env down",
-		"docker:db": "docker compose --env-file ./apps/api/.env up -d db",
+		"docker:db": "docker compose --env-file ./apps/api/.env up -d --wait db",
 		"docker:start": "docker compose --env-file ./apps/api/.env start",
 		"docker:stop": "docker compose --env-file ./apps/api/.env stop",
 		"docker:logs": "docker compose --env-file ./apps/api/.env logs -f",
