@@ -11,6 +11,7 @@ import {
 	sendTelegramCheckResult,
 	sendTelegramUnsubscribedNotice,
 } from './telegram-bot'
+import { waitForTelegramLinkOrHeartbeat } from './telegram-link-events'
 
 export type RunCheckResult =
 	| { ok: true; result: CheckResultResponse }
@@ -19,6 +20,15 @@ export type RunCheckResult =
 export type TelegramLinkResult =
 	| { ok: true; link: TelegramLinkResponse }
 	| { ok: false; reason: 'no_practice_number' | 'bot_not_configured' }
+
+export type TelegramLinkEvent =
+	| { event: 'connected' }
+	| { event: 'open' }
+	| { event: 'ping' }
+	| { event: 'timeout' }
+
+const TELEGRAM_LINK_TIMEOUT_MS = 60_000
+const TELEGRAM_LINK_HEARTBEAT_MS = 15_000
 
 function toStatusResponse(
 	row: Awaited<ReturnType<typeof permessoRepository.getByUserId>> | null,
@@ -125,5 +135,44 @@ export const permessoService = {
 			triggeredBy: row.triggeredBy,
 			checkedAt: row.checkedAt.toISOString(),
 		}))
+	},
+
+	/**
+	 * Yields 'connected' immediately if a Telegram chat is already linked;
+	 * otherwise polls (via Postgres LISTEN/NOTIFY, see telegram-link-events.ts)
+	 * until it links or TELEGRAM_LINK_TIMEOUT_MS elapses, yielding 'ping' on
+	 * every heartbeat in between so the route can keep the SSE connection alive.
+	 */
+	streamTelegramLinkEvents: async function* (
+		userId: string,
+		{
+			timeoutMs = TELEGRAM_LINK_TIMEOUT_MS,
+			heartbeatMs = TELEGRAM_LINK_HEARTBEAT_MS,
+		}: { timeoutMs?: number; heartbeatMs?: number } = {},
+	): AsyncGenerator<TelegramLinkEvent> {
+		const row = await permessoRepository.getByUserId(userId)
+		if (row?.telegramChatId) {
+			yield { event: 'connected' }
+			return
+		}
+
+		// Flush headers immediately — otherwise nothing (not even the response
+		// headers) reaches the client until the first heartbeat.
+		yield { event: 'open' }
+
+		const deadline = Date.now() + timeoutMs
+		while (Date.now() < deadline) {
+			const outcome = await waitForTelegramLinkOrHeartbeat(
+				userId,
+				Math.min(heartbeatMs, deadline - Date.now()),
+			)
+			if (outcome === 'linked') {
+				yield { event: 'connected' }
+				return
+			}
+			yield { event: 'ping' }
+		}
+
+		yield { event: 'timeout' }
 	},
 }
