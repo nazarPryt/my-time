@@ -20,7 +20,7 @@ export function getHourInTimeZone(date: Date, timeZone: string): number {
 	}
 }
 
-async function runScheduledChecks() {
+export async function runScheduledChecks() {
 	const now = new Date()
 	const subscriptions = await permessoRepository.listAll()
 	const due = subscriptions.filter((s) =>

@@ -5,6 +5,8 @@
 - [Eden Treaty test client pattern](project_eden_treaty.md) — use treaty(app).api.v1 for all route assertions; bracket notation for path params
 - [Auth token pattern](project_auth_token.md) — register via treaty client to get real JWT; no manual jwt.sign needed in tests
 - [DB seeding pattern](project_db_seeding.md) — import db + schema directly for direct INSERT/UPDATE fixtures in tests
+- [mock.module pattern](project_mock_module_pattern.md) — mocking external-dep modules (checker/telegram-bot) + capturing real refs to test a real branch
+- [Eden Treaty date auto-parsing gotcha](project_eden_date_parsing.md) — treaty() turns ISO strings into Date; use `{ parseDate: false }` for z.string() date fields
 
 ## Feature Coverage
 - [auth feature tests](feature_auth_tests.md) — location and coverage of auth.test.ts
