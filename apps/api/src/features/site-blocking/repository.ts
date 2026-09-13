@@ -17,8 +17,10 @@ export const blockedSitesRepository = {
 	},
 
 	deleteById: async (userId: string, id: string) => {
-		await db
+		const [site] = await db
 			.delete(blockedSites)
 			.where(and(eq(blockedSites.id, id), eq(blockedSites.userId, userId)))
+			.returning()
+		return site ?? null
 	},
 }

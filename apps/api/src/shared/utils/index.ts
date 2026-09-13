@@ -1,1 +1,1 @@
-export { normalizeDomain } from './normalizeDomain'
+export { normalizeDomain } from './normalizeDomain/normalizeDomain'
