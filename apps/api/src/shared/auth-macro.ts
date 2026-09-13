@@ -1,5 +1,6 @@
 import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
+import { AUTH_ERRORS } from 'contracts'
 import { Elysia } from 'elysia'
 
 const jwtPlugin = jwt({
@@ -14,17 +15,11 @@ export const authMacro = new Elysia({ name: 'auth-macro' })
 			async resolve({ status, headers, jwt }) {
 				const token = headers.authorization
 				if (!token?.startsWith('Bearer ')) {
-					return status('Unauthorized', {
-						code: 'UNAUTHORIZED',
-						message: 'Missing token',
-					})
+					return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
 				}
 				const payload = await jwt.verify(token.slice(7))
 				if (!payload || typeof payload.sub !== 'string') {
-					return status('Unauthorized', {
-						code: 'UNAUTHORIZED',
-						message: 'Invalid token',
-					})
+					return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
 				}
 				return { userId: payload.sub }
 			},
