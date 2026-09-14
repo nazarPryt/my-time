@@ -5,7 +5,12 @@ import { addMinutes, subHours, subMinutes } from 'date-fns'
 import { eq } from 'drizzle-orm'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { timeSessionsRepository } from '../repository'
-import { OTHER_USER, registerAndGetToken, VALID_USER } from './fixtures'
+import {
+	OTHER_USER,
+	registerAndGetToken,
+	seedSession,
+	VALID_USER,
+} from './fixtures'
 
 beforeAll(async () => {
 	await runMigrations()
@@ -15,29 +20,6 @@ beforeAll(async () => {
 afterEach(async () => {
 	await cleanDatabase()
 })
-
-// Seeds a time_sessions row directly via drizzle so tests can control
-// startedAt/endedAt/abandonedAt independently of the repository's own
-// create/end/abandon (which always stamp "now").
-async function seedSession(params: {
-	userId: string
-	startedAt?: Date
-	endedAt?: Date | null
-	abandonedAt?: Date | null
-}) {
-	const [session] = await db
-		.insert(timeSessions)
-		.values({
-			userId: params.userId,
-			type: 'work',
-			startedAt: params.startedAt ?? new Date(),
-			endedAt: params.endedAt ?? null,
-			abandonedAt: params.abandonedAt ?? null,
-		})
-		.returning()
-	if (!session) throw new Error('seedSession failed')
-	return session
-}
 
 describe('timeSessionsRepository', () => {
 	describe('getActive', () => {
@@ -60,17 +42,6 @@ describe('timeSessionsRepository', () => {
 			expect(await timeSessionsRepository.getActive(userId)).toBeNull()
 		})
 
-		it('returns the most recently started session when more than one is open', async () => {
-			const { userId } = await registerAndGetToken(VALID_USER)
-			await seedSession({ userId, startedAt: subMinutes(new Date(), 30) })
-			const newer = await seedSession({
-				userId,
-				startedAt: subMinutes(new Date(), 5),
-			})
-			const active = await timeSessionsRepository.getActive(userId)
-			expect(active?.id).toBe(newer.id)
-		})
-
 		it('is scoped to the given userId', async () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
 			const { userId: otherUserId } = await registerAndGetToken(OTHER_USER)
@@ -88,7 +59,13 @@ describe('timeSessionsRepository', () => {
 			const end = addMinutes(now, 1)
 
 			const mine = await seedSession({ userId, startedAt: now })
-			await seedSession({ userId, startedAt: subHours(now, 24) }) // outside range
+			// outside range — ended so it doesn't conflict with `mine` under the
+			// one-open-session-per-user constraint
+			await seedSession({
+				userId,
+				startedAt: subHours(now, 24),
+				endedAt: subHours(now, 23),
+			})
 			await seedSession({ userId: otherUserId, startedAt: now }) // other user
 
 			const sessions = await timeSessionsRepository.getTodaySessions(
@@ -104,9 +81,12 @@ describe('timeSessionsRepository', () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
 			const now = new Date()
 			const later = await seedSession({ userId, startedAt: now })
+			// ended so it doesn't conflict with `later` under the
+			// one-open-session-per-user constraint
 			const earlier = await seedSession({
 				userId,
 				startedAt: subMinutes(now, 30),
+				endedAt: subMinutes(now, 20),
 			})
 
 			const sessions = await timeSessionsRepository.getTodaySessions(
@@ -157,7 +137,13 @@ describe('timeSessionsRepository', () => {
 			const now = new Date()
 
 			const inRange = await seedSession({ userId, startedAt: now })
-			await seedSession({ userId, startedAt: subHours(now, 48) }) // out of range
+			// out of range — ended so it doesn't conflict with `inRange` under the
+			// one-open-session-per-user constraint
+			await seedSession({
+				userId,
+				startedAt: subHours(now, 48),
+				endedAt: subHours(now, 47),
+			})
 			await seedSession({ userId: otherUserId, startedAt: now }) // other user
 
 			const sessions = await timeSessionsRepository.getSessionsInRange(
@@ -179,10 +165,29 @@ describe('timeSessionsRepository', () => {
 				'work',
 				startedAt,
 			)
-			expect(session.userId).toBe(userId)
-			expect(session.type).toBe('work')
-			expect(session.endedAt).toBeNull()
-			expect(session.abandonedAt).toBeNull()
+			expect(session?.userId).toBe(userId)
+			expect(session?.type).toBe('work')
+			expect(session?.endedAt).toBeNull()
+			expect(session?.abandonedAt).toBeNull()
+		})
+
+		it('returns null and inserts nothing when the user already has an open session', async () => {
+			const { userId } = await registerAndGetToken(VALID_USER)
+			const existing = await seedSession({ userId })
+
+			const result = await timeSessionsRepository.create(
+				userId,
+				'work',
+				new Date(),
+			)
+			expect(result).toBeNull()
+
+			const sessions = await db
+				.select()
+				.from(timeSessions)
+				.where(eq(timeSessions.userId, userId))
+			expect(sessions).toHaveLength(1)
+			expect(sessions[0]?.id).toBe(existing.id)
 		})
 	})
 
@@ -306,11 +311,10 @@ describe('timeSessionsRepository', () => {
 	})
 
 	describe('abandonStale', () => {
-		it('abandons only open sessions started before the given cutoff', async () => {
+		it('abandons an open session started before the given cutoff', async () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
 			const now = new Date()
 			const stale = await seedSession({ userId, startedAt: subHours(now, 3) })
-			const fresh = await seedSession({ userId, startedAt: subHours(now, 1) })
 
 			await timeSessionsRepository.abandonStale(userId, subHours(now, 2))
 
@@ -318,11 +322,20 @@ describe('timeSessionsRepository', () => {
 				.select()
 				.from(timeSessions)
 				.where(eq(timeSessions.id, stale.id))
+			expect(staleRow?.abandonedAt).not.toBeNull()
+		})
+
+		it('leaves an open session started after the given cutoff untouched', async () => {
+			const { userId } = await registerAndGetToken(VALID_USER)
+			const now = new Date()
+			const fresh = await seedSession({ userId, startedAt: subHours(now, 1) })
+
+			await timeSessionsRepository.abandonStale(userId, subHours(now, 2))
+
 			const [freshRow] = await db
 				.select()
 				.from(timeSessions)
 				.where(eq(timeSessions.id, fresh.id))
-			expect(staleRow?.abandonedAt).not.toBeNull()
 			expect(freshRow?.abandonedAt).toBeNull()
 		})
 

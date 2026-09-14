@@ -1,3 +1,5 @@
+import { db } from '@db'
+import { timeSessions } from '@db/schema'
 import { treaty } from '@elysiajs/eden'
 import type { RegisterRequest } from 'contracts'
 import { AuthResponseSchema } from 'contracts'
@@ -48,4 +50,27 @@ export async function registerAndGetToken(user: RegisterRequest) {
 
 export function authHeaders(token: string) {
 	return { authorization: `Bearer ${token}` }
+}
+
+// Seeds a time_sessions row directly via drizzle so tests can control
+// startedAt/endedAt/abandonedAt independently of the repository/service's own
+// create/end/abandon (which always stamp "now").
+export async function seedSession(params: {
+	userId: string
+	startedAt?: Date
+	endedAt?: Date | null
+	abandonedAt?: Date | null
+}) {
+	const [session] = await db
+		.insert(timeSessions)
+		.values({
+			userId: params.userId,
+			type: 'work',
+			startedAt: params.startedAt ?? new Date(),
+			endedAt: params.endedAt ?? null,
+			abandonedAt: params.abandonedAt ?? null,
+		})
+		.returning()
+	if (!session) throw new Error('seedSession failed')
+	return session
 }

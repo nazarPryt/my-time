@@ -2,9 +2,15 @@ import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { db } from '@db'
 import { timeSessions } from '@db/schema'
 import { subDays, subHours, subMinutes } from 'date-fns'
+import { eq } from 'drizzle-orm'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { timeTrackerService } from '../service'
-import { OTHER_USER, registerAndGetToken, VALID_USER } from './fixtures'
+import {
+	OTHER_USER,
+	registerAndGetToken,
+	seedSession,
+	VALID_USER,
+} from './fixtures'
 
 beforeAll(async () => {
 	await runMigrations()
@@ -14,28 +20,6 @@ beforeAll(async () => {
 afterEach(async () => {
 	await cleanDatabase()
 })
-
-// Seeds a time_sessions row directly via drizzle so tests can control
-// startedAt/endedAt/abandonedAt independently of the service.
-async function seedSession(params: {
-	userId: string
-	startedAt?: Date
-	endedAt?: Date | null
-	abandonedAt?: Date | null
-}) {
-	const [session] = await db
-		.insert(timeSessions)
-		.values({
-			userId: params.userId,
-			type: 'work',
-			startedAt: params.startedAt ?? new Date(),
-			endedAt: params.endedAt ?? null,
-			abandonedAt: params.abandonedAt ?? null,
-		})
-		.returning()
-	if (!session) throw new Error('seedSession failed')
-	return session
-}
 
 describe('timeTrackerService', () => {
 	describe('getActive', () => {
@@ -75,6 +59,22 @@ describe('timeTrackerService', () => {
 			expect(result.id).toBe(existing.id)
 
 			const sessions = await db.select().from(timeSessions)
+			expect(sessions).toHaveLength(1)
+		})
+
+		it('never creates duplicate open sessions when called concurrently', async () => {
+			const { userId } = await registerAndGetToken(VALID_USER)
+
+			const [first, second] = await Promise.all([
+				timeTrackerService.startSession(userId, 'work'),
+				timeTrackerService.startSession(userId, 'work'),
+			])
+			expect(first.id).toBe(second.id)
+
+			const sessions = await db
+				.select()
+				.from(timeSessions)
+				.where(eq(timeSessions.userId, userId))
 			expect(sessions).toHaveLength(1)
 		})
 
