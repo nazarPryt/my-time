@@ -2,9 +2,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { db } from '@db'
 import { timeSessions } from '@db/schema'
 import { treaty } from '@elysiajs/eden'
-import type { RegisterRequest } from 'contracts'
 import {
-	AuthResponseSchema,
 	SessionResponseSchema,
 	TodaySummaryResponseSchema,
 	WeeklySummaryResponseSchema,
@@ -12,41 +10,14 @@ import {
 import { subDays, subHours, subMinutes } from 'date-fns'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
-
-// ---------------------------------------------------------------------------
-// Eden Treaty client
-// ---------------------------------------------------------------------------
+import {
+	authHeaders,
+	OTHER_USER,
+	registerAndGetToken,
+	VALID_USER,
+} from './fixtures'
 
 const api = treaty(app).api.v1
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const VALID_USER: RegisterRequest = {
-	email: 'tracker@example.com',
-	name: 'Tracker User',
-	password: 'password123',
-}
-
-const OTHER_USER: RegisterRequest = {
-	email: 'other@example.com',
-	name: 'Other User',
-	password: 'password123',
-}
-
-async function registerAndGetToken(user: RegisterRequest) {
-	const { data } = await api.auth.register.post(user)
-	const auth = AuthResponseSchema.parse(data)
-	return {
-		token: auth.tokens.accessToken,
-		userId: auth.user.id,
-	}
-}
-
-function authHeaders(token: string) {
-	return { authorization: `Bearer ${token}` }
-}
 
 /** Insert a completed work session directly into the DB for a given user */
 async function seedCompletedSession(
@@ -69,10 +40,6 @@ async function seedActiveSession(userId: string, startedAt: Date) {
 		.returning()
 	return session
 }
-
-// ---------------------------------------------------------------------------
-// Lifecycle
-// ---------------------------------------------------------------------------
 
 beforeAll(async () => {
 	await runMigrations()
@@ -376,6 +343,29 @@ describe('POST /time-tracker/start', () => {
 		expect(session.startedAt.getTime()).toBeLessThanOrEqual(Date.now())
 	})
 
+	it('returns the existing active session instead of creating a duplicate', async () => {
+		const { token } = await registerAndGetToken(VALID_USER)
+		const { data: firstData } = await api['time-tracker'].start.post(
+			{ type: 'work' },
+			{ headers: authHeaders(token) },
+		)
+		const first = SessionResponseSchema.parse(firstData)
+
+		const { data: secondData, status } = await api['time-tracker'].start.post(
+			{ type: 'work' },
+			{ headers: authHeaders(token) },
+		)
+		expect(status).toBe(200)
+		const second = SessionResponseSchema.parse(secondData)
+		expect(second.id).toBe(first.id)
+
+		const { data: todayData } = await api['time-tracker'].today.get({
+			headers: authHeaders(token),
+		})
+		const today = TodaySummaryResponseSchema.parse(todayData)
+		expect(today.sessions).toHaveLength(1)
+	})
+
 	it('abandons a stale session (>2 h old) when starting a new one', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		// Seed an old open session (3 hours ago — past the 2-hour threshold)
@@ -473,6 +463,20 @@ describe('PATCH /time-tracker/:id/end', () => {
 		expect(ended.id).toBe(session.id)
 		expect(ended.endedAt).not.toBeNull()
 		expect(ended.abandonedAt).toBeNull()
+	})
+
+	it('returns null when ending the same session a second time', async () => {
+		const { token, userId } = await registerAndGetToken(VALID_USER)
+		const session = await seedActiveSession(userId, subMinutes(new Date(), 30))
+
+		await api['time-tracker']({ id: session.id }).end.patch(undefined, {
+			headers: authHeaders(token),
+		})
+		const { data, status } = await api['time-tracker']({
+			id: session.id,
+		}).end.patch(undefined, { headers: authHeaders(token) })
+		expect(status).toBe(200)
+		expect(data).toBeFalsy()
 	})
 
 	it('returns null when ending a session that does not belong to the user', async () => {
