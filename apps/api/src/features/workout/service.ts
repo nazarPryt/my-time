@@ -1,6 +1,7 @@
 import type {
 	ExerciseType,
 	GoalResponse,
+	ProgressDay,
 	ProgressResponse,
 	SetResponse,
 	TodayResponse,
@@ -23,6 +24,53 @@ function todayBounds() {
 	return { start: startOfDay(now), end: endOfDay(now) }
 }
 
+function toSetResponse(set: {
+	id: string
+	exerciseType: string
+	reps: number
+	createdAt: Date
+}): SetResponse {
+	return {
+		id: set.id,
+		exerciseType: ExerciseTypeSchema.parse(set.exerciseType),
+		reps: set.reps,
+		createdAt: set.createdAt.toISOString(),
+	}
+}
+
+function toGoalResponse(
+	goal: { exerciseType: string; targetReps: number } | null,
+	fallbackExerciseType: ExerciseType,
+): GoalResponse {
+	return {
+		exerciseType: ExerciseTypeSchema.parse(
+			goal?.exerciseType ?? fallbackExerciseType,
+		),
+		targetReps: goal?.targetReps ?? DEFAULT_GOAL_REPS,
+	}
+}
+
+function sumRepsByDay(sets: Array<{ createdAt: Date; reps: number }>) {
+	const totals = new Map<string, number>()
+	for (const s of sets) {
+		const day = format(s.createdAt, 'yyyy-MM-dd')
+		totals.set(day, (totals.get(day) ?? 0) + s.reps)
+	}
+	return totals
+}
+
+function buildMonthDays(
+	firstDay: Date,
+	year: number,
+	month: number,
+	totals: Map<string, number>,
+): ProgressDay[] {
+	return Array.from({ length: getDaysInMonth(firstDay) }, (_, i) => {
+		const date = format(new Date(year, month - 1, i + 1), 'yyyy-MM-dd')
+		return { date, total: totals.get(date) ?? 0 }
+	})
+}
+
 export const workoutService = {
 	getToday: async (
 		userId: string,
@@ -35,18 +83,8 @@ export const workoutService = {
 		])
 		const total = sets.reduce((sum, s) => sum + s.reps, 0)
 		return {
-			sets: sets.map((s) => ({
-				id: s.id,
-				exerciseType: ExerciseTypeSchema.parse(s.exerciseType),
-				reps: s.reps,
-				createdAt: s.createdAt.toISOString(),
-			})),
-			goal: {
-				exerciseType: ExerciseTypeSchema.parse(
-					goal?.exerciseType ?? exerciseType,
-				),
-				targetReps: goal?.targetReps ?? DEFAULT_GOAL_REPS,
-			},
+			sets: sets.map(toSetResponse),
+			goal: toGoalResponse(goal, exerciseType),
 			total,
 		}
 	},
@@ -57,12 +95,7 @@ export const workoutService = {
 		reps: number,
 	): Promise<SetResponse> => {
 		const set = await workoutSetsRepository.addSet(userId, exerciseType, reps)
-		return {
-			id: set.id,
-			exerciseType: ExerciseTypeSchema.parse(set.exerciseType),
-			reps: set.reps,
-			createdAt: set.createdAt.toISOString(),
-		}
+		return toSetResponse(set)
 	},
 
 	deleteSet: async (userId: string, setId: string): Promise<void> => {
@@ -87,10 +120,7 @@ export const workoutService = {
 			exerciseType,
 			targetReps,
 		)
-		return {
-			exerciseType: ExerciseTypeSchema.parse(goal.exerciseType),
-			targetReps: goal.targetReps,
-		}
+		return toGoalResponse(goal, exerciseType)
 	},
 
 	getProgress: async (
@@ -108,27 +138,12 @@ export const workoutService = {
 			workoutGoalsRepository.getGoal(userId, exerciseType),
 		])
 
-		// Aggregate reps per calendar day
-		const totals = new Map<string, number>()
-		for (const s of sets) {
-			const day = format(s.createdAt, 'yyyy-MM-dd')
-			totals.set(day, (totals.get(day) ?? 0) + s.reps)
-		}
-
-		// Return all days in the month, filling zeros for days with no sets
-		const days = Array.from({ length: getDaysInMonth(firstDay) }, (_, i) => {
-			const date = format(new Date(year, month - 1, i + 1), 'yyyy-MM-dd')
-			return { date, total: totals.get(date) ?? 0 }
-		})
+		const totals = sumRepsByDay(sets)
+		const days = buildMonthDays(firstDay, year, month, totals)
 
 		return {
 			days,
-			goal: {
-				exerciseType: ExerciseTypeSchema.parse(
-					goal?.exerciseType ?? exerciseType,
-				),
-				targetReps: goal?.targetReps ?? DEFAULT_GOAL_REPS,
-			},
+			goal: toGoalResponse(goal, exerciseType),
 		}
 	},
 }
