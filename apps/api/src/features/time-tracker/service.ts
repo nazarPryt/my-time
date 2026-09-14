@@ -77,6 +77,10 @@ export const timeTrackerService = {
 	},
 
 	getToday: async (userId: string): Promise<TodaySummaryResponse> => {
+		// TODO: day boundaries use the API server's local timezone, not the
+		// user's — a session just after local midnight for a user ahead of the
+		// server's TZ can land in "yesterday" here. Needs a user-supplied
+		// timezone to fix properly; left as a follow-up.
 		const now = new Date()
 		const sessions = await timeSessionsRepository.getTodaySessions(
 			userId,
@@ -98,6 +102,11 @@ export const timeTrackerService = {
 			userId,
 			subHours(new Date(), STALE_THRESHOLD_HOURS),
 		)
+
+		// A user can only have one open session at a time — return it instead of
+		// creating a duplicate (e.g. a double-click or a retried request).
+		const active = await timeSessionsRepository.getActive(userId)
+		if (active) return toSessionResponse(active)
 
 		const session = await timeSessionsRepository.create(
 			userId,

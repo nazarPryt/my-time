@@ -1,7 +1,7 @@
 import { db } from '@db'
 import { timeSessions } from '@db/schema'
 import type { SessionType } from 'contracts'
-import { and, asc, eq, gte, isNull, lt, lte } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, isNull, lt, lte } from 'drizzle-orm'
 
 export const timeSessionsRepository = {
 	getActive: async (userId: string) => {
@@ -15,6 +15,7 @@ export const timeSessionsRepository = {
 					isNull(timeSessions.abandonedAt),
 				),
 			)
+			.orderBy(desc(timeSessions.startedAt))
 			.limit(1)
 		return session ?? null
 	},
@@ -60,7 +61,14 @@ export const timeSessionsRepository = {
 		const [session] = await db
 			.update(timeSessions)
 			.set({ endedAt })
-			.where(and(eq(timeSessions.id, id), eq(timeSessions.userId, userId)))
+			.where(
+				and(
+					eq(timeSessions.id, id),
+					eq(timeSessions.userId, userId),
+					isNull(timeSessions.endedAt),
+					isNull(timeSessions.abandonedAt),
+				),
+			)
 			.returning()
 		return session ?? null
 	},
