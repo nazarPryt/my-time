@@ -12,3 +12,4 @@
 - [auth feature tests](feature_auth_tests.md) — location and coverage of auth.test.ts
 - [time-tracker feature tests](feature_time_tracker_tests.md) — location and full coverage of time-tracker.test.ts
 - [permesso feature tests](feature_permesso_tests.md) — getHourInTimeZone unit tests + PUT /permesso/schedule coverage, timezone no-upsert gotcha
+- [workout feature tests](feature_workout_tests.md) — repository/service/routes split, day/month boundary + exerciseType-scoping coverage, single-enum-value seeding trick
