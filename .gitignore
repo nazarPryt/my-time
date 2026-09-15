@@ -21,6 +21,9 @@ derby.log
 # SOPS-encrypted env files are safe to commit
 !*.env.*.enc
 
+# local Postgres bind mount (docker-compose.yml, DB_DATA_PATH)
+/.data/
+
 # typescript
 *.tsbuildinfo
 

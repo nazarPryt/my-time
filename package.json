@@ -8,7 +8,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"dev": "./scripts/ensure-docker.sh && bun run docker:db && bun --filter api dev & bun --filter web dev & wait",
+		"dev": "./scripts/ensure-docker.sh && ./scripts/ensure-env.sh && bun run docker:db && bun --filter api dev & bun --filter web dev & wait",
 		"web:dev": "bun --filter web dev",
 		"web:build": "bun --filter web build",
 		"api:dev": "bun --filter api dev",
