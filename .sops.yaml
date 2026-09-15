@@ -1,0 +1,6 @@
+creation_rules:
+  # Matches apps/api/.env.production.enc, apps/web/.env.production.enc,
+  # apps/api/.env.staging.enc, etc. — one rule for every app/environment,
+  # all using the same recipient for now.
+  - path_regex: \.env\.[^/]+\.enc$
+    age: age1jkgzke64v5y5v33ggfm2fyksgdp40nh74evvykgcv46xw6zl75vqtvnjnt

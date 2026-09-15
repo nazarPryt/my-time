@@ -18,6 +18,8 @@ derby.log
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# SOPS-encrypted env files are safe to commit
+!*.env.*.enc
 
 # typescript
 *.tsbuildinfo
