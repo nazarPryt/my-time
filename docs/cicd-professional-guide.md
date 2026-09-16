@@ -2,8 +2,15 @@
 
 Reference notes on how to wire up a production-grade CI/CD pipeline for this
 repo (bun monorepo, Elysia API + Postgres, React/Vite web, Playwright e2e,
-deployed via `docker-compose.prod.yml` on a VPS). Not implemented yet —
-written up for when it's time to actually build it.
+deployed via `docker-compose.prod.yml` on a VPS).
+
+**Status:** CI (`.github/workflows/ci.yml`) is implemented and live — lint,
+typecheck, API tests, web e2e tests, and a production build run on every PR
+and push to `main`/`dev`. Image build/push to GHCR
+(`.github/workflows/deploy.yml`, job `build-and-push`) is also live. The
+actual VPS deploy (job `deploy` in the same file) is written out but
+disabled (`if: false`) until VPS SSH access is wired up — see §10 for what's
+left.
 
 ## 1. CI and CD are separate concerns
 
@@ -145,3 +152,30 @@ than discovered via a user bug report.
 | Migrations | Run inline with deploy | Separate pre-step, backward-compatible, blocks deploy on failure |
 | Prod gate | None | Required status checks + required reviewer approval on `production` environment |
 | Failure detection | Notice manually | Health-check retry loop + auto-rollback + alert |
+
+## 10. Manual setup checklist (one-time, GitHub UI)
+
+These can't be done from a workflow file — they're one-time settings you
+click through yourself.
+
+1. **Branch protection** on `main` (and `dev`): Settings → Branches → Add
+   rule → require status checks `Lint`, `Typecheck`, `API tests`,
+   `Web e2e tests`, `Build` (the CI job names) → require branches to be up
+   to date before merging → do **not** allow admins/actors to bypass. This
+   is what actually enforces quality — without it CI is just a suggestion.
+2. **Create the `production` GitHub Environment**: Settings → Environments
+   → New environment → `production`. Optionally add a required reviewer so
+   a human approves before the deploy job runs.
+3. **When VPS SSH access is ready**, to turn on the `deploy` job in
+   `.github/workflows/deploy.yml`:
+   - Switch `docker-compose.prod.yml`'s `api`/`web` services from `build:`
+     to `image: ghcr.io/nazarpryt/my-time-{api,web}:${IMAGE_TAG:-latest}`
+     (they still build from source today, which is what local
+     `bun run docker:build`/`docker:up` rely on — check that still works
+     the way you want it to before/after this change).
+   - Add `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` as secrets scoped to the
+     `production` environment.
+   - Confirm/adjust `DEPLOY_DIR` in the `deploy` job — it's currently a
+     placeholder (`/opt/my-time`) for wherever `docker-compose.prod.yml`
+     actually lives on the VPS.
+   - Delete the `if: false` line on the `deploy` job.

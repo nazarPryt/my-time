@@ -18,5 +18,6 @@ export const app = new Elysia({ prefix: API_PREFIX })
 	.use(siteBlockingPlugin)
 	.use(permessoPlugin)
 	.get('/', () => '✅ my-time api — up and running')
+	.get('/health', () => ({ status: 'ok' }))
 
 export type App = typeof app
