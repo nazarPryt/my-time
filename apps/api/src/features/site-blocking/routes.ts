@@ -1,5 +1,10 @@
 import { authMacro } from '@shared/auth-macro'
-import { CreateBlockedSiteRequestSchema, SITE_BLOCKING_ROUTES } from 'contracts'
+import {
+	CreateBlockedSiteRequestSchema,
+	SITE_BLOCKING_ERRORS,
+	SITE_BLOCKING_ROUTES,
+	SiteBlockingErrorSchema,
+} from 'contracts'
 import { Elysia } from 'elysia'
 import { blockedSitesService } from './service'
 
@@ -14,16 +19,27 @@ export const siteBlockingPlugin = new Elysia({
 			})
 			.post(
 				SITE_BLOCKING_ROUTES.root,
-				async ({ userId, body, set }) => {
-					const site = await blockedSitesService.addSite(userId, body.domain)
-					if (!site) {
-						set.status = 409
-						return { message: 'Domain already blocked' }
+				async ({ userId, body, set, status }) => {
+					const result = await blockedSitesService.addSite(userId, body.domain)
+					if (result.status === 'invalid') {
+						return status('Bad Request', SITE_BLOCKING_ERRORS.INVALID_DOMAIN)
+					}
+					if (result.status === 'duplicate') {
+						return status(
+							'Conflict',
+							SITE_BLOCKING_ERRORS.DOMAIN_ALREADY_BLOCKED,
+						)
 					}
 					set.status = 201
-					return site
+					return result.site
 				},
-				{ body: CreateBlockedSiteRequestSchema },
+				{
+					body: CreateBlockedSiteRequestSchema,
+					response: {
+						'Bad Request': SiteBlockingErrorSchema,
+						Conflict: SiteBlockingErrorSchema,
+					},
+				},
 			)
 			.delete(SITE_BLOCKING_ROUTES.deleteById, async ({ userId, params }) => {
 				await blockedSitesService.removeSite(userId, params.id)

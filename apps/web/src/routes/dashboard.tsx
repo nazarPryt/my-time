@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { fetchMe } from '@/feature/auth/api'
 import { SignOutButton } from '@/feature/auth/logout'
+import { DASHBOARD_TEST_IDS } from '@/feature/dashboard/testIds'
 import { cn } from '@/shared/lib/cn'
 import { tokenStorage } from '@/shared/lib/token-storage'
 
@@ -41,38 +42,50 @@ type NavItemType = {
 	label: string
 	icon: LucideIcon
 	exact: boolean
+	testId: string
 }
 const NAV_ITEMS: NavItemType[] = [
-	{ to: '/dashboard', label: 'Home', icon: Home, exact: true },
+	{
+		to: '/dashboard',
+		label: 'Home',
+		icon: Home,
+		exact: true,
+		testId: DASHBOARD_TEST_IDS.navLink('home'),
+	},
 	{
 		to: '/dashboard/workout',
 		label: 'Workout',
 		icon: Dumbbell,
 		exact: false,
+		testId: DASHBOARD_TEST_IDS.navLink('workout'),
 	},
 	{
 		to: '/dashboard/time-tracker',
 		label: 'Time tracker',
 		icon: Timer,
 		exact: false,
+		testId: DASHBOARD_TEST_IDS.navLink('time-tracker'),
 	},
 	{
 		to: '/dashboard/site-blocking',
 		label: 'Site Blocking',
 		icon: ShieldOff,
 		exact: false,
+		testId: DASHBOARD_TEST_IDS.navLink('site-blocking'),
 	},
 	{
 		to: '/dashboard/permesso-status',
 		label: 'Permesso Status',
 		icon: FileCheck2,
 		exact: false,
+		testId: DASHBOARD_TEST_IDS.navLink('permesso-status'),
 	},
 	{
 		to: '/dashboard/settings',
 		label: 'Settings',
 		icon: Settings,
 		exact: false,
+		testId: DASHBOARD_TEST_IDS.navLink('settings'),
 	},
 ] as const
 
@@ -125,10 +138,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 			{/* Navigation */}
 			<nav className="flex-1 p-2 pt-3 space-y-0.5 overflow-y-auto">
-				{NAV_ITEMS.map(({ to, label, icon: Icon, exact }) => (
+				{NAV_ITEMS.map(({ to, label, icon: Icon, exact, testId }) => (
 					<Link
 						key={to}
 						to={to}
+						data-testid={testId}
 						activeOptions={{ exact }}
 						onClick={onNavigate}
 						className={cn(

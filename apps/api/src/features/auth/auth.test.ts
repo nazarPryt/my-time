@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { treaty } from '@elysiajs/eden'
-import { AUTH_ERRORS } from 'contracts'
+import { AUTH_ERRORS, type RegisterRequest } from 'contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { REFRESH_TOKEN } from './constants'
@@ -11,13 +11,13 @@ const auth = treaty(app).api.v1.auth
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const VALID_USER = {
+const VALID_USER: RegisterRequest = {
 	email: 'test@example.com',
 	name: 'Test User',
 	password: 'password123',
 }
 
-async function registerUser(overrides?: Partial<typeof VALID_USER>) {
+async function registerUser(overrides?: Partial<RegisterRequest>) {
 	return auth.register.post({ ...VALID_USER, ...overrides })
 }
 
@@ -186,6 +186,142 @@ describe('GET /auth/me', () => {
 	it('returns 401 with an invalid token', async () => {
 		const { status } = await auth.me.get({
 			headers: { authorization: 'Bearer invalid.token.here' },
+		})
+		expect(status).toBe(401)
+	})
+})
+
+// ---------------------------------------------------------------------------
+// POST /auth/extension-token
+// ---------------------------------------------------------------------------
+
+describe('POST /auth/extension-token', () => {
+	it('returns a one-time token for an authenticated user', async () => {
+		const { data: registered } = await registerUser()
+		const { data, status } = await auth['extension-token'].post(undefined, {
+			headers: { authorization: `Bearer ${registered!.tokens.accessToken}` },
+		})
+		expect(status).toBe(200)
+		expect(typeof data?.token).toBe('string')
+	})
+
+	it('returns 401 with no token', async () => {
+		const { status } = await auth['extension-token'].post()
+		expect(status).toBe(401)
+	})
+
+	it('returns 401 with an invalid token', async () => {
+		const { status } = await auth['extension-token'].post(undefined, {
+			headers: { authorization: 'Bearer invalid.token.here' },
+		})
+		expect(status).toBe(401)
+	})
+})
+
+// ---------------------------------------------------------------------------
+// POST /auth/exchange-extension-token
+// ---------------------------------------------------------------------------
+
+describe('POST /auth/exchange-extension-token', () => {
+	async function issueExtensionToken() {
+		const { data: registered } = await registerUser()
+		const { data } = await auth['extension-token'].post(undefined, {
+			headers: { authorization: `Bearer ${registered!.tokens.accessToken}` },
+		})
+		return data!.token
+	}
+
+	it('exchanges a valid extension token for an access + refresh token pair', async () => {
+		const token = await issueExtensionToken()
+
+		const { data, status } = await auth['exchange-extension-token'].post({
+			token,
+		})
+		expect(status).toBe(200)
+		expect(typeof data?.accessToken).toBe('string')
+		expect(typeof data?.refreshToken).toBe('string')
+	})
+
+	it('is single-use — a second exchange with the same token returns 401', async () => {
+		const token = await issueExtensionToken()
+
+		await auth['exchange-extension-token'].post({ token })
+		const { status } = await auth['exchange-extension-token'].post({ token })
+		expect(status).toBe(401)
+	})
+
+	it('returns 401 for an unknown token', async () => {
+		const { status } = await auth['exchange-extension-token'].post({
+			token: crypto.randomUUID(),
+		})
+		expect(status).toBe(401)
+	})
+})
+
+// ---------------------------------------------------------------------------
+// POST /auth/login-extension
+// ---------------------------------------------------------------------------
+
+describe('POST /auth/login-extension', () => {
+	it('returns both tokens in the body (no cookie) for valid credentials', async () => {
+		await registerUser()
+		const { data, status, response } = await auth['login-extension'].post({
+			email: VALID_USER.email,
+			password: VALID_USER.password,
+		})
+		expect(status).toBe(200)
+		expect(typeof data?.accessToken).toBe('string')
+		expect(typeof data?.refreshToken).toBe('string')
+		expect(response.headers.get('set-cookie')).toBeNull()
+	})
+
+	it('returns 401 for wrong password', async () => {
+		await registerUser()
+		const { status } = await auth['login-extension'].post({
+			email: VALID_USER.email,
+			password: 'wrong-password',
+		})
+		expect(status).toBe(401)
+	})
+})
+
+// ---------------------------------------------------------------------------
+// POST /auth/refresh-extension
+// ---------------------------------------------------------------------------
+
+describe('POST /auth/refresh-extension', () => {
+	async function loginExtension() {
+		await registerUser()
+		const { data } = await auth['login-extension'].post({
+			email: VALID_USER.email,
+			password: VALID_USER.password,
+		})
+		return data!.refreshToken
+	}
+
+	it('returns a new token pair in the body (no cookie)', async () => {
+		const refreshToken = await loginExtension()
+
+		const { data, status, response } = await auth['refresh-extension'].post({
+			refreshToken,
+		})
+		expect(status).toBe(200)
+		expect(typeof data?.accessToken).toBe('string')
+		expect(typeof data?.refreshToken).toBe('string')
+		expect(response.headers.get('set-cookie')).toBeNull()
+	})
+
+	it('refresh token is single-use', async () => {
+		const refreshToken = await loginExtension()
+
+		await auth['refresh-extension'].post({ refreshToken })
+		const { status } = await auth['refresh-extension'].post({ refreshToken })
+		expect(status).toBe(401)
+	})
+
+	it('returns 401 for an unknown refresh token', async () => {
+		const { status } = await auth['refresh-extension'].post({
+			refreshToken: 'not-a-real-token',
 		})
 		expect(status).toBe(401)
 	})

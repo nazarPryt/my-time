@@ -1,15 +1,7 @@
+import { logger } from '@shared/logger'
+import { normalizeDomain } from '@shared/utils'
 import type { BlockedSiteListResponse, BlockedSiteResponse } from 'contracts'
 import { blockedSitesRepository } from './repository'
-
-function normalizeDomain(input: string): string {
-	// Strip protocol, www, paths, and lowercase
-	return input
-		.toLowerCase()
-		.replace(/^https?:\/\//, '')
-		.replace(/^www\./, '')
-		.split('/')[0]
-		.split('?')[0]
-}
 
 function toResponse(site: {
 	id: string
@@ -23,6 +15,11 @@ function toResponse(site: {
 	}
 }
 
+type AddSiteResult =
+	| { status: 'created'; site: BlockedSiteResponse }
+	| { status: 'duplicate' }
+	| { status: 'invalid' }
+
 export const blockedSitesService = {
 	listSites: async (userId: string): Promise<BlockedSiteListResponse> => {
 		const sites = await blockedSitesRepository.findByUserId(userId)
@@ -32,13 +29,23 @@ export const blockedSitesService = {
 	addSite: async (
 		userId: string,
 		rawDomain: string,
-	): Promise<BlockedSiteResponse | null> => {
+	): Promise<AddSiteResult> => {
 		const domain = normalizeDomain(rawDomain)
+		if (!domain) {
+			return { status: 'invalid' }
+		}
 		const site = await blockedSitesRepository.create(userId, domain)
-		return site ? toResponse(site) : null
+		if (!site) {
+			return { status: 'duplicate' }
+		}
+		logger.info({ userId, domain }, 'site blocked')
+		return { status: 'created', site: toResponse(site) }
 	},
 
 	removeSite: async (userId: string, id: string): Promise<void> => {
-		await blockedSitesRepository.deleteById(userId, id)
+		const site = await blockedSitesRepository.deleteById(userId, id)
+		if (site) {
+			logger.info({ userId, id }, 'site removed')
+		}
 	},
 }

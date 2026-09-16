@@ -1,10 +1,11 @@
 import { format } from 'date-fns'
 import { Dumbbell } from 'lucide-react'
+import { WORKOUT_TEST_IDS } from '../testIds'
 
 export function WorkoutHeader() {
 	return (
 		<header
-			data-testid="workout-header"
+			data-testid={WORKOUT_TEST_IDS.header}
 			className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0 gap-2.5"
 		>
 			<Dumbbell
@@ -16,7 +17,7 @@ export function WorkoutHeader() {
 				Workout
 			</h1>
 			<span
-				data-testid="workout-date"
+				data-testid={WORKOUT_TEST_IDS.date}
 				className="ml-auto text-xs text-muted-foreground"
 			>
 				{format(new Date(), 'EEEE, MMMM d')}

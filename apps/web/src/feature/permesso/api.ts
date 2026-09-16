@@ -13,7 +13,8 @@ export async function runPermessoCheck() {
 }
 
 export async function updatePermessoCheckHours(checkHours: number[]) {
-	return api.permesso.schedule.put({ checkHours })
+	const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	return api.permesso.schedule.put({ checkHours, timezone })
 }
 
 export async function fetchPermessoHistory() {
@@ -26,4 +27,8 @@ export async function createPermessoTelegramLink() {
 
 export async function disconnectPermessoTelegram() {
 	return api.permesso.telegram.disconnect.post()
+}
+
+export async function resetPermesso() {
+	return api.permesso.reset.post()
 }

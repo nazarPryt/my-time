@@ -37,7 +37,14 @@ bun run docker:up        # Start full stack (api + db)
 bun run docker:down      # Stop full stack
 ```
 
-API environment variables (copy `apps/api/.env.example` → `apps/api/.env`):
+API environment variables — get a working local `.env` in one step (see
+`docs/secrets-sops-age-setup.md`; requires your age key to be a recipient
+in `.sops.yaml`):
+```bash
+bun --filter api secrets:decrypt:dev > apps/api/.env
+```
+Falling back to `apps/api/.env.example` and filling values by hand is only
+needed if you don't have SOPS/age set up yet:
 - `DATABASE_URL`, `JWT_SECRET`, `API_URL`, `FRONTEND_WEB_URL`, `DB_DATA_PATH`
 - `LOG_LEVEL` (optional, defaults to `info`)
 

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import { DASHBOARD_TEST_IDS } from '@/feature/dashboard/testIds'
 import { LiveClock, StatCard } from '@/feature/dashboard/ui'
 import { TimeProgressChart } from '@/feature/time-tracker/ui'
 import { WorkoutProgressChart } from '@/feature/workout/ui'
@@ -12,7 +13,7 @@ function DashboardHome() {
 	const today = format(new Date(), 'EEEE, MMMM d')
 
 	return (
-		<div data-testid="dashboard-home" className="h-full flex flex-col">
+		<div data-testid={DASHBOARD_TEST_IDS.home} className="h-full flex flex-col">
 			<header className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground tracking-tight">
 					Overview

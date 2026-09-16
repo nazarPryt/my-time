@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react'
 import { AuthShell } from '@/components/auth-shell'
 import { Button, Input, Label } from '@/components/ui'
 import { useRegister } from '@/feature/auth/register'
+import { AUTH_TEST_IDS } from '@/feature/auth/testIds'
 
 export const Route = createFileRoute('/auth/register')({
 	component: RegisterPage,
@@ -26,7 +27,7 @@ function RegisterPage() {
 					<Link
 						to="/auth/login"
 						className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"
-						data-testid="register-login-link"
+						data-testid={AUTH_TEST_IDS.register.loginLink}
 					>
 						Sign in
 					</Link>
@@ -34,7 +35,7 @@ function RegisterPage() {
 			}
 		>
 			<form
-				data-testid="register-form"
+				data-testid={AUTH_TEST_IDS.register.form}
 				onSubmit={handleSubmit(onSubmit)}
 				className="flex flex-col gap-5"
 			>
@@ -43,7 +44,7 @@ function RegisterPage() {
 					<Label htmlFor="name">Full name</Label>
 					<Input
 						id="name"
-						data-testid="register-name"
+						data-testid={AUTH_TEST_IDS.register.name}
 						type="text"
 						autoComplete="name"
 						placeholder="Alex Johnson"
@@ -52,7 +53,7 @@ function RegisterPage() {
 					/>
 					{errors.name && (
 						<p
-							data-testid="register-name-error"
+							data-testid={AUTH_TEST_IDS.register.nameError}
 							className="text-xs text-destructive"
 						>
 							{errors.name.message}
@@ -65,7 +66,7 @@ function RegisterPage() {
 					<Label htmlFor="email">Email</Label>
 					<Input
 						id="email"
-						data-testid="register-email"
+						data-testid={AUTH_TEST_IDS.register.email}
 						type="email"
 						autoComplete="email"
 						placeholder="you@example.com"
@@ -74,7 +75,7 @@ function RegisterPage() {
 					/>
 					{errors.email && (
 						<p
-							data-testid="register-email-error"
+							data-testid={AUTH_TEST_IDS.register.emailError}
 							className="text-xs text-destructive"
 						>
 							{errors.email.message}
@@ -87,7 +88,7 @@ function RegisterPage() {
 					<Label htmlFor="password">Password</Label>
 					<Input
 						id="password"
-						data-testid="register-password"
+						data-testid={AUTH_TEST_IDS.register.password}
 						type="password"
 						autoComplete="new-password"
 						placeholder="At least 4 characters"
@@ -96,7 +97,7 @@ function RegisterPage() {
 					/>
 					{errors.password ? (
 						<p
-							data-testid="register-password-error"
+							data-testid={AUTH_TEST_IDS.register.passwordError}
 							className="text-xs text-destructive"
 						>
 							{errors.password.message}
@@ -111,7 +112,7 @@ function RegisterPage() {
 				{/* Submit */}
 				<div>
 					<Button
-						data-testid="register-submit"
+						data-testid={AUTH_TEST_IDS.register.submit}
 						type="submit"
 						className="w-full gap-2"
 						size="lg"

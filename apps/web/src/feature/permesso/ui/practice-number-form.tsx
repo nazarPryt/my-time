@@ -6,17 +6,8 @@ import {
 } from 'contracts'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
 	Field,
 	FieldDescription,
@@ -72,7 +63,9 @@ export function PracticeNumberForm({
 					<FieldLabel htmlFor="practiceNumber" className="sr-only">
 						Practice number
 					</FieldLabel>
-					<FieldDescription>{PRACTICE_NUMBER_HINT}</FieldDescription>
+					{!defaultValue && (
+						<FieldDescription>{PRACTICE_NUMBER_HINT}</FieldDescription>
+					)}
 					<div className="flex gap-2">
 						<Input
 							id="practiceNumber"
@@ -89,27 +82,14 @@ export function PracticeNumberForm({
 				</Field>
 			</form>
 
-			<AlertDialog
+			<ConfirmDialog
 				open={pendingValue !== null}
 				onOpenChange={(open) => !open && setPendingValue(null)}
-			>
-				<AlertDialogContent size="sm">
-					<AlertDialogHeader>
-						<AlertDialogTitle>Replace practice number?</AlertDialogTitle>
-						<AlertDialogDescription>
-							This will replace your current practice number "{defaultValue}"
-							with "{pendingValue}". Past check history stays, but automatic
-							checks will use the new number.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={confirmOverride}>
-							Replace
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+				title="Replace practice number?"
+				description={`This will replace your current practice number "${defaultValue}" with "${pendingValue}". Past check history stays, but automatic checks will use the new number.`}
+				confirmLabel="Replace"
+				onConfirm={confirmOverride}
+			/>
 		</>
 	)
 }

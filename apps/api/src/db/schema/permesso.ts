@@ -21,9 +21,12 @@ export const permessoSubscriptions = pgTable('permesso_subscriptions', {
 		.unique()
 		.references(() => users.id, { onDelete: 'cascade' }),
 	practiceNumber: text('practice_number').notNull(),
-	// Hours of day (0-23, server local time) the automatic checker runs for this
-	// user — user-configurable from the Permesso Status page, no global schedule.
+	// Hours of day (0-23, in `timezone` below) the automatic checker runs for
+	// this user — user-configurable from the Permesso Status page, no global schedule.
 	checkHours: integer('check_hours').array().notNull().default([9, 18]),
+	// IANA timezone (e.g. "Europe/Rome") checkHours are interpreted in. Refreshed
+	// from the browser every time the schedule is edited.
+	timezone: text('timezone').notNull().default('UTC'),
 	// Set once the user completes the /start deep-link flow with the bot.
 	telegramChatId: text('telegram_chat_id'),
 	// One-shot token embedded in the deep link while a link is pending; cleared

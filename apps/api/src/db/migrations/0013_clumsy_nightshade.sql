@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "idx_time_sessions_one_active_per_user" ON "time_sessions" USING btree ("user_id") WHERE "time_sessions"."ended_at" is null and "time_sessions"."abandoned_at" is null;

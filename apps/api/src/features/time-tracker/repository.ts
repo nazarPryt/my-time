@@ -4,6 +4,9 @@ import type { SessionType } from 'contracts'
 import { and, asc, eq, gte, isNull, lt, lte } from 'drizzle-orm'
 
 export const timeSessionsRepository = {
+	// At most one open session per user is guaranteed by the partial unique
+	// index idx_time_sessions_one_active_per_user, so a plain select is safe
+	// here — no ordering/limit needed to pick "the" active one.
 	getActive: async (userId: string) => {
 		const [session] = await db
 			.select()
@@ -15,7 +18,6 @@ export const timeSessionsRepository = {
 					isNull(timeSessions.abandonedAt),
 				),
 			)
-			.limit(1)
 		return session ?? null
 	},
 
@@ -48,19 +50,36 @@ export const timeSessionsRepository = {
 			.orderBy(asc(timeSessions.startedAt))
 	},
 
+	// Returns null if the user already has an open session — the insert is
+	// skipped by the partial unique index (idx_time_sessions_one_active_per_user)
+	// instead of racing a separate getActive check against a separate insert.
 	create: async (userId: string, type: SessionType, startedAt: Date) => {
 		const [session] = await db
 			.insert(timeSessions)
 			.values({ userId, type, startedAt })
+			.onConflictDoNothing({
+				target: timeSessions.userId,
+				where: and(
+					isNull(timeSessions.endedAt),
+					isNull(timeSessions.abandonedAt),
+				),
+			})
 			.returning()
-		return session
+		return session ?? null
 	},
 
 	end: async (id: string, userId: string, endedAt: Date) => {
 		const [session] = await db
 			.update(timeSessions)
 			.set({ endedAt })
-			.where(and(eq(timeSessions.id, id), eq(timeSessions.userId, userId)))
+			.where(
+				and(
+					eq(timeSessions.id, id),
+					eq(timeSessions.userId, userId),
+					isNull(timeSessions.endedAt),
+					isNull(timeSessions.abandonedAt),
+				),
+			)
 			.returning()
 		return session ?? null
 	},

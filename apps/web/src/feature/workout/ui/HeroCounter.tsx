@@ -1,5 +1,6 @@
 import { Target } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { WORKOUT_TEST_IDS } from '../testIds'
 
 interface HeroCounterProps {
 	total: number
@@ -32,7 +33,7 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 
 	return (
 		<div
-			data-testid="hero-counter"
+			data-testid={WORKOUT_TEST_IDS.heroCounter}
 			className="rounded-xl border border-border bg-card p-7 flex flex-col items-center gap-5"
 		>
 			<span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground/60">
@@ -40,7 +41,7 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 			</span>
 
 			<span
-				data-testid="total-reps"
+				data-testid={WORKOUT_TEST_IDS.totalReps}
 				key={total}
 				className="counter-pop font-bold tabular-nums text-foreground leading-none select-none"
 				style={{
@@ -54,7 +55,7 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 			<div className="w-full space-y-2">
 				<div className="w-full h-0.75 rounded-full bg-muted overflow-hidden">
 					<div
-						data-testid="progress-bar-fill"
+						data-testid={WORKOUT_TEST_IDS.progressBarFill}
 						className="h-full rounded-full bg-foreground transition-all duration-500 ease-out"
 						style={{ width: `${pct}%` }}
 					/>
@@ -63,20 +64,22 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 					<span className="text-xs text-muted-foreground tabular-nums">
 						{done ? (
 							<span
-								data-testid="goal-reached"
+								data-testid={WORKOUT_TEST_IDS.goalReached}
 								className="text-foreground font-medium"
 							>
 								Goal reached ✓
 							</span>
 						) : (
-							<span data-testid="reps-left">{goal - total} left</span>
+							<span data-testid={WORKOUT_TEST_IDS.repsLeft}>
+								{goal - total} left
+							</span>
 						)}
 					</span>
 
 					{editingGoal ? (
 						<div className="flex items-center gap-1.5">
 							<input
-								data-testid="goal-input"
+								data-testid={WORKOUT_TEST_IDS.goalInput}
 								ref={inputRef}
 								type="number"
 								value={goalInput}
@@ -88,7 +91,7 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 								className="w-20 h-6 rounded border border-border bg-background px-2 text-xs text-foreground outline-none focus:border-foreground/40 tabular-nums"
 							/>
 							<button
-								data-testid="goal-set-btn"
+								data-testid={WORKOUT_TEST_IDS.goalSetBtn}
 								type="button"
 								onClick={commitGoal}
 								className="text-xs font-medium text-foreground hover:opacity-70 transition-opacity"
@@ -98,7 +101,7 @@ export function HeroCounter({ total, goal, onGoalChange }: HeroCounterProps) {
 						</div>
 					) : (
 						<button
-							data-testid="goal-display-btn"
+							data-testid={WORKOUT_TEST_IDS.goalDisplayBtn}
 							type="button"
 							onClick={() => {
 								setEditingGoal(true)

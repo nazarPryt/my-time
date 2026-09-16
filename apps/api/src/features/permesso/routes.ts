@@ -5,13 +5,8 @@ import {
 	UpdateCheckHoursRequestSchema,
 } from 'contracts'
 import { Elysia, sse } from 'elysia'
-import { permessoRepository } from './repository'
 import { permessoService } from './service'
 import { handleTelegramWebhook } from './telegram-bot'
-import { waitForTelegramLinkOrHeartbeat } from './telegram-link-events'
-
-const TELEGRAM_LINK_TIMEOUT_MS = 60_000
-const TELEGRAM_LINK_HEARTBEAT_MS = 15_000
 
 export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 	// No auth guard — Telegram calls this directly. Authenticated via the
@@ -35,7 +30,11 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 			.put(
 				PERMESSO_ROUTES.schedule,
 				async ({ userId, body }) => {
-					return permessoService.updateCheckHours(userId, body.checkHours)
+					return permessoService.updateCheckHours(
+						userId,
+						body.checkHours,
+						body.timezone,
+					)
 				},
 				{ body: UpdateCheckHoursRequestSchema },
 			)
@@ -64,32 +63,19 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 				return outcome.link
 			})
 			.get(PERMESSO_ROUTES.telegramLinkEvents, async function* ({ userId }) {
-				const row = await permessoRepository.getByUserId(userId)
-				if (row?.telegramChatId) {
-					yield sse({ event: 'connected', data: 'ok' })
-					return
+				for await (const evt of permessoService.streamTelegramLinkEvents(
+					userId,
+				)) {
+					yield sse({
+						event: evt.event,
+						data: evt.event === 'ping' ? 'waiting' : 'ok',
+					})
 				}
-
-				// Flush headers immediately — otherwise nothing (not even the
-				// response headers) reaches the client until the first heartbeat.
-				yield sse({ event: 'open', data: 'ok' })
-
-				const deadline = Date.now() + TELEGRAM_LINK_TIMEOUT_MS
-				while (Date.now() < deadline) {
-					const outcome = await waitForTelegramLinkOrHeartbeat(
-						userId,
-						Math.min(TELEGRAM_LINK_HEARTBEAT_MS, deadline - Date.now()),
-					)
-					if (outcome === 'linked') {
-						yield sse({ event: 'connected', data: 'ok' })
-						return
-					}
-					yield sse({ event: 'ping', data: 'waiting' })
-				}
-
-				yield sse({ event: 'timeout', data: 'ok' })
 			})
 			.post(PERMESSO_ROUTES.telegramDisconnect, async ({ userId }) => {
 				return permessoService.disconnectTelegram(userId)
+			})
+			.post(PERMESSO_ROUTES.reset, async ({ userId }) => {
+				return permessoService.resetAll(userId)
 			}),
 	)

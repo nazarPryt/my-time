@@ -57,10 +57,14 @@ export const permessoRepository = {
 		})
 	},
 
-	updateCheckHours: async (userId: string, checkHours: number[]) => {
+	updateCheckHours: async (
+		userId: string,
+		checkHours: number[],
+		timezone: string,
+	) => {
 		const [row] = await db
 			.update(permessoSubscriptions)
-			.set({ checkHours, updatedAt: new Date() })
+			.set({ checkHours, timezone, updatedAt: new Date() })
 			.where(eq(permessoSubscriptions.userId, userId))
 			.returning()
 		return row ?? null
@@ -122,5 +126,12 @@ export const permessoRepository = {
 			.where(eq(permessoSubscriptions.userId, userId))
 			.returning()
 		return row ?? null
+	},
+
+	deleteAllForUser: async (userId: string) => {
+		await db.delete(permessoChecks).where(eq(permessoChecks.userId, userId))
+		await db
+			.delete(permessoSubscriptions)
+			.where(eq(permessoSubscriptions.userId, userId))
 	},
 }

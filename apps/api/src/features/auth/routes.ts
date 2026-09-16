@@ -1,6 +1,6 @@
 import { jwt } from '@elysiajs/jwt'
 import { API_CONFIG } from '@shared/api-config'
-import { logger } from '@shared/logger'
+import { authMacro } from '@shared/auth-macro'
 import {
 	AUTH_ERRORS,
 	AUTH_ROUTES,
@@ -14,9 +14,7 @@ import {
 } from 'contracts'
 import { type CookieOptions, Elysia, t } from 'elysia'
 import { REFRESH_TOKEN } from './constants'
-import { extensionTokenRepository, refreshTokenRepository } from './repository'
 import { authService } from './service'
-import { generateTokens } from './token'
 
 const jwtPlugin = jwt({
 	name: 'jwt',
@@ -32,12 +30,13 @@ const COOKIE_OPTIONS: CookieOptions = {
 
 export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 	.use(jwtPlugin)
+	.use(authMacro)
 	.post(
 		AUTH_ROUTES.register,
 		async ({ body, jwt, status, cookie }) => {
 			try {
 				const user = await authService.register(body)
-				const tokens = await generateTokens(jwt, user.id)
+				const tokens = await authService.signAndSaveTokens(jwt, user.id)
 				cookie[REFRESH_TOKEN].set({
 					value: tokens.refreshToken,
 					...COOKIE_OPTIONS,
@@ -61,16 +60,17 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 	.post(
 		AUTH_ROUTES.login,
 		async ({ body, jwt, status, cookie }) => {
-			try {
-				const user = await authService.login(body)
-				const tokens = await generateTokens(jwt, user.id)
-				cookie[REFRESH_TOKEN].set({
-					value: tokens.refreshToken,
-					...COOKIE_OPTIONS,
-				})
-				return { user, tokens: { accessToken: tokens.accessToken } }
-			} catch {
+			const result = await authService.loginAndSignTokens(jwt, body)
+			if (!result.ok) {
 				return status('Unauthorized', AUTH_ERRORS.INVALID_CREDENTIALS)
+			}
+			cookie[REFRESH_TOKEN].set({
+				value: result.tokens.refreshToken,
+				...COOKIE_OPTIONS,
+			})
+			return {
+				user: result.user,
+				tokens: { accessToken: result.tokens.accessToken },
 			}
 		},
 		{
@@ -85,21 +85,15 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 			if (!token) {
 				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
-			// Atomically consume the token — only one concurrent request can succeed
-			const consumed = await refreshTokenRepository.consume(token)
-			if (!consumed) {
+			const outcome = await authService.refreshTokens(jwt, token)
+			if (!outcome.ok) {
 				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
-			const payload = await jwt.verify(token)
-			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
-			}
-			await refreshTokenRepository.deleteExpired().catch((err) => {
-				logger.error({ err }, 'failed to purge expired tokens')
+			refreshCookie.set({
+				value: outcome.tokens.refreshToken,
+				...COOKIE_OPTIONS,
 			})
-			const tokens = await generateTokens(jwt, payload.sub)
-			refreshCookie.set({ value: tokens.refreshToken, ...COOKIE_OPTIONS })
-			return { tokens: { accessToken: tokens.accessToken } }
+			return { tokens: { accessToken: outcome.tokens.accessToken } }
 		},
 		{
 			cookie: t.Cookie({ refreshToken: t.Optional(t.String()) }),
@@ -109,59 +103,45 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 	.post(
 		AUTH_ROUTES.logout,
 		async ({ cookie: { refreshToken: refreshCookie } }) => {
-			const token = refreshCookie.value
-			if (token) {
-				await refreshTokenRepository.remove(token)
-			}
+			await authService.logout(refreshCookie.value)
 			refreshCookie.remove()
 		},
 		{ cookie: t.Cookie({ refreshToken: t.Optional(t.String()) }) },
 	)
-	.get(
-		AUTH_ROUTES.me,
-		async ({ headers, jwt, status }) => {
-			const auth = headers.authorization
-			const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
-			const payload = token ? await jwt.verify(token) : null
-			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
-			}
-			const user = await authService.getById(payload.sub)
-			return MeResponseSchema.parse(user)
-		},
-		{
-			response: { Unauthorized: AuthErrorSchema },
-		},
-	)
-	// Generates a short-lived one-time token for passwordless extension auth.
-	// Requires a valid Bearer access token (user must be logged in on the web).
-	.post(
-		AUTH_ROUTES.extensionToken,
-		async ({ headers, jwt, status }) => {
-			const auth = headers.authorization
-			const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
-			const payload = token ? await jwt.verify(token) : null
-			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
-			}
-			const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
-			const row = await extensionTokenRepository.create(payload.sub, expiresAt)
-			return { token: row.token }
-		},
-		{
-			response: { Unauthorized: AuthErrorSchema },
-		},
+	.guard({ auth: true }, (app) =>
+		app
+			.get(
+				AUTH_ROUTES.me,
+				async ({ userId }) => {
+					const user = await authService.getById(userId)
+					return MeResponseSchema.parse(user)
+				},
+				{
+					response: { Unauthorized: AuthErrorSchema },
+				},
+			)
+			// Generates a short-lived one-time token for passwordless extension auth.
+			// Requires a valid Bearer access token (user must be logged in on the web).
+			.post(
+				AUTH_ROUTES.extensionToken,
+				async ({ userId }) => {
+					const token = await authService.createExtensionToken(userId)
+					return { token }
+				},
+				{
+					response: { Unauthorized: AuthErrorSchema },
+				},
+			),
 	)
 	// Exchanges a one-time extension token for a JWT access + refresh token pair.
 	// Returns tokens in the response body (not cookies) for extension storage.
 	.post(
 		AUTH_ROUTES.exchangeExtensionToken,
 		async ({ body, jwt, status }) => {
-			const consumed = await extensionTokenRepository.consume(body.token)
-			if (!consumed) {
+			const tokens = await authService.exchangeExtensionToken(jwt, body.token)
+			if (!tokens) {
 				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
-			const tokens = await generateTokens(jwt, consumed.userId)
 			return tokens
 		},
 		{
@@ -174,15 +154,13 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 	.post(
 		AUTH_ROUTES.loginExtension,
 		async ({ body, jwt, status }) => {
-			try {
-				const user = await authService.login(body)
-				const tokens = await generateTokens(jwt, user.id)
-				return {
-					accessToken: tokens.accessToken,
-					refreshToken: tokens.refreshToken,
-				}
-			} catch {
+			const result = await authService.loginAndSignTokens(jwt, body)
+			if (!result.ok) {
 				return status('Unauthorized', AUTH_ERRORS.INVALID_CREDENTIALS)
+			}
+			return {
+				accessToken: result.tokens.accessToken,
+				refreshToken: result.tokens.refreshToken,
 			}
 		},
 		{
@@ -195,21 +173,13 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 	.post(
 		AUTH_ROUTES.refreshExtension,
 		async ({ body, jwt, status }) => {
-			const consumed = await refreshTokenRepository.consume(body.refreshToken)
-			if (!consumed) {
+			const outcome = await authService.refreshTokens(jwt, body.refreshToken)
+			if (!outcome.ok) {
 				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
 			}
-			const payload = await jwt.verify(body.refreshToken)
-			if (!payload || typeof payload.sub !== 'string') {
-				return status('Unauthorized', AUTH_ERRORS.INVALID_TOKEN)
-			}
-			await refreshTokenRepository.deleteExpired().catch((err) => {
-				logger.error({ err }, 'failed to purge expired tokens')
-			})
-			const tokens = await generateTokens(jwt, payload.sub)
 			return {
-				accessToken: tokens.accessToken,
-				refreshToken: tokens.refreshToken,
+				accessToken: outcome.tokens.accessToken,
+				refreshToken: outcome.tokens.refreshToken,
 			}
 		},
 		{

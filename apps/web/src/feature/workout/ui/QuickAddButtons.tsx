@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import { WORKOUT_TEST_IDS } from '../testIds'
 
 const QUICK_ADD = [5, 10, 15, 20] as const
 
@@ -9,12 +10,15 @@ interface QuickAddButtonsProps {
 
 export function QuickAddButtons({ onAdd, disabled }: QuickAddButtonsProps) {
 	return (
-		<div data-testid="quick-add-buttons" className="grid grid-cols-4 gap-2">
+		<div
+			data-testid={WORKOUT_TEST_IDS.quickAddButtons}
+			className="grid grid-cols-4 gap-2"
+		>
 			{QUICK_ADD.map((n) => (
 				<button
 					type="button"
 					key={n}
-					data-testid={`quick-add-${n}`}
+					data-testid={WORKOUT_TEST_IDS.quickAddBtn(n)}
 					onClick={() => onAdd(n)}
 					disabled={disabled}
 					className="group h-17 rounded-xl border border-border bg-card hover:bg-muted active:scale-95 transition-all duration-100 flex flex-col items-center justify-center gap-0.5 select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"

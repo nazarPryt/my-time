@@ -4,71 +4,18 @@ import type {
 	TodaySummaryResponse,
 	WeeklySummaryResponse,
 } from 'contracts'
+import { endOfDay, startOfDay, subDays, subHours } from 'date-fns'
 import {
-	differenceInSeconds,
-	endOfDay,
-	format,
-	startOfDay,
-	subDays,
-	subHours,
-} from 'date-fns'
+	buildDayRange,
+	computeCurrentStreak,
+	computeTodayStats,
+	groupCompletedWorkByDay,
+	toSessionResponse,
+} from './helpers'
 import { timeSessionsRepository } from './repository'
 
 const STALE_THRESHOLD_HOURS = 2
 const SUMMARY_DAYS = 30
-const EMPTY_DAY_STATS = { totalWorkSeconds: 0, sessionsCompleted: 0 }
-
-function isCompletedWork(s: {
-	type: string
-	endedAt: Date | null
-	abandonedAt: Date | null
-}) {
-	return s.type === 'work' && s.endedAt !== null && s.abandonedAt === null
-}
-
-function toSessionResponse(s: {
-	id: string
-	type: string
-	startedAt: Date
-	endedAt: Date | null
-	abandonedAt: Date | null
-}): SessionResponse {
-	return {
-		id: s.id,
-		type: s.type as SessionType,
-		startedAt: s.startedAt,
-		endedAt: s.endedAt,
-		abandonedAt: s.abandonedAt,
-	}
-}
-
-function computeTodayStats(
-	sessions: Array<{
-		type: string
-		startedAt: Date
-		endedAt: Date | null
-		abandonedAt: Date | null
-	}>,
-) {
-	const completedWork = sessions.flatMap((s) =>
-		isCompletedWork(s) ? [{ ...s, endedAt: s.endedAt as Date }] : [],
-	)
-
-	const totalWorkSeconds = completedWork.reduce((acc, s) => {
-		return acc + differenceInSeconds(s.endedAt, s.startedAt)
-	}, 0)
-
-	const longestSessionSeconds = completedWork.reduce((max, s) => {
-		const dur = differenceInSeconds(s.endedAt, s.startedAt)
-		return dur > max ? dur : max
-	}, 0)
-
-	return {
-		totalWorkSeconds,
-		sessionsCompleted: completedWork.length,
-		longestSessionSeconds,
-	}
-}
 
 export const timeTrackerService = {
 	getActive: async (userId: string): Promise<SessionResponse | null> => {
@@ -77,6 +24,10 @@ export const timeTrackerService = {
 	},
 
 	getToday: async (userId: string): Promise<TodaySummaryResponse> => {
+		// TODO: day boundaries use the API server's local timezone, not the
+		// user's — a session just after local midnight for a user ahead of the
+		// server's TZ can land in "yesterday" here. Needs a user-supplied
+		// timezone to fix properly; left as a follow-up.
 		const now = new Date()
 		const sessions = await timeSessionsRepository.getTodaySessions(
 			userId,
@@ -99,12 +50,23 @@ export const timeTrackerService = {
 			subHours(new Date(), STALE_THRESHOLD_HOURS),
 		)
 
-		const session = await timeSessionsRepository.create(
+		// A user can only have one open session at a time. create() is a
+		// conditional insert (DB-enforced via a partial unique index) rather
+		// than a separate check-then-insert, so concurrent/retried calls (e.g.
+		// a double-click) can't both pass a check and create duplicate open
+		// sessions — the loser's insert is skipped and it falls through to
+		// fetching the session the winner created.
+		const created = await timeSessionsRepository.create(
 			userId,
 			type,
 			new Date(),
 		)
-		return toSessionResponse(session)
+		if (created) return toSessionResponse(created)
+
+		const active = await timeSessionsRepository.getActive(userId)
+		if (!active)
+			throw new Error('startSession: no active session after conflict')
+		return toSessionResponse(active)
 	},
 
 	endSession: async (
@@ -138,38 +100,9 @@ export const timeTrackerService = {
 			end,
 		)
 
-		const byDay = new Map<
-			string,
-			{ totalWorkSeconds: number; sessionsCompleted: number }
-		>()
-
-		for (const s of sessions) {
-			if (!isCompletedWork(s) || s.endedAt === null) continue
-			const day = format(s.startedAt, 'yyyy-MM-dd')
-			const dur = differenceInSeconds(s.endedAt, s.startedAt)
-			const existing = byDay.get(day) ?? EMPTY_DAY_STATS
-			byDay.set(day, {
-				totalWorkSeconds: existing.totalWorkSeconds + dur,
-				sessionsCompleted: existing.sessionsCompleted + 1,
-			})
-		}
-
-		// Build last N days array (most recent first)
-		const days = Array.from({ length: SUMMARY_DAYS }, (_, i) => {
-			const day = subDays(now, i)
-			const dateKey = format(day, 'yyyy-MM-dd')
-			return { date: day, ...(byDay.get(dateKey) ?? EMPTY_DAY_STATS) }
-		})
-
-		// Consecutive days with >= 1 completed session, starting from today
-		let currentStreakDays = 0
-		for (const day of days) {
-			if (day.sessionsCompleted > 0) {
-				currentStreakDays++
-			} else {
-				break
-			}
-		}
+		const byDay = groupCompletedWorkByDay(sessions)
+		const days = buildDayRange(now, SUMMARY_DAYS, byDay)
+		const currentStreakDays = computeCurrentStreak(days)
 
 		return { days, currentStreakDays }
 	},
