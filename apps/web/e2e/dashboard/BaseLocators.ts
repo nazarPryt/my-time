@@ -1,7 +1,10 @@
 import type { Page } from '@playwright/test'
-import { SHARED_TEST_IDS } from '@/components/testIds'
-import { AUTH_TEST_IDS } from '@/feature/auth/testIds'
-import { DASHBOARD_TEST_IDS, type NavKey } from '@/feature/dashboard/testIds'
+import { AUTH_TEST_IDS } from '@/features/auth/shared/testIds'
+import {
+	DASHBOARD_TEST_IDS,
+	type NavKey,
+	SHARED_TEST_IDS,
+} from '@/shared/ui/testIds'
 
 export type { NavKey }
 

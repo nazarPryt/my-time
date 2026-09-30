@@ -1,0 +1,41 @@
+import { format } from 'date-fns'
+import { TimeProgressChart } from '@/features/time-tracker'
+import { WorkoutProgressChart } from '@/features/workout'
+import { DASHBOARD_TEST_IDS } from '@/shared/ui/testIds'
+import { LiveClock } from './LiveClock'
+import { StatCard } from './StatCard'
+
+export function DashboardHomePage() {
+	const today = format(new Date(), 'EEEE, MMMM d')
+
+	return (
+		<div data-testid={DASHBOARD_TEST_IDS.home} className="h-full flex flex-col">
+			<header className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
+				<h1 className="text-sm font-semibold text-foreground tracking-tight">
+					Overview
+				</h1>
+				<span className="ml-3 text-xs text-muted-foreground">{today}</span>
+			</header>
+
+			<div className="flex-1 overflow-auto p-4 sm:p-8">
+				<div className="mb-10">
+					<LiveClock />
+					<p className="mt-2 text-sm text-muted-foreground">
+						Start tracking to see where your time goes.
+					</p>
+				</div>
+
+				<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl mb-8">
+					<StatCard label="Today" value="0h 00m" sub="No entries yet" />
+					<StatCard label="This week" value="0h 00m" sub="Goal: 40h" />
+					<StatCard label="Projects" value="0" sub="None active" />
+				</div>
+
+				<div className="w-full flex flex-col gap-6">
+					<TimeProgressChart />
+					<WorkoutProgressChart />
+				</div>
+			</div>
+		</div>
+	)
+}

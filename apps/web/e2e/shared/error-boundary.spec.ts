@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { SHARED_TEST_IDS } from '@/components/testIds'
+import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
 
 test.describe('Error boundary', () => {
 	test('shows error screen when a route component throws', async ({ page }) => {

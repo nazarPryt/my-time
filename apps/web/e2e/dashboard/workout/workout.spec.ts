@@ -1,5 +1,5 @@
 import { AUTH_ERRORS } from 'contracts'
-import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
+import { WORKOUT_TEST_IDS } from '@/features/workout/testIds'
 import { LOGIN_PATH } from '../../auth/login/LoginPage'
 import { API_ME } from '../../support/auth.mocks'
 import { WORKOUT_PATH } from './WorkoutPage'

@@ -66,7 +66,7 @@
 			// default styles that break the component design. Array index keys and
 			// click-without-keyboard are also acceptable in low-level primitives that
 			// handle their own accessibility at a higher composition level.
-			"includes": ["**/components/ui/**"],
+			"includes": ["**/shared/ui/**"],
 			"linter": {
 				"rules": {
 					"a11y": {
@@ -76,6 +76,125 @@
 					},
 					"suspicious": {
 						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		},
+		// ─── Feature-Sliced Design layer boundaries (web app) ───
+		// Imports may only point DOWN the stack: app → pages → features → shared.
+		// A slice's own internals are reached with relative imports; anything
+		// crossing a slice or layer must go through the alias paths restricted below.
+		{
+			// shared/ is the lowest layer: it must not import from any layer above.
+			"includes": ["apps/web/src/shared/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@/app",
+											"@/app/**",
+											"@/pages",
+											"@/pages/**",
+											"@/features",
+											"@/features/**"
+										],
+										"message": "Layer violation: shared/ is the lowest layer and must not import from app, pages, or features."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			// features/ may import shared only. No app, no pages, and no OTHER
+			// feature (use relative imports within your own slice).
+			"includes": ["apps/web/src/features/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@/app",
+											"@/app/**",
+											"@/pages",
+											"@/pages/**",
+											"@/features",
+											"@/features/**"
+										],
+										"message": "Layer violation: a feature may import shared/ only — not app, pages, or another feature. Import your own slice with relative paths; share code by moving it down to shared/."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			// pages/ compose features + shared. No app, no other page, and features
+			// must be imported through their barrel (not deep ui/model/api/lib paths).
+			"includes": ["apps/web/src/pages/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@/app", "@/app/**", "@/pages", "@/pages/**"],
+										"message": "Layer violation: a page must not import from app or another page."
+									},
+									{
+										"group": [
+											"@/features/**/ui/**",
+											"@/features/**/model/**",
+											"@/features/**/api/**",
+											"@/features/**/lib/**"
+										],
+										"message": "Import a feature through its barrel (@/features/<name>), not its internal ui/model/api/lib files."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			// app/ is the top layer and may import anything below, but still only
+			// through feature barrels — never a feature's internal segments.
+			"includes": ["apps/web/src/app/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@/features/**/ui/**",
+											"@/features/**/model/**",
+											"@/features/**/api/**",
+											"@/features/**/lib/**"
+										],
+										"message": "Import a feature through its barrel (@/features/<name>), not its internal ui/model/api/lib files."
+									}
+								]
+							}
+						}
 					}
 				}
 			}

@@ -1,0 +1,70 @@
+import type * as React from 'react'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/shared/ui/alert-dialog'
+import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
+
+interface ConfirmDialogProps {
+	/** Omit when the dialog is opened programmatically via `open`/`onOpenChange` instead of a click. */
+	trigger?: React.ReactNode
+	/** Controls the dialog externally — for chaining multiple confirmations. Uncontrolled (trigger-only) when omitted. */
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
+	title: string
+	description?: React.ReactNode
+	confirmLabel?: string
+	cancelLabel?: string
+	variant?: 'default' | 'destructive'
+	onConfirm: () => void
+}
+
+export function ConfirmDialog({
+	trigger,
+	open,
+	onOpenChange,
+	title,
+	description,
+	confirmLabel = 'Confirm',
+	cancelLabel = 'Cancel',
+	variant = 'default',
+	onConfirm,
+}: ConfirmDialogProps) {
+	return (
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			{trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
+			<AlertDialogContent
+				size="sm"
+				data-testid={SHARED_TEST_IDS.confirmDialog.root}
+			>
+				<AlertDialogHeader>
+					<AlertDialogTitle>{title}</AlertDialogTitle>
+					<AlertDialogDescription
+						className={description ? undefined : 'sr-only'}
+					>
+						{description ?? title}
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel data-testid={SHARED_TEST_IDS.confirmDialog.cancel}>
+						{cancelLabel}
+					</AlertDialogCancel>
+					<AlertDialogAction
+						variant={variant}
+						onClick={onConfirm}
+						data-testid={SHARED_TEST_IDS.confirmDialog.confirm}
+					>
+						{confirmLabel}
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	)
+}
