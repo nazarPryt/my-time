@@ -5,11 +5,18 @@ import { parse } from './parser'
 const ROOT = path.resolve(import.meta.dir, '../..')
 const graph = await parse(ROOT)
 
-test('parser finds web/auth feature node', () => {
+test('parser emits app-level nodes', () => {
+	const web = graph.nodes.find((n) => n.id === 'web')
+	expect(web).toBeDefined()
+	expect(web?.type).toBe('app')
+	expect(web?.app).toBe('web')
+})
+
+test('parser finds web/auth feature node parented to the web app', () => {
 	const node = graph.nodes.find((n) => n.id === 'web/auth')
 	expect(node).toBeDefined()
 	expect(node?.type).toBe('feature')
-	expect(node?.app).toBe('web')
+	expect(node?.parent).toBe('web')
 })
 
 test('parser finds api/auth feature node', () => {
@@ -18,11 +25,11 @@ test('parser finds api/auth feature node', () => {
 	expect(node?.app).toBe('api')
 })
 
-test('parser finds contracts/auth package node', () => {
+test('parser finds contracts/auth feature node', () => {
 	const node = graph.nodes.find((n) => n.id === 'contracts/auth')
 	expect(node).toBeDefined()
-	expect(node?.type).toBe('package')
-	expect(node?.app).toBeNull()
+	expect(node?.type).toBe('feature')
+	expect(node?.app).toBe('contracts')
 })
 
 test('parser emits file-level nodes for web features', () => {
@@ -34,7 +41,7 @@ test('parser emits file-level nodes for web features', () => {
 	expect(fileNode?.label).toBeTruthy()
 })
 
-test('parser emits edges between features', () => {
+test('every edge endpoint resolves to a known node', () => {
 	expect(graph.edges.length).toBeGreaterThan(0)
 	const ids = new Set(graph.nodes.map((n) => n.id))
 	for (const edge of graph.edges) {
@@ -43,10 +50,15 @@ test('parser emits edges between features', () => {
 	}
 })
 
+test('edges carry a positive import count', () => {
+	for (const edge of graph.edges) {
+		expect(edge.count).toBeGreaterThan(0)
+	}
+})
+
 test('parser produces no duplicate node ids', () => {
 	const ids = graph.nodes.map((n) => n.id)
-	const unique = new Set(ids)
-	expect(ids.length).toBe(unique.size)
+	expect(ids.length).toBe(new Set(ids).size)
 })
 
 test('parser produces no self-loop edges', () => {
@@ -57,9 +69,7 @@ test('parser produces no self-loop edges', () => {
 
 test('parser emits at least one cross-app edge (web → contracts)', () => {
 	const crossAppEdge = graph.edges.find(
-		(e) =>
-			e.source.startsWith('web/') &&
-			(e.target === 'contracts' || e.target.startsWith('contracts/')),
+		(e) => e.source.startsWith('web/') && e.target.startsWith('contracts/'),
 	)
 	expect(crossAppEdge).toBeDefined()
 })
