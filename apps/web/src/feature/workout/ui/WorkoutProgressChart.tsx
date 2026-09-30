@@ -6,6 +6,7 @@ import {
 	BarChart,
 	CartesianGrid,
 	Rectangle,
+	ReferenceLine,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -39,13 +40,17 @@ export function WorkoutProgressChart() {
 		void loadProgress(year, month)
 	}, [loadProgress, year, month])
 
+	const totalReps = data.reduce((sum, d) => sum + d.total, 0)
+	const goalDays =
+		goalReps > 0 ? data.filter((d) => d.total >= goalReps).length : 0
+
 	return (
 		<div
 			data-testid={WORKOUT_TEST_IDS.progressChart}
 			className="rounded-xl border border-border bg-card p-5"
 		>
 			{/* Header */}
-			<div className="flex items-center justify-between mb-4">
+			<div className="flex items-start justify-between mb-4">
 				<div>
 					<p className="text-xs font-medium tracking-wide uppercase text-muted-foreground/70">
 						Push-ups
@@ -56,6 +61,11 @@ export function WorkoutProgressChart() {
 					>
 						{monthLabel}
 					</p>
+					{!loading && totalReps > 0 && (
+						<p className="text-xs text-muted-foreground mt-1">
+							{totalReps} reps · goal hit {goalDays} of {data.length} days
+						</p>
+					)}
 				</div>
 				<div className="flex items-center gap-1">
 					<button
@@ -87,6 +97,12 @@ export function WorkoutProgressChart() {
 					>
 						<span className="text-xs text-muted-foreground">Loading…</span>
 					</div>
+				) : totalReps === 0 ? (
+					<div className="h-full flex items-center justify-center">
+						<span className="text-xs text-muted-foreground">
+							No push-ups logged in {monthLabel}
+						</span>
+					</div>
 				) : (
 					<ResponsiveContainer width="100%" height={160}>
 						<BarChart data={data} barCategoryGap="20%">
@@ -100,14 +116,24 @@ export function WorkoutProgressChart() {
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
 								axisLine={false}
 								tickLine={false}
-								interval={0}
+								interval="preserveStartEnd"
+								minTickGap={12}
 							/>
 							<YAxis
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
 								axisLine={false}
 								tickLine={false}
 								width={30}
+								domain={[0, (dataMax: number) => Math.max(dataMax, goalReps)]}
 							/>
+							{goalReps > 0 && (
+								<ReferenceLine
+									y={goalReps}
+									stroke="hsl(142 71% 45%)"
+									strokeDasharray="4 4"
+									strokeOpacity={0.8}
+								/>
+							)}
 							<Tooltip
 								cursor={{ fill: 'var(--muted)', opacity: 0.5 }}
 								content={({ active, payload }) => {
@@ -156,7 +182,7 @@ export function WorkoutProgressChart() {
 			</div>
 
 			{/* Legend */}
-			<div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+			<div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
 				<span className="flex items-center gap-1.5">
 					<span className="inline-block w-2.5 h-2.5 rounded-sm bg-primary" />
 					Today
@@ -166,7 +192,14 @@ export function WorkoutProgressChart() {
 						className="inline-block w-2.5 h-2.5 rounded-sm"
 						style={{ background: 'hsl(142 71% 45%)' }}
 					/>
-					Goal reached ({goalReps} reps)
+					Goal reached
+				</span>
+				<span className="flex items-center gap-1.5">
+					<span
+						className="inline-block w-3 border-t border-dashed"
+						style={{ borderColor: 'hsl(142 71% 45%)' }}
+					/>
+					Goal: {goalReps} reps
 				</span>
 			</div>
 		</div>

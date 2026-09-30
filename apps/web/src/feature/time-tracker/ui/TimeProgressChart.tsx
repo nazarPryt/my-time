@@ -1,3 +1,4 @@
+import { format, parseISO } from 'date-fns'
 import { useEffect } from 'react'
 import {
 	Bar,
@@ -30,7 +31,10 @@ export function TimeProgressChart() {
 		return () => controller.abort()
 	}, [loadWeekly])
 
-	const todayLabel = data.at(-1)?.label ?? null
+	const todayDate = data.at(-1)?.date ?? null
+
+	const totalSeconds = data.reduce((sum, d) => sum + d.totalWorkSeconds, 0)
+	const activeDays = data.filter((d) => d.totalWorkSeconds > 0).length
 
 	const maxHours = Math.max(...data.map((d) => d.hours), 0)
 	const topTick = Math.ceil(maxHours) || 1
@@ -45,12 +49,24 @@ export function TimeProgressChart() {
 				<p className="text-sm font-semibold text-foreground mt-0.5">
 					Last 30 days
 				</p>
+				{!loading && totalSeconds > 0 && (
+					<p className="text-xs text-muted-foreground mt-1">
+						{formatDuration(totalSeconds)} total · {activeDays} active{' '}
+						{activeDays === 1 ? 'day' : 'days'}
+					</p>
+				)}
 			</div>
 
 			<div className="h-40">
 				{loading ? (
 					<div className="h-full flex items-center justify-center">
 						<span className="text-xs text-muted-foreground">Loading…</span>
+					</div>
+				) : totalSeconds === 0 ? (
+					<div className="h-full flex items-center justify-center">
+						<span className="text-xs text-muted-foreground">
+							No sessions in the last 30 days
+						</span>
 					</div>
 				) : (
 					<ResponsiveContainer width="100%" height={160}>
@@ -61,11 +77,13 @@ export function TimeProgressChart() {
 								stroke="var(--border)"
 							/>
 							<XAxis
-								dataKey="label"
+								dataKey="date"
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
 								axisLine={false}
 								tickLine={false}
-								interval={0}
+								interval="preserveStartEnd"
+								minTickGap={12}
+								tickFormatter={(v: string) => format(parseISO(v), 'd')}
 							/>
 							<YAxis
 								tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
@@ -99,8 +117,8 @@ export function TimeProgressChart() {
 								dataKey="hours"
 								// biome-ignore lint/suspicious/noExplicitAny: recharts spreads data keys into shape props but doesn't type them
 								shape={(props: any) => {
-									const { label, hours } = props as TimeChartEntry
-									const isToday = label === todayLabel
+									const { date, hours } = props as TimeChartEntry
+									const isToday = date === todayDate
 									const fill = isToday
 										? 'var(--primary)'
 										: hours > 0
