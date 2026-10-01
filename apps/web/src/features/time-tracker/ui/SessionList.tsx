@@ -1,4 +1,5 @@
 import { useTimeTrackerStore } from '../model/store'
+import { TIME_TRACKER_TEST_IDS } from '../testIds'
 import { SessionRow } from './SessionRow'
 
 export function SessionList() {
@@ -7,7 +8,10 @@ export function SessionList() {
 	if (!todaySummary || todaySummary.sessions.length === 0) return null
 
 	return (
-		<div className="rounded-xl border border-border bg-card overflow-hidden">
+		<div
+			className="rounded-xl border border-border bg-card overflow-hidden"
+			data-testid={TIME_TRACKER_TEST_IDS.sessionList}
+		>
 			<div className="px-5 py-3 border-b border-border">
 				<span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
 					Today's Sessions

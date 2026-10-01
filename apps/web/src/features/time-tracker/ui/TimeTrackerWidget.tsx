@@ -4,8 +4,9 @@ import { cn } from '@/shared/lib/cn'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
-import { formatElapsed } from '../lib/utils'
+import { formatElapsed } from '../lib/format-elapsed'
 import { useTimeTrackerStore } from '../model/store'
+import { TIME_TRACKER_TEST_IDS } from '../testIds'
 import { SessionList } from './SessionList'
 import { TodayStats } from './TodayStats'
 
@@ -33,7 +34,10 @@ export function TimeTrackerWidget() {
 	const strokeOffset = CIRCUMFERENCE * (1 - progress)
 
 	return (
-		<div className="h-full flex flex-col">
+		<div
+			className="h-full flex flex-col"
+			data-testid={TIME_TRACKER_TEST_IDS.page}
+		>
 			<div className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-medium text-foreground">Time Tracker</h1>
 			</div>
@@ -41,7 +45,10 @@ export function TimeTrackerWidget() {
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-105 mx-auto space-y-4">
 					{loading ? (
-						<div className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-64">
+						<div
+							className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-64"
+							data-testid={TIME_TRACKER_TEST_IDS.loading}
+						>
 							<span className="text-xs text-muted-foreground">Loading…</span>
 						</div>
 					) : (
@@ -49,6 +56,7 @@ export function TimeTrackerWidget() {
 							<div className="rounded-xl border border-border bg-card p-4 sm:p-8 flex flex-col items-center gap-6">
 								<Badge
 									variant={activeSession ? 'default' : 'outline'}
+									data-testid={TIME_TRACKER_TEST_IDS.statusBadge}
 									className={cn(
 										'text-xs font-medium',
 										!activeSession && 'text-muted-foreground',
@@ -94,7 +102,10 @@ export function TimeTrackerWidget() {
 										/>
 									</svg>
 									<div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-										<span className="text-3xl font-mono font-semibold tracking-tight text-foreground tabular-nums">
+										<span
+											className="text-3xl font-mono font-semibold tracking-tight text-foreground tabular-nums"
+											data-testid={TIME_TRACKER_TEST_IDS.timer}
+										>
 											{formatElapsed(elapsed)}
 										</span>
 										{activeSession && (
@@ -112,6 +123,7 @@ export function TimeTrackerWidget() {
 											size="lg"
 											onClick={stopWork}
 											isLoading={submitting}
+											data-testid={TIME_TRACKER_TEST_IDS.stopBtn}
 											className="w-36"
 										>
 											Stop Work
@@ -123,6 +135,7 @@ export function TimeTrackerWidget() {
 													size="icon"
 													className="text-muted-foreground hover:text-destructive"
 													disabled={submitting}
+													data-testid={TIME_TRACKER_TEST_IDS.deleteTrigger}
 												>
 													<Trash2 className="size-4" />
 												</Button>
@@ -139,6 +152,7 @@ export function TimeTrackerWidget() {
 										size="lg"
 										onClick={startWork}
 										isLoading={submitting}
+										data-testid={TIME_TRACKER_TEST_IDS.startBtn}
 										className="w-36"
 									>
 										Start Work
