@@ -13,6 +13,8 @@ export default defineConfig({
 		},
 	}),
 	manifest: {
+		name: 'my·time',
+		description: 'Blocks distracting sites from your my·time block list.',
 		permissions: [
 			'declarativeNetRequest',
 			'declarativeNetRequestWithHostAccess',
