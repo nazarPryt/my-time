@@ -1,6 +1,7 @@
 import { PuzzleIcon } from 'lucide-react'
 import { Badge } from '@/shared/ui'
 import type { ExtensionStatus } from '../model/use-extension-connection'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
 
 const LABELS: Record<ExtensionStatus, string> = {
 	checking: 'Checking extension…',
@@ -31,7 +32,12 @@ export function ExtensionStatusBadge({
 			: LABELS[status]
 
 	return (
-		<Badge variant={variant} className="h-6 gap-1.5 px-2.5">
+		<Badge
+			variant={variant}
+			className="h-6 gap-1.5 px-2.5"
+			data-testid={SB.statusBadge}
+			data-variant={variant}
+		>
 			<PuzzleIcon />
 			{label}
 		</Badge>

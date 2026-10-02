@@ -14,6 +14,7 @@ import {
 	useSiteBlockingActions,
 	useSiteBlockingState,
 } from '@/features/site-blocking'
+import { SITE_BLOCKING_TEST_IDS as SB } from '@/features/site-blocking/testIds'
 import { Button, Input } from '@/shared/ui'
 
 export function SiteBlockingPage() {
@@ -40,7 +41,7 @@ export function SiteBlockingPage() {
 	}
 
 	return (
-		<div className="h-full flex flex-col">
+		<div className="h-full flex flex-col" data-testid={SB.page}>
 			<header className="h-14 flex items-center justify-between px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground">Site Blocking</h1>
 				<ExtensionStatusBadge
@@ -66,19 +67,28 @@ export function SiteBlockingPage() {
 						/>
 					)}
 
-					<form onSubmit={handleSubmit(handleAdd)} className="flex gap-2">
+					<form
+						onSubmit={handleSubmit(handleAdd)}
+						className="flex gap-2"
+						data-testid={SB.addForm}
+					>
 						<Input
 							placeholder="e.g. reddit.com"
 							{...register('domain')}
 							disabled={submitting}
 							className="flex-1"
+							data-testid={SB.domainInput}
 						/>
-						<Button type="submit" disabled={submitting}>
+						<Button type="submit" disabled={submitting} data-testid={SB.addBtn}>
 							Block
 						</Button>
 					</form>
 
-					{error && <p className="text-sm text-destructive">{error}</p>}
+					{error && (
+						<p className="text-sm text-destructive" data-testid={SB.error}>
+							{error}
+						</p>
+					)}
 
 					<div className="rounded-xl border border-border bg-card overflow-hidden">
 						<SiteList sites={sites} loading={loading} onRemove={removeSite} />

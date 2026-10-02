@@ -17,6 +17,7 @@ import {
 } from '@/shared/ui'
 import { extensionDownloadUrl } from '../lib/extension-download-url'
 import type { ExtensionStatus } from '../model/use-extension-connection'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
 import { CHROME_EXTENSIONS_PAGE, CopyableUrl } from './copyable-url'
 
 interface ExtensionSetupCardProps {
@@ -35,7 +36,7 @@ export function ExtensionSetupCard({
 	const installed = status === 'not-linked' || status === 'linked'
 
 	return (
-		<Card>
+		<Card data-testid={SB.setupCard}>
 			<CardHeader>
 				<CardTitle>Set up site blocking</CardTitle>
 				<CardDescription>
@@ -46,7 +47,12 @@ export function ExtensionSetupCard({
 			</CardHeader>
 			<CardContent>
 				<ol className="space-y-5">
-					<Step number={1} done={installed} title="Install the extension">
+					<Step
+						number={1}
+						done={installed}
+						title="Install the extension"
+						testId={SB.installStep}
+					>
 						{!installed && <InstallInstructions />}
 					</Step>
 					<Step
@@ -54,17 +60,23 @@ export function ExtensionSetupCard({
 						done={status === 'linked'}
 						disabled={!installed}
 						title="Connect it to your account"
+						testId={SB.connectStep}
 					>
 						{installed && (
 							<div className="space-y-2">
 								<p className="text-muted-foreground">
 									Signs the extension in as you, so it syncs your block list.
 								</p>
-								<Button size="sm" onClick={onConnect} disabled={connecting}>
+								<Button
+									size="sm"
+									onClick={onConnect}
+									disabled={connecting}
+									data-testid={SB.connectBtn}
+								>
 									{connecting ? 'Connecting…' : 'Connect extension'}
 								</Button>
 								{connectFailed && (
-									<p className="text-destructive">
+									<p className="text-destructive" data-testid={SB.connectError}>
 										Couldn't connect. Reload this page and try again.
 									</p>
 								)}
@@ -82,16 +94,22 @@ function Step({
 	title,
 	done,
 	disabled = false,
+	testId,
 	children,
 }: {
 	number: number
 	title: string
+	testId: string
 	done: boolean
 	disabled?: boolean
 	children?: ReactNode
 }) {
 	return (
-		<li className={cn('flex gap-3', disabled && 'opacity-50')}>
+		<li
+			className={cn('flex gap-3', disabled && 'opacity-50')}
+			data-testid={testId}
+			data-disabled={disabled || undefined}
+		>
 			<span
 				className={cn(
 					'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium',
@@ -106,7 +124,10 @@ function Step({
 				<p className="font-medium text-foreground">
 					{title}
 					{done && (
-						<span className="ml-2 text-xs font-normal text-green-500">
+						<span
+							className="ml-2 text-xs font-normal text-green-500"
+							data-testid={SB.stepDone}
+						>
 							Done
 						</span>
 					)}
@@ -126,6 +147,7 @@ function InstallInstructions() {
 						href={WEB_CONFIG.EXTENSION_STORE_URL}
 						target="_blank"
 						rel="noreferrer"
+						data-testid={SB.storeLink}
 					>
 						<ExternalLinkIcon />
 						Add to Chrome
@@ -139,7 +161,7 @@ function InstallInstructions() {
 	return (
 		<div className="space-y-3">
 			<Button size="sm" asChild>
-				<a href={extensionDownloadUrl()} download>
+				<a href={extensionDownloadUrl()} download data-testid={SB.downloadLink}>
 					<DownloadIcon />
 					Download extension (.zip)
 				</a>
@@ -174,6 +196,7 @@ function ReloadHint() {
 				size="xs"
 				className="h-auto px-0"
 				onClick={() => window.location.reload()}
+				data-testid={SB.reloadBtn}
 			>
 				<RotateCwIcon />
 				Reload this page

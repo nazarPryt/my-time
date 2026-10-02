@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
 import { useFavicon } from '../model/use-favicon'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
 
 interface Props {
 	site: BlockedSiteResponse
@@ -14,7 +15,10 @@ export function BlockedSiteItem({ site, onRemove }: Props) {
 	const favicon = useFavicon(site.domain)
 
 	return (
-		<li className="flex items-center justify-between px-4 py-3">
+		<li
+			className="flex items-center justify-between px-4 py-3"
+			data-testid={SB.siteRow}
+		>
 			<div className="flex items-center gap-3">
 				{favicon.src && (
 					<img
@@ -24,11 +28,20 @@ export function BlockedSiteItem({ site, onRemove }: Props) {
 						height={20}
 						className="rounded-sm shrink-0"
 						onError={favicon.onError}
+						data-testid={SB.siteFavicon}
 					/>
 				)}
 				<div>
-					<p className="text-sm font-medium text-foreground">{site.domain}</p>
-					<p className="text-xs text-muted-foreground">
+					<p
+						className="text-sm font-medium text-foreground"
+						data-testid={SB.siteDomain}
+					>
+						{site.domain}
+					</p>
+					<p
+						className="text-xs text-muted-foreground"
+						data-testid={SB.siteAddedAt}
+					>
 						Added {format(new Date(site.createdAt), 'MMM d, yyyy')}
 					</p>
 				</div>
@@ -39,6 +52,7 @@ export function BlockedSiteItem({ site, onRemove }: Props) {
 						variant="ghost"
 						size="icon"
 						className="text-muted-foreground hover:text-destructive"
+						data-testid={SB.siteRemoveTrigger}
 					>
 						<Trash2 size={15} />
 					</Button>
