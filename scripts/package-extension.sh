@@ -3,8 +3,8 @@
 # Site Blocking setup card links to it (the "Load unpacked" install path, used
 # until the extension is on the Chrome Web Store).
 #
-# The extension bakes VITE_WEB_URL / VITE_API_URL in at build time, so build it
-# with the env of the deployment that will serve the zip (apps/extension/.env).
+# Local testing only: production zips are built inside the web Docker image
+# (apps/web/Dockerfile). This one bakes in apps/extension/.env's URLs.
 set -euo pipefail
 
 # --bun runs WXT on Bun's runtime instead of the system Node, which may be too

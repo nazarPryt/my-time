@@ -1,3 +1,6 @@
 **/node_modules
-apps/extension
 **/.env
+# Extension build output — the web image builds its own zip from source.
+apps/extension/.output
+apps/extension/.wxt
+apps/web/public/my-time-extension.zip

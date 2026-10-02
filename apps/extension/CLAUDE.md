@@ -19,7 +19,7 @@ bun run lint:check
 > **Node 18 caveat:** the system Node (18) is too old for WXT's CLI (`node:util` has no
 > `styleText`), so `bun --filter extension build`/`zip` fail. `extension:package` works
 > because it runs WXT on Bun's runtime: `cd apps/extension && bun --bun wxt <cmd>`.
-> Use the same form for any other WXT command.
+> Use the same form for any other WXT command (the `postinstall` already does).
 
 ## Environment
 
@@ -124,22 +124,24 @@ by file path (not the `contracts` barrel, to keep zod out of the config). The we
 compares the installed version against the same constant and shows an update prompt
 (sidebar dot + update card) when the user's copy is older.
 
-Release order:
-1. Bump `EXTENSION_VERSION` (dotted numbers only, e.g. `0.3.0` — Chrome rejects anything else).
-2. `bun run extension:package` with production env values.
-3. Publish the zip.
-4. Deploy the web app.
+Releasing = bump `EXTENSION_VERSION` (dotted numbers only, e.g. `0.3.0` — Chrome rejects
+anything else) and merge to `main`. The web Docker image (`apps/web/Dockerfile`) builds the
+zip itself and serves it at `/my-time-extension.zip`, so the zip and the version the site
+advertises always ship together — there's no separate publish step to forget. Its URLs come
+from the image's build args: `FRONTEND_WEB_URL` → `VITE_WEB_URL`, and `VITE_API_URL` +
+`/api/v1` → `VITE_API_URL` (production environment secrets in `deploy.yml`, env vars in
+`docker-compose.prod.yml`).
 
-Publish the zip **before** (or with) the web deploy, or users get prompted to download a
-version that isn't up yet.
+`bun run extension:package` is for local testing only — it drops a zip built with your local
+`.env` into `apps/web/public/` (gitignored, excluded from the Docker context).
 
 Distribution is currently a zip installed via **Load unpacked**; the web app's setup card
 walks users through it. Once on the Chrome Web Store, set `VITE_EXTENSION_STORE_URL` in the
 web app and the cards switch to the store flow. Unpacked installs are identified by folder
 path — updating means unzipping over the **same folder**, or the user must reconnect.
 
-CI doesn't build or check the extension, and the web Docker image excludes
-`apps/extension` (`.dockerignore`), so the zip isn't part of a deploy automatically.
+CI's **Extension** job (`ci.yml`) typechecks and builds it on every PR and push to `main`
+(check only — nothing from it ships); root Biome lints it in the **Lint** job.
 
 ## Monorepo context
 

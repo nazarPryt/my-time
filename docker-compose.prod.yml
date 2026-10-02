@@ -53,6 +53,8 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        # Baked into the extension zip the web image builds and serves.
+        FRONTEND_WEB_URL: ${FRONTEND_WEB_URL}
     restart: unless-stopped
     logging: *default-logging
     expose:

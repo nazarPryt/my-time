@@ -49,6 +49,31 @@ jobs:
       - run: bun run --filter api typecheck
       - run: bun run --filter web typecheck
 
+  # Check only — nothing ships from here. The release zip is built inside the
+  # web Docker image (apps/web/Dockerfile) on deploy; this catches a broken
+  # extension on the PR instead of after merge.
+  extension:
+    name: Extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - name: Cache bun install
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      # postinstall runs `wxt prepare`, generating .wxt/tsconfig.json that the
+      # typecheck extends.
+      - run: bun install --frozen-lockfile
+      - run: bun --filter extension compile
+      # --bun: WXT on Bun's runtime, same as the Dockerfile and extension:package.
+      - run: bun --bun wxt build
+        working-directory: apps/extension
+
   test-api:
     name: API tests
     runs-on: ubuntu-latest

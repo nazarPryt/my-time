@@ -11,7 +11,7 @@
 		"zip": "wxt zip",
 		"zip:firefox": "wxt zip -b firefox",
 		"compile": "tsc --noEmit",
-		"postinstall": "wxt prepare"
+		"postinstall": "bun --bun wxt prepare"
 	},
 	"dependencies": {
 		"react": "^19.2.4",
