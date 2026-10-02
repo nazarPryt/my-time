@@ -6,6 +6,13 @@ import {
 	fetchBlockedSites,
 	removeBlockedSite,
 } from '../api/api'
+import { reinsertAt } from '../lib/reinsert-at'
+
+export const SITES_ERRORS = {
+	load: 'Failed to load blocked sites',
+	add: 'Failed to block site',
+	remove: 'Failed to remove site',
+} as const
 
 interface SiteBlockingState {
 	sites: BlockedSiteResponse[]
@@ -17,7 +24,7 @@ interface SiteBlockingState {
 	removeSite: (id: string) => Promise<void>
 }
 
-export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
+const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 	sites: [],
 	loading: true,
 	submitting: false,
@@ -25,32 +32,38 @@ export const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 
 	loadSites: async () => {
 		set({ loading: true, error: null })
-		const { data, error: err } = await fetchBlockedSites()
-		if (err) {
-			set({ error: 'Failed to load blocked sites', loading: false })
-		} else {
-			set({ sites: data ?? [], loading: false })
-		}
+		const { data, error } = await fetchBlockedSites()
+		set(
+			error
+				? { loading: false, error: SITES_ERRORS.load }
+				: { loading: false, sites: data ?? [] },
+		)
 	},
 
 	addSite: async (domain) => {
-		const { submitting } = get()
-		if (submitting) return
+		if (get().submitting) return
 		set({ submitting: true, error: null })
-		const { data, error: err } = await addBlockedSite(domain)
-		if (err || !data || 'message' in data) {
-			set({ submitting: false, error: 'Failed to block site' })
-		} else {
-			set((s) => ({ submitting: false, sites: [...s.sites, data] }))
+		const { data, error } = await addBlockedSite(domain)
+		if (error || !data || 'message' in data) {
+			set({ submitting: false, error: SITES_ERRORS.add })
+			return
 		}
+		set((s) => ({ submitting: false, sites: [...s.sites, data] }))
 	},
 
+	// Optimistic: the row disappears at once and comes back if the server fails.
 	removeSite: async (id) => {
-		const prev = get().sites
-		set((s) => ({ sites: s.sites.filter((s) => s.id !== id) }))
-		const { error: err } = await removeBlockedSite(id)
-		if (err) {
-			set({ sites: prev, error: 'Failed to remove site' })
+		const index = get().sites.findIndex((site) => site.id === id)
+		const removed = get().sites[index]
+		if (!removed) return
+		set((s) => ({ sites: s.sites.filter((site) => site.id !== id) }))
+
+		const { error } = await removeBlockedSite(id)
+		if (error) {
+			set((s) => ({
+				sites: reinsertAt(s.sites, removed, index),
+				error: SITES_ERRORS.remove,
+			}))
 		}
 	},
 }))

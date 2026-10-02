@@ -1,13 +1,12 @@
 import { useState } from 'react'
+import { faviconUrl } from '../lib/favicon-url'
 
-const FAVICON_URL = (domain: string) =>
-	`https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-
+/** Favicon src for a domain, or `null` once it fails to load (hide the img). */
 export function useFavicon(domain: string) {
 	const [failed, setFailed] = useState(false)
 
 	return {
-		src: failed ? null : FAVICON_URL(domain),
+		src: failed ? null : faviconUrl(domain),
 		onError: () => setFailed(true),
 	}
 }

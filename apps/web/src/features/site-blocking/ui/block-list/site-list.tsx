@@ -1,6 +1,6 @@
 import type { BlockedSiteResponse } from 'contracts'
 import { ShieldOff } from 'lucide-react'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
 import { BlockedSiteItem } from './blocked-site-item'
 
 type Props = {

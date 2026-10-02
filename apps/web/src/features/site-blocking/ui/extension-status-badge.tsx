@@ -1,35 +1,13 @@
 import { PuzzleIcon } from 'lucide-react'
 import { Badge } from '@/shared/ui'
-import type { ExtensionStatus } from '../model/use-extension-connection'
+import { statusBadgeFor } from '../lib/extension-status'
+import { useExtensionConnection } from '../model/use-extension-connection'
 import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
 
-const LABELS: Record<ExtensionStatus, string> = {
-	checking: 'Checking extension…',
-	'not-installed': 'Extension not installed',
-	'not-linked': 'Extension not connected',
-	linked: 'Extension active',
-}
-
-interface ExtensionStatusBadgeProps {
-	status: ExtensionStatus
-	updateAvailable: boolean
-}
-
-export function ExtensionStatusBadge({
-	status,
-	updateAvailable,
-}: ExtensionStatusBadgeProps) {
-	const variant =
-		status === 'linked' && !updateAvailable
-			? 'success'
-			: status === 'checking'
-				? 'outline'
-				: 'warning'
-	// Install/connect problems outrank an update — they mean nothing is blocked.
-	const label =
-		status === 'linked' && updateAvailable
-			? 'Extension update available'
-			: LABELS[status]
+/** Header badge summarising the extension: checking / missing / unlinked / active / outdated. */
+export function ExtensionStatusBadge() {
+	const { status, updateAvailable } = useExtensionConnection()
+	const { label, variant } = statusBadgeFor(status, updateAvailable)
 
 	return (
 		<Badge

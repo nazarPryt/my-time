@@ -3,8 +3,8 @@ import { format } from 'date-fns'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
-import { useFavicon } from '../model/use-favicon'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
+import { useFavicon } from '../../model/use-favicon'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
 
 interface Props {
 	site: BlockedSiteResponse
@@ -12,25 +12,13 @@ interface Props {
 }
 
 export function BlockedSiteItem({ site, onRemove }: Props) {
-	const favicon = useFavicon(site.domain)
-
 	return (
 		<li
 			className="flex items-center justify-between px-4 py-3"
 			data-testid={SB.siteRow}
 		>
 			<div className="flex items-center gap-3">
-				{favicon.src && (
-					<img
-						src={favicon.src}
-						alt=""
-						width={20}
-						height={20}
-						className="rounded-sm shrink-0"
-						onError={favicon.onError}
-						data-testid={SB.siteFavicon}
-					/>
-				)}
+				<SiteFavicon domain={site.domain} />
 				<div>
 					<p
 						className="text-sm font-medium text-foreground"
@@ -64,5 +52,22 @@ export function BlockedSiteItem({ site, onRemove }: Props) {
 				onConfirm={onRemove}
 			/>
 		</li>
+	)
+}
+
+/** Renders nothing once the icon fails to load, rather than a broken image. */
+function SiteFavicon({ domain }: { domain: string }) {
+	const favicon = useFavicon(domain)
+	if (!favicon.src) return null
+	return (
+		<img
+			src={favicon.src}
+			alt=""
+			width={20}
+			height={20}
+			className="rounded-sm shrink-0"
+			onError={favicon.onError}
+			data-testid={SB.siteFavicon}
+		/>
 	)
 }
