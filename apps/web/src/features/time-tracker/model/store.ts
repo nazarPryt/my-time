@@ -3,7 +3,7 @@ import type {
 	SessionResponse,
 	TodaySummaryResponse,
 } from 'contracts'
-import { format } from 'date-fns'
+import { differenceInSeconds, format } from 'date-fns'
 import { create } from 'zustand'
 import {
 	deleteSession,
@@ -19,6 +19,16 @@ export type TimeChartEntry = {
 	label: string
 	hours: number
 	totalWorkSeconds: number
+}
+
+/**
+ * Elapsed seconds since a session began, derived from its start timestamp.
+ * Computing from `startedAt` (instead of a from-zero counter) keeps the timer
+ * correct across remounts/navigation and clock drift. Clamped at 0 to guard
+ * against minor client/server clock skew producing a negative value.
+ */
+function elapsedSince(startedAt: Date): number {
+	return Math.max(0, differenceInSeconds(new Date(), startedAt))
 }
 
 function toChartEntry(d: DailySummary): TimeChartEntry {
@@ -51,122 +61,126 @@ interface TimeTrackerState {
 	loadWeekly: (signal?: AbortSignal) => Promise<void>
 }
 
-export const useTimeTrackerStore = create<TimeTrackerState>((set, get) => ({
-	activeSession: null,
-	todaySummary: null,
-	loading: true,
-	submitting: false,
-	elapsed: 0,
-	_intervalId: null,
-
-	weeklyData: [],
-	weeklyLoading: true,
-
-	load: async (signal) => {
-		const [{ data: active }, { data: today }] = await Promise.all([
-			fetchActiveSession(),
-			fetchTodaySummary(signal),
-		])
-		if (signal?.aborted) return
-
-		const activeSession = active ?? null
-
-		// Start or clear the tick interval based on whether there is an active session
+export const useTimeTrackerStore = create<TimeTrackerState>((set, get) => {
+	/**
+	 * Clears any running interval and, for an active session, starts a 1s tick
+	 * that recomputes `elapsed` from the session's `startedAt`. Returns the new
+	 * interval id (null when there is no active session) to store in state.
+	 */
+	function startTicking(): ReturnType<typeof setInterval> {
 		const existing = get()._intervalId
 		if (existing) clearInterval(existing)
+		return setInterval(() => {
+			set((s) =>
+				s.activeSession
+					? { elapsed: elapsedSince(s.activeSession.startedAt) }
+					: { elapsed: 0, _intervalId: null },
+			)
+		}, 1000)
+	}
 
-		let intervalId: ReturnType<typeof setInterval> | null = null
-		if (activeSession) {
-			intervalId = setInterval(() => {
-				set((s) =>
-					s.activeSession
-						? { elapsed: s.elapsed + 1 }
-						: { elapsed: 0, _intervalId: null },
-				)
-			}, 1000)
-		}
+	return {
+		activeSession: null,
+		todaySummary: null,
+		loading: true,
+		submitting: false,
+		elapsed: 0,
+		_intervalId: null,
 
-		set({
-			activeSession,
-			todaySummary: today ?? null,
-			loading: false,
-			elapsed: 0,
-			_intervalId: intervalId,
-		})
-	},
+		weeklyData: [],
+		weeklyLoading: true,
 
-	startWork: async () => {
-		const { submitting } = get()
-		if (submitting) return
-		set({ submitting: true })
+		load: async (signal) => {
+			const [{ data: active }, { data: today }] = await Promise.all([
+				fetchActiveSession(),
+				fetchTodaySummary(signal),
+			])
+			if (signal?.aborted) return
 
-		const { data, error } = await startSession('work')
-		if (!error && data) {
-			// Start ticking
+			const activeSession = active ?? null
+
+			// Start or clear the tick interval based on whether there is an active
+			// session. elapsed is derived from startedAt so it reflects real time
+			// already spent, not time since this component mounted.
 			const existing = get()._intervalId
 			if (existing) clearInterval(existing)
-			const intervalId = setInterval(() => {
-				set((s) =>
-					s.activeSession
-						? { elapsed: s.elapsed + 1 }
-						: { elapsed: 0, _intervalId: null },
-				)
-			}, 1000)
-			set({ activeSession: data, elapsed: 0, _intervalId: intervalId })
-		}
-		set({ submitting: false })
-	},
 
-	stopWork: async () => {
-		const { activeSession, submitting } = get()
-		if (!activeSession || submitting) return
-		set({ submitting: true })
+			set({
+				activeSession,
+				todaySummary: today ?? null,
+				loading: false,
+				elapsed: activeSession ? elapsedSince(activeSession.startedAt) : 0,
+				_intervalId: activeSession ? startTicking() : null,
+			})
+		},
 
-		await endSession(activeSession.id)
+		startWork: async () => {
+			const { submitting } = get()
+			if (submitting) return
+			set({ submitting: true })
 
-		const existing = get()._intervalId
-		if (existing) clearInterval(existing)
+			const { data, error } = await startSession('work')
+			if (!error && data) {
+				set({
+					activeSession: data,
+					elapsed: elapsedSince(data.startedAt),
+					_intervalId: startTicking(),
+				})
+			}
+			set({ submitting: false })
+		},
 
-		const { data: today } = await fetchTodaySummary()
-		set({
-			activeSession: null,
-			todaySummary: today ?? null,
-			elapsed: 0,
-			_intervalId: null,
-			submitting: false,
-		})
-	},
+		stopWork: async () => {
+			const { activeSession, submitting } = get()
+			if (!activeSession || submitting) return
+			set({ submitting: true })
 
-	abandonSession: async (id: string) => {
-		const { submitting } = get()
-		if (submitting) return
-		set({ submitting: true })
+			await endSession(activeSession.id)
 
-		await deleteSession(id)
+			const existing = get()._intervalId
+			if (existing) clearInterval(existing)
 
-		const existing = get()._intervalId
-		if (existing) clearInterval(existing)
+			const { data: today } = await fetchTodaySummary()
+			set({
+				activeSession: null,
+				todaySummary: today ?? null,
+				elapsed: 0,
+				_intervalId: null,
+				submitting: false,
+			})
+		},
 
-		const { data: today } = await fetchTodaySummary()
-		set({
-			activeSession: null,
-			todaySummary: today ?? null,
-			elapsed: 0,
-			_intervalId: null,
-			submitting: false,
-		})
-	},
+		abandonSession: async (id: string) => {
+			const { submitting } = get()
+			if (submitting) return
+			set({ submitting: true })
 
-	loadWeekly: async (signal) => {
-		set({ weeklyLoading: true })
-		const { data } = await fetchWeeklyProgress(signal)
-		if (signal?.aborted) return
-		if (!data) {
-			set({ weeklyLoading: false })
-			return
-		}
-		// API returns most-recent-first; reverse for chronological display
-		const sorted = [...data.days].reverse()
-		set({ weeklyData: sorted.map(toChartEntry), weeklyLoading: false })
-	},
-}))
+			await deleteSession(id)
+
+			const existing = get()._intervalId
+			if (existing) clearInterval(existing)
+
+			const { data: today } = await fetchTodaySummary()
+			set({
+				activeSession: null,
+				todaySummary: today ?? null,
+				elapsed: 0,
+				_intervalId: null,
+				submitting: false,
+			})
+		},
+
+		loadWeekly: async (signal) => {
+			set({ weeklyLoading: true })
+			const { data } = await fetchWeeklyProgress(signal)
+			if (signal?.aborted) return
+			if (!data) {
+				set({ weeklyLoading: false })
+				return
+			}
+			// API returns most-recent-first; reverse for chronological display
+			const sorted = [...data.days].reverse()
+			set({ weeklyData: sorted.map(toChartEntry), weeklyLoading: false })
+		},
+	}
+})

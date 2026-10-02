@@ -1,14 +1,25 @@
 import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
+import type { TimeTrackerPage } from './TimeTrackerPage'
 import { TIME_TRACKER_PATH } from './TimeTrackerPage'
 import { expect, test } from './time-tracker.fixtures'
 import {
 	API_TIME_TODAY,
+	activeSessionStartedSecondsAgo,
 	MOCK_SESSION_ACTIVE,
 	MOCK_TODAY_EMPTY,
 	MOCK_TODAY_WITH_SESSIONS,
 	mockTimeActive,
 	mockTimeToday,
 } from './time-tracker.mocks'
+
+/** Parse the timer's `mm:ss` / `hh:mm:ss` text into total seconds. */
+async function readTimerSeconds(timeTrackerPage: TimeTrackerPage) {
+	const text = (await timeTrackerPage.timer.textContent()) ?? ''
+	return text
+		.split(':')
+		.map(Number)
+		.reduce((total, part) => total * 60 + part, 0)
+}
 
 test.describe('Time Tracker page', () => {
 	test.describe('Loading state', () => {
@@ -152,14 +163,48 @@ test.describe('Time Tracker page', () => {
 			page,
 			timeTrackerPage,
 		}) => {
-			await mockTimeActive(page, MOCK_SESSION_ACTIVE)
+			// Started ~5s ago; elapsed is derived from startedAt, so it opens near
+			// 00:05 rather than 00:00, then keeps climbing once per second.
+			await mockTimeActive(page, activeSessionStartedSecondsAgo(5))
 			await timeTrackerPage.goto()
 
-			// The store ticks `elapsed` once per second; assert it leaves 00:00 and
-			// renders as mm:ss. A regex avoids racing a specific second value.
-			await expect(timeTrackerPage.timer).toHaveText(/^00:0[1-9]$/, {
-				timeout: 3000,
-			})
+			const initial = await readTimerSeconds(timeTrackerPage)
+			expect(initial).toBeGreaterThanOrEqual(5)
+
+			// The store ticks once per second; the value must strictly increase.
+			await expect
+				.poll(() => readTimerSeconds(timeTrackerPage), { timeout: 3000 })
+				.toBeGreaterThan(initial)
+		})
+	})
+
+	test.describe('Elapsed timer persistence across navigation', () => {
+		// Regression for the bug where the timer reset to 00:00 after leaving and
+		// returning to the page: the widget remounts and re-runs load(), which used
+		// to zero a from-zero counter. elapsed is now derived from startedAt, so it
+		// must survive the remount.
+		test('keeps the elapsed time after navigating away and back', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			// Started ~2 minutes ago so a reset-to-zero regression is unmistakable.
+			await mockTimeActive(page, activeSessionStartedSecondsAgo(125))
+			await timeTrackerPage.goto()
+
+			const beforeNav = await readTimerSeconds(timeTrackerPage)
+			expect(beforeNav).toBeGreaterThanOrEqual(125)
+
+			// Leave for another tab — this unmounts the time-tracker widget.
+			await timeTrackerPage.navLink('settings').click()
+			await expect(timeTrackerPage.timer).toHaveCount(0)
+
+			// Return — the widget remounts and load() runs again.
+			await timeTrackerPage.navLink('time-tracker').click()
+			await timeTrackerPage.statusBadge.waitFor({ state: 'visible' })
+
+			// The timer must resume from the real elapsed time, never from 00:00.
+			const afterNav = await readTimerSeconds(timeTrackerPage)
+			expect(afterNav).toBeGreaterThanOrEqual(beforeNav)
 		})
 	})
 

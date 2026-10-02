@@ -58,6 +58,25 @@ export const MOCK_SESSION_ACTIVE: SessionResponse = {
 	abandonedAt: null,
 }
 
+/**
+ * A running session that began `seconds` ago, built at call time. The timer's
+ * elapsed is derived from `startedAt` (not a from-zero counter), so timer
+ * assertions need a start time relative to "now" — a fixed past date would
+ * render as many hours. Use this instead of MOCK_SESSION_ACTIVE whenever the
+ * test asserts the elapsed value.
+ */
+export function activeSessionStartedSecondsAgo(
+	seconds: number,
+): SessionResponse {
+	return {
+		id: 'sess-active',
+		type: 'work',
+		startedAt: new Date(Date.now() - seconds * 1000),
+		endedAt: null,
+		abandonedAt: null,
+	}
+}
+
 export const MOCK_TODAY_WITH_SESSIONS: TodaySummaryResponse = {
 	sessions: [MOCK_SESSION_SHORT, MOCK_SESSION_LONG, MOCK_SESSION_ABANDONED],
 	totalWorkSeconds: 7200, // "2h"
