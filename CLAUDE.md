@@ -87,11 +87,35 @@ The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — ne
 
 ### web — React + TanStack Router + Tailwind v4
 
-- **Routing:** File-based via TanStack Router. `src/routeTree.gen.ts` is **auto-generated** — do not edit manually; it regenerates on `dev` startup. Route files live in `src/routes/`.
-- **Dashboard layout:** `src/routes/dashboard.tsx` — sidebar + `<Outlet>`. Add new nav items to `NAV_ITEMS` and create the route file in `src/routes/dashboard/`.
+**Architecture: Feature-Sliced Design (FSD).** `src/` is organised into layers, and
+**imports may only point down the stack** — never upward, never sideways between
+slices of the same layer. Boundaries are enforced by Biome (`noRestrictedImports`
+overrides in `biome.jsonc`), so violations fail `lint`/CI.
+
+```
+app       src/app/     routing, providers, layout wiring (e.g. app/ui/dashboard-shell.tsx)
+  ↓
+pages     src/pages/   one screen each; composes features + shared
+  ↓
+features  src/features/ one capability each: ui/ → model/ → api/ (+ lib/), one index.ts barrel
+  ↓
+shared    src/shared/  design system (shared/ui), api client, utils, config — depends on nothing
+```
+
+Rules: import a slice only through its `index.ts` barrel (`@/features/<name>`), never
+its internal `ui/model/api` files. Reach your own slice's files with relative imports.
+To share code between two slices, move it *down* a layer, don't import sideways.
+
+- **Routing:** File-based via TanStack Router. Route files live in `src/app/routes/`;
+  `src/app/routeTree.gen.ts` is **auto-generated** (do not edit; configured in
+  `vite.config.ts` via `routesDirectory`/`generatedRouteTree`). A route file is thin:
+  it renders a page — `createFileRoute(...)({ component: XPage })`.
+- **Dashboard layout:** `src/app/ui/dashboard-shell.tsx` (`DashboardShell`) holds the
+  sidebar + mobile nav; the layout route `src/app/routes/dashboard.tsx` renders
+  `<DashboardShell><Outlet/></DashboardShell>`. Add nav items to `NAV_ITEMS` in the shell.
 - **API client:** `src/shared/lib/api.ts` — Eden Treaty typed client (`treaty<App>`). The `App` type is imported from `@my-time/api` (the api package's public export). This gives end-to-end type safety with zero code generation.
-- **Auth guard:** `dashboard.tsx` `beforeLoad` calls `api.auth.me.get()` and redirects to login on failure. Tokens stored via `src/shared/lib/token-storage.ts`.
-- **UI components:** Shadcn-style components in `src/components/ui/` (Button, Input, Card, etc.). Use these before reaching for raw HTML.
+- **Auth guard:** `dashboard.tsx` `beforeLoad` calls `fetchMe()` (`@/features/auth/shared/api`) and redirects to login on failure. Tokens stored via `src/shared/lib/token-storage.ts`.
+- **UI components:** Shadcn-style components in `src/shared/ui/` (Button, Input, Card, etc.). Use these before reaching for raw HTML.
 - **Styling:** Tailwind v4 with CSS variables. Use design tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, etc.) to stay consistent with the design system.
 - **Path alias:** `@/` → `src/`.
 
@@ -100,5 +124,6 @@ The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — ne
 1. **Schema:** Add Zod schema(s) to `contracts/src/features/<feature>/`.
 2. **API route:** Create `apps/api/src/features/<feature>/routes.ts` as an Elysia plugin, wire it into `apps/api/src/app.ts`.
 3. **DB (if needed):** Add Drizzle table to `apps/api/src/db/schema/`, run `db:generate` + `db:migrate`.
-4. **Web page:** Create `apps/web/src/routes/dashboard/<feature>.tsx`. Add nav item in `apps/web/src/routes/dashboard.tsx`. The route tree regenerates automatically on next `dev` run.
-5. **API calls:** Use `api.<resource>.<method>()` from the Eden Treaty client — types flow automatically from the `App` type.
+4. **Web feature:** Create `apps/web/src/features/<feature>/` with `ui/`, `model/`, `api/` segments and an `index.ts` barrel (copy an existing slice like `time-tracker`).
+5. **Web page:** Create `apps/web/src/pages/<feature>/ui/<Feature>Page.tsx` + `index.ts`, composing the feature's barrel. Add a thin route in `apps/web/src/app/routes/dashboard/<feature>.tsx` that renders the page, and a nav item to `NAV_ITEMS` in `src/app/ui/dashboard-shell.tsx`. The route tree regenerates on next `dev` run.
+6. **API calls:** Use `api.<resource>.<method>()` from the Eden Treaty client (`@/shared/lib/api`) inside the feature's `api/` segment — types flow automatically from the `App` type.

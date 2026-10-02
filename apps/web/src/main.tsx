@@ -2,8 +2,8 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 
-import { ErrorBoundary } from '@/components/error-boundary'
-import { routeTree } from './routeTree.gen'
+import { ErrorBoundary } from '@/shared/ui/error-boundary'
+import { routeTree } from './app/routeTree.gen'
 import './index.css'
 
 const router = createRouter({ routeTree })

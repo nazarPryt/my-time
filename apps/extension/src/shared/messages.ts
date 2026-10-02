@@ -5,7 +5,9 @@
 export type ExtensionMessage =
 	| { type: 'SYNC' }
 	| { type: 'EXCHANGE_TOKEN'; token: string }
+	| { type: 'GET_STATUS' }
 
 export type ExtensionResponse =
 	| { type: 'SYNC'; count: number }
 	| { type: 'EXCHANGE_TOKEN'; success: boolean }
+	| { type: 'GET_STATUS'; authenticated: boolean }

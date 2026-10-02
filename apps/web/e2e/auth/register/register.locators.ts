@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test'
-import { AUTH_TEST_IDS } from '@/feature/auth/testIds'
+import { AUTH_TEST_IDS } from '@/features/auth/shared/testIds'
 
 export class RegisterLocators {
 	readonly page: Page

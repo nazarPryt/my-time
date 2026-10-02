@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test'
-import { WORKOUT_TEST_IDS } from '@/feature/workout/testIds'
+import { WORKOUT_TEST_IDS } from '@/features/workout/testIds'
 import { BaseLocators } from '../BaseLocators'
 
 export class WorkoutLocators extends BaseLocators {

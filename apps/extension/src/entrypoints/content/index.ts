@@ -6,8 +6,33 @@ export default defineContentScript({
 	main() {
 		const WEB_URL = EXTENSION_CONFIG.WEB_URL
 
+		// Tell the web app we're installed, whether we're signed in, and which
+		// version we are — so it can tell "not linked" from "working" and prompt
+		// for updates.
+		async function postStatus(type: 'MY_TIME_READY' | 'MY_TIME_PING_RESULT') {
+			// After the extension is reloaded/updated, this old script lingers in
+			// the page with a dead runtime. Stay silent rather than report a bogus
+			// "signed out" status — the background reloads this tab anyway.
+			if (!browser.runtime?.id) return
+			const message: ExtensionMessage = { type: 'GET_STATUS' }
+			const response = (await browser.runtime
+				.sendMessage(message)
+				.catch(() => null)) as Extract<
+				ExtensionResponse,
+				{ type: 'GET_STATUS' }
+			> | null
+			window.postMessage(
+				{
+					type,
+					authenticated: response?.authenticated ?? false,
+					version: browser.runtime.getManifest().version,
+				},
+				WEB_URL,
+			)
+		}
+
 		// Announce presence to the web app as soon as the content script loads
-		window.postMessage({ type: 'MY_TIME_READY' }, WEB_URL)
+		if (window.location.origin === WEB_URL) void postStatus('MY_TIME_READY')
 
 		window.addEventListener('message', (event) => {
 			// Only accept messages from the web app origin
@@ -15,7 +40,16 @@ export default defineContentScript({
 			if (!event.data) return
 
 			if (event.data.type === 'MY_TIME_PING') {
-				window.postMessage({ type: 'MY_TIME_PING_RESULT' }, WEB_URL)
+				void postStatus('MY_TIME_PING_RESULT')
+				return
+			}
+
+			// The block list changed in the web app — re-pull it now instead of
+			// waiting for the user to press "Sync now" in the popup.
+			if (event.data.type === 'MY_TIME_SYNC') {
+				if (!browser.runtime?.id) return
+				const message: ExtensionMessage = { type: 'SYNC' }
+				void browser.runtime.sendMessage(message).catch(() => null)
 				return
 			}
 

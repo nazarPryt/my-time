@@ -24,6 +24,9 @@ jobs:
   build-and-push:
     name: Build & push images
     runs-on: ubuntu-latest
+    # For VITE_API_URL / FRONTEND_WEB_URL, which are production environment
+    # secrets — the web build bakes them into the site and the extension zip.
+    environment: production
     if: github.event.workflow_run.conclusion == 'success'
     outputs:
       sha_tag: sha-${{ steps.sha.outputs.short }}
@@ -64,6 +67,9 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           push: true
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            FRONTEND_WEB_URL=${{ secrets.FRONTEND_WEB_URL }}
           tags: |
             ${{ env.WEB_IMAGE }}:sha-${{ steps.sha.outputs.short }}
             ${{ env.WEB_IMAGE }}:latest

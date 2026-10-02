@@ -4,8 +4,6 @@ import { useAuth } from '@/features/auth/useAuth'
 import { useSiteBlocking } from '@/features/siteBlocking/useSiteBlocking'
 import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 
-const WEB_APP_URL = EXTENSION_CONFIG.WEB_URL
-
 function App() {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -109,7 +107,7 @@ function App() {
 					className="btn btn-secondary"
 					onClick={() =>
 						browser.tabs.create({
-							url: `${WEB_APP_URL}/dashboard/site-blocking`,
+							url: EXTENSION_CONFIG.SITE_BLOCKING_PAGE_URL,
 						})
 					}
 				>

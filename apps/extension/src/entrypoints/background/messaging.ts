@@ -1,7 +1,7 @@
 // Background — typed message handlers.
 // Calls BLL services only; never touches DAL or chrome APIs directly.
 
-import { exchangeToken } from '@/bll/auth/authService'
+import { exchangeToken, isAuthenticated } from '@/bll/auth/authService'
 import { syncBlockedSites } from '@/bll/siteBlocking/siteBlockingService'
 import type { ExtensionMessage, ExtensionResponse } from '@/shared/messages'
 
@@ -28,6 +28,13 @@ export function handleMessage(
 				await syncBlockedSites()
 			}
 			sendResponse({ type: 'EXCHANGE_TOKEN', success })
+		})
+		return true // keep channel open for async response
+	}
+
+	if (msg.type === 'GET_STATUS') {
+		isAuthenticated().then((authenticated) => {
+			sendResponse({ type: 'GET_STATUS', authenticated })
 		})
 		return true // keep channel open for async response
 	}
