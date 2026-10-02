@@ -44,6 +44,15 @@ export default defineContentScript({
 				return
 			}
 
+			// The block list changed in the web app — re-pull it now instead of
+			// waiting for the user to press "Sync now" in the popup.
+			if (event.data.type === 'MY_TIME_SYNC') {
+				if (!browser.runtime?.id) return
+				const message: ExtensionMessage = { type: 'SYNC' }
+				void browser.runtime.sendMessage(message).catch(() => null)
+				return
+			}
+
 			if (event.data.type === 'MY_TIME_CONNECT') {
 				const { token } = event.data as { token: string }
 				const message: ExtensionMessage = { type: 'EXCHANGE_TOKEN', token }

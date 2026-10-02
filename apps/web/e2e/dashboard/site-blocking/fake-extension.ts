@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test'
+import { EXTENSION_VERSION } from 'contracts'
 
 /**
  * Stand-in for the browser extension's content script
@@ -10,6 +11,7 @@ import type { Page } from '@playwright/test'
  *   page → ext   MY_TIME_PING              ext → page   MY_TIME_PING_RESULT
  *   page → ext   MY_TIME_CONNECT { token } ext → page   MY_TIME_CONNECT_RESULT
  *                                          ext → page   MY_TIME_READY (unprompted)
+ *   page → ext   MY_TIME_SYNC              (no reply)
  *
  * Keep this in sync with the content script if the protocol changes.
  */
@@ -32,7 +34,8 @@ export interface FakeExtensionState {
 const DEFAULT_STATE: FakeExtensionState = {
 	installed: true,
 	authenticated: true,
-	version: '0.2.0',
+	// Up to date by default, so a release bump doesn't flip tests to "update".
+	version: EXTENSION_VERSION,
 	connectResult: 'success',
 	pingDelayMs: 0,
 }
@@ -41,6 +44,7 @@ const DEFAULT_STATE: FakeExtensionState = {
 export interface FakeExtensionLog {
 	pings: number
 	connectTokens: string[]
+	syncs: number
 }
 
 interface FakeExtensionHandle {
@@ -73,7 +77,7 @@ export async function installFakeExtension(
 			}
 			const handle: FakeExtensionHandle = {
 				state: initial,
-				log: { pings: 0, connectTokens: [] },
+				log: { pings: 0, connectTokens: [], syncs: 0 },
 			}
 			window.__fakeExtension = handle
 
@@ -98,6 +102,11 @@ export async function installFakeExtension(
 						() => reply(statusMessage('MY_TIME_PING_RESULT')),
 						state.pingDelayMs,
 					)
+					return
+				}
+
+				if (event.data.type === 'MY_TIME_SYNC') {
+					log.syncs++
 					return
 				}
 

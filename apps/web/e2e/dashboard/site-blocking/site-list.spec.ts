@@ -1,5 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { SITE_BLOCKING_ERRORS } from 'contracts'
+import { readFakeExtensionLog } from './fake-extension'
 import { SITE_BLOCKING_PATH } from './SiteBlockingPage'
 import { expect, linkedTest as test } from './site-blocking.fixtures'
 import {
@@ -142,6 +143,18 @@ test.describe('Site Blocking — block list', () => {
 			await expect(siteBlockingPage.domainInput).toHaveValue('')
 		})
 
+		test('tells the extension to sync once the add succeeds', async ({
+			page,
+			siteBlockingPage,
+		}) => {
+			await siteBlockingPage.addSite('twitter.com')
+
+			await expect(siteBlockingPage.siteRows).toHaveCount(3)
+			await expect
+				.poll(async () => (await readFakeExtensionLog(page)).syncs)
+				.toBe(1)
+		})
+
 		test('submits with the Enter key', async ({ page, siteBlockingPage }) => {
 			const request = page.waitForRequest((req) =>
 				isPost(req.url(), req.method()),
@@ -225,6 +238,7 @@ test.describe('Site Blocking — block list', () => {
 				await expect(siteBlockingPage.error).toHaveText('Failed to block site')
 				await expect(siteBlockingPage.siteRows).toHaveCount(2)
 				await expect(siteBlockingPage.addBtn).toBeEnabled()
+				expect((await readFakeExtensionLog(page)).syncs).toBe(0)
 			})
 		}
 
@@ -305,6 +319,22 @@ test.describe('Site Blocking — block list', () => {
 			await expect(siteBlockingPage.siteDomain(0)).toHaveText('reddit.com')
 		})
 
+		test('tells the extension to sync once the DELETE succeeds', async ({
+			page,
+			siteBlockingPage,
+		}) => {
+			const response = page.waitForResponse(
+				(res) => res.request().method() === 'DELETE',
+			)
+
+			await siteBlockingPage.removeSite(0)
+			await response
+
+			await expect
+				.poll(async () => (await readFakeExtensionLog(page)).syncs)
+				.toBe(1)
+		})
+
 		test('removes the row optimistically, before the server answers', async ({
 			page,
 			siteBlockingPage,
@@ -329,6 +359,8 @@ test.describe('Site Blocking — block list', () => {
 			await expect(siteBlockingPage.error).toHaveText('Failed to remove site')
 			await expect(siteBlockingPage.siteRows).toHaveCount(2)
 			await expect(siteBlockingPage.siteDomain(0)).toHaveText('reddit.com')
+			// Nothing changed server-side, so nothing for the extension to pull.
+			expect((await readFakeExtensionLog(page)).syncs).toBe(0)
 		})
 
 		test('removing the last site shows the empty state', async ({

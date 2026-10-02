@@ -6,6 +6,7 @@ import {
 	fetchBlockedSites,
 	removeBlockedSite,
 } from '../api/api'
+import { requestExtensionSync } from '../lib/extension-protocol'
 import { reinsertAt } from '../lib/reinsert-at'
 
 export const SITES_ERRORS = {
@@ -49,6 +50,7 @@ const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 			return
 		}
 		set((s) => ({ submitting: false, sites: [...s.sites, data] }))
+		requestExtensionSync()
 	},
 
 	// Optimistic: the row disappears at once and comes back if the server fails.
@@ -64,7 +66,9 @@ const useSiteBlockingStore = create<SiteBlockingState>((set, get) => ({
 				sites: reinsertAt(s.sites, removed, index),
 				error: SITES_ERRORS.remove,
 			}))
+			return
 		}
+		requestExtensionSync()
 	},
 }))
 

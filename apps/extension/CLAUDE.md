@@ -93,6 +93,7 @@ sides together:
 | `MY_TIME_READY` | ext → web, on content script load | `authenticated`, `version` |
 | `MY_TIME_PING` / `MY_TIME_PING_RESULT` | web → ext → web | result carries `authenticated`, `version` |
 | `MY_TIME_CONNECT` / `MY_TIME_CONNECT_RESULT` | web → ext → web | `token` → `success` |
+| `MY_TIME_SYNC` | web → ext, no reply | — (forwarded to the background as `SYNC`) |
 
 No reply to a ping within 300 ms means "not installed". A content script orphaned by an
 extension reload (`browser.runtime.id` undefined) stays silent rather than reporting a
@@ -110,9 +111,10 @@ Sign-out in the popup clears tokens, the cached list, and all DNR rules.
 
 ### When does the block list sync?
 
-Only on service worker startup, right after connecting/login, and on the popup's **Sync now**.
-There is no periodic or push sync — sites added in the web app reach the extension at the
-next one of those. Keep this in mind before assuming a change "should already be blocked".
+On service worker startup, right after connecting/login, on the popup's **Sync now**, and
+whenever the web app adds or removes a site (it posts `MY_TIME_SYNC` after the API call
+succeeds). There is no periodic sync — a change made while no web app tab with the content
+script is open (e.g. from another device) arrives at the next one of those.
 
 ## Versioning & releases
 

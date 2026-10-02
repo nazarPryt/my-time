@@ -12,7 +12,18 @@ export const EXTENSION_MESSAGE = {
 	connect: 'MY_TIME_CONNECT',
 	/** extension → page: reply to a connect */
 	connectResult: 'MY_TIME_CONNECT_RESULT',
+	/** page → extension: the block list changed, re-fetch it (no reply) */
+	sync: 'MY_TIME_SYNC',
 } as const
+
+/**
+ * Asks the extension to re-pull the block list right away, so a site added or
+ * removed here takes effect without the user pressing "Sync now". Fire and
+ * forget: with no extension (or an old build) nobody listens and that's fine.
+ */
+export function requestExtensionSync() {
+	window.postMessage({ type: EXTENSION_MESSAGE.sync }, window.location.origin)
+}
 
 /** Payload of `pingResult` and `ready`. */
 export interface ExtensionStatusReply {
