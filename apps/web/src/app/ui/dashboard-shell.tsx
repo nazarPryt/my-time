@@ -9,8 +9,9 @@ import {
 	ShieldOff,
 	Timer,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ComponentType, type ReactNode, useState } from 'react'
 import { SignOutButton } from '@/features/auth/logout'
+import { ExtensionUpdateDot } from '@/features/site-blocking'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/shared/ui/sheet'
@@ -22,6 +23,8 @@ type NavItemType = {
 	icon: LucideIcon
 	exact: boolean
 	testId: string
+	// Optional status marker rendered at the end of the nav item (e.g. a dot)
+	indicator?: ComponentType
 }
 
 const NAV_ITEMS: NavItemType[] = [
@@ -52,6 +55,7 @@ const NAV_ITEMS: NavItemType[] = [
 		icon: ShieldOff,
 		exact: false,
 		testId: DASHBOARD_TEST_IDS.navLink('site-blocking'),
+		indicator: ExtensionUpdateDot,
 	},
 	{
 		to: '/dashboard/permesso-status',
@@ -116,36 +120,39 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 			{/* Navigation */}
 			<nav className="flex-1 p-2 pt-3 space-y-0.5 overflow-y-auto">
-				{NAV_ITEMS.map(({ to, label, icon: Icon, exact, testId }) => (
-					<Link
-						key={to}
-						to={to}
-						data-testid={testId}
-						activeOptions={{ exact }}
-						onClick={onNavigate}
-						className={cn(
-							'relative flex items-center gap-2.5 px-3 py-2 rounded-md',
-							'text-sm text-sidebar-foreground/55 transition-colors duration-150',
-							'hover:text-sidebar-foreground hover:bg-sidebar-accent',
-							'[&.active]:text-sidebar-foreground [&.active]:bg-sidebar-accent [&.active]:font-medium',
-						)}
-					>
-						{({ isActive }: { isActive: boolean }) => (
-							<>
-								{/* Left accent bar */}
-								<span
-									aria-hidden="true"
-									className={cn(
-										'absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-sidebar-primary transition-opacity duration-150',
-										isActive ? 'opacity-100' : 'opacity-0',
-									)}
-								/>
-								<Icon size={15} strokeWidth={1.75} className="shrink-0" />
-								{label}
-							</>
-						)}
-					</Link>
-				))}
+				{NAV_ITEMS.map(
+					({ to, label, icon: Icon, exact, testId, indicator: Indicator }) => (
+						<Link
+							key={to}
+							to={to}
+							data-testid={testId}
+							activeOptions={{ exact }}
+							onClick={onNavigate}
+							className={cn(
+								'relative flex items-center gap-2.5 px-3 py-2 rounded-md',
+								'text-sm text-sidebar-foreground/55 transition-colors duration-150',
+								'hover:text-sidebar-foreground hover:bg-sidebar-accent',
+								'[&.active]:text-sidebar-foreground [&.active]:bg-sidebar-accent [&.active]:font-medium',
+							)}
+						>
+							{({ isActive }: { isActive: boolean }) => (
+								<>
+									{/* Left accent bar */}
+									<span
+										aria-hidden="true"
+										className={cn(
+											'absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-sidebar-primary transition-opacity duration-150',
+											isActive ? 'opacity-100' : 'opacity-0',
+										)}
+									/>
+									<Icon size={15} strokeWidth={1.75} className="shrink-0" />
+									{label}
+									{Indicator && <Indicator />}
+								</>
+							)}
+						</Link>
+					),
+				)}
 			</nav>
 
 			{/* Footer */}

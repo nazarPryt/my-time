@@ -9,18 +9,31 @@ const LABELS: Record<ExtensionStatus, string> = {
 	linked: 'Extension active',
 }
 
-export function ExtensionStatusBadge({ status }: { status: ExtensionStatus }) {
+interface ExtensionStatusBadgeProps {
+	status: ExtensionStatus
+	updateAvailable: boolean
+}
+
+export function ExtensionStatusBadge({
+	status,
+	updateAvailable,
+}: ExtensionStatusBadgeProps) {
 	const variant =
-		status === 'linked'
+		status === 'linked' && !updateAvailable
 			? 'success'
 			: status === 'checking'
 				? 'outline'
 				: 'warning'
+	// Install/connect problems outrank an update — they mean nothing is blocked.
+	const label =
+		status === 'linked' && updateAvailable
+			? 'Extension update available'
+			: LABELS[status]
 
 	return (
 		<Badge variant={variant} className="h-6 gap-1.5 px-2.5">
 			<PuzzleIcon />
-			{LABELS[status]}
+			{label}
 		</Badge>
 	)
 }

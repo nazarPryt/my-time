@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import {
 	ExtensionSetupCard,
 	ExtensionStatusBadge,
+	ExtensionUpdateCard,
 	SiteList,
 	useExtensionConnection,
 	useSiteBlockingActions,
@@ -18,11 +19,11 @@ import { Button, Input } from '@/shared/ui'
 export function SiteBlockingPage() {
 	const { sites, loading, submitting, error } = useSiteBlockingState()
 	const { loadSites, addSite, removeSite } = useSiteBlockingActions()
-	// One hook instance shared by the badge and the setup card, so they never
-	// disagree and the extension is only pinged once.
 	const extension = useExtensionConnection()
 	const showSetup =
 		extension.status === 'not-installed' || extension.status === 'not-linked'
+	// Setup comes first: an update only matters once the extension is working.
+	const showUpdate = !showSetup && extension.updateAvailable
 
 	const { register, handleSubmit, reset } = useForm<CreateBlockedSiteRequest>({
 		resolver: zodResolver(CreateBlockedSiteRequestSchema),
@@ -42,7 +43,10 @@ export function SiteBlockingPage() {
 		<div className="h-full flex flex-col">
 			<header className="h-14 flex items-center justify-between px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground">Site Blocking</h1>
-				<ExtensionStatusBadge status={extension.status} />
+				<ExtensionStatusBadge
+					status={extension.status}
+					updateAvailable={extension.updateAvailable}
+				/>
 			</header>
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
@@ -53,6 +57,12 @@ export function SiteBlockingPage() {
 							connecting={extension.connecting}
 							connectFailed={extension.connectFailed}
 							onConnect={extension.connect}
+						/>
+					)}
+					{showUpdate && (
+						<ExtensionUpdateCard
+							installedVersion={extension.installedVersion}
+							latestVersion={extension.latestVersion}
 						/>
 					)}
 

@@ -2,7 +2,6 @@
 	"name": "extension",
 	"description": "Blocks distracting sites from your my·time block list.",
 	"private": true,
-	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
 		"dev": "wxt",

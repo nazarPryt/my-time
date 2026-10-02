@@ -1,11 +1,10 @@
 import {
 	CheckIcon,
-	CopyIcon,
 	DownloadIcon,
 	ExternalLinkIcon,
 	RotateCwIcon,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import type { ReactNode } from 'react'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { cn } from '@/shared/lib/cn'
 import {
@@ -16,9 +15,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shared/ui'
+import { extensionDownloadUrl } from '../lib/extension-download-url'
 import type { ExtensionStatus } from '../model/use-extension-connection'
-
-const EXTENSIONS_PAGE = 'chrome://extensions'
+import { CHROME_EXTENSIONS_PAGE, CopyableUrl } from './copyable-url'
 
 interface ExtensionSetupCardProps {
 	status: ExtensionStatus
@@ -140,7 +139,7 @@ function InstallInstructions() {
 	return (
 		<div className="space-y-3">
 			<Button size="sm" asChild>
-				<a href={WEB_CONFIG.EXTENSION_DOWNLOAD_URL} download>
+				<a href={extensionDownloadUrl()} download>
 					<DownloadIcon />
 					Download extension (.zip)
 				</a>
@@ -148,7 +147,7 @@ function InstallInstructions() {
 			<ol className="list-decimal space-y-1.5 pl-5 text-muted-foreground marker:text-muted-foreground/60">
 				<li>Unzip the downloaded file.</li>
 				<li>
-					Open <CopyableUrl url={EXTENSIONS_PAGE} /> in a new tab.
+					Open <CopyableUrl url={CHROME_EXTENSIONS_PAGE} /> in a new tab.
 				</li>
 				<li>
 					Turn on <strong className="text-foreground">Developer mode</strong>{' '}
@@ -161,33 +160,6 @@ function InstallInstructions() {
 			</ol>
 			<ReloadHint />
 		</div>
-	)
-}
-
-// Browsers block links to chrome:// pages from websites, so the user has to
-// paste the address themselves — a copy button makes that painless.
-function CopyableUrl({ url }: { url: string }) {
-	const [copied, setCopied] = useState(false)
-
-	async function copy() {
-		await navigator.clipboard.writeText(url)
-		setCopied(true)
-		setTimeout(() => setCopied(false), 1500)
-	}
-
-	return (
-		<button
-			type="button"
-			onClick={copy}
-			className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground hover:bg-muted/70"
-		>
-			{url}
-			{copied ? (
-				<CheckIcon className="size-3" />
-			) : (
-				<CopyIcon className="size-3" />
-			)}
-		</button>
 	)
 }
 

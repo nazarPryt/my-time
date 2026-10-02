@@ -6,9 +6,14 @@ export default defineContentScript({
 	main() {
 		const WEB_URL = EXTENSION_CONFIG.WEB_URL
 
-		// Tell the web app we're installed AND whether we're signed in, so it can
-		// distinguish "not linked yet" from "fully working".
+		// Tell the web app we're installed, whether we're signed in, and which
+		// version we are — so it can tell "not linked" from "working" and prompt
+		// for updates.
 		async function postStatus(type: 'MY_TIME_READY' | 'MY_TIME_PING_RESULT') {
+			// After the extension is reloaded/updated, this old script lingers in
+			// the page with a dead runtime. Stay silent rather than report a bogus
+			// "signed out" status — the background reloads this tab anyway.
+			if (!browser.runtime?.id) return
 			const message: ExtensionMessage = { type: 'GET_STATUS' }
 			const response = (await browser.runtime
 				.sendMessage(message)
@@ -17,7 +22,11 @@ export default defineContentScript({
 				{ type: 'GET_STATUS' }
 			> | null
 			window.postMessage(
-				{ type, authenticated: response?.authenticated ?? false },
+				{
+					type,
+					authenticated: response?.authenticated ?? false,
+					version: browser.runtime.getManifest().version,
+				},
 				WEB_URL,
 			)
 		}
