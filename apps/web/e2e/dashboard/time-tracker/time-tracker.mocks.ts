@@ -104,6 +104,12 @@ const json = (body: unknown, status = 200) => ({
 	body: JSON.stringify(body),
 })
 
+export async function mockTimeFailure(page: Page, path: string) {
+	await page.route(path, (route) =>
+		route.fulfill(json({ message: 'Unavailable' }, 503)),
+	)
+}
+
 /** GET /active — pass `null` for the idle (no running session) case. */
 export async function mockTimeActive(
 	page: Page,

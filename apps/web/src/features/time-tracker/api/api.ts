@@ -1,8 +1,8 @@
 import type { SessionType } from 'contracts'
 import { api } from '@/shared/lib/api'
 
-export async function fetchActiveSession() {
-	return api['time-tracker'].active.get()
+export async function fetchActiveSession(signal?: AbortSignal) {
+	return api['time-tracker'].active.get({ fetch: { signal } })
 }
 
 export async function fetchTodaySummary(signal?: AbortSignal) {

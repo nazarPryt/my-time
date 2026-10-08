@@ -6,6 +6,7 @@ export class TimeTrackerLocators extends BaseLocators {
 	// Page shell
 	readonly timeTrackerPage: Locator
 	readonly loading: Locator
+	readonly error: Locator
 
 	// Timer card
 	readonly statusBadge: Locator
@@ -29,6 +30,7 @@ export class TimeTrackerLocators extends BaseLocators {
 
 		this.timeTrackerPage = page.getByTestId(TT.page)
 		this.loading = this.timeTrackerPage.getByTestId(TT.loading)
+		this.error = this.timeTrackerPage.getByTestId(TT.error)
 
 		this.statusBadge = this.timeTrackerPage.getByTestId(TT.statusBadge)
 		this.timer = this.timeTrackerPage.getByTestId(TT.timer)

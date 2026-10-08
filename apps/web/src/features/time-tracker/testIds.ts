@@ -2,6 +2,7 @@ export const TIME_TRACKER_TEST_IDS = {
 	// Page shell
 	page: 'time-tracker-page',
 	loading: 'time-tracker-loading',
+	error: 'time-tracker-error',
 
 	// Timer card
 	statusBadge: 'tt-status-badge',

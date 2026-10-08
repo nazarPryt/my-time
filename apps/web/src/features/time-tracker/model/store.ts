@@ -47,6 +47,7 @@ interface TimeTrackerState {
 	loading: boolean
 	submitting: boolean
 	elapsed: number
+	error: string | null
 	_intervalId: ReturnType<typeof setInterval> | null
 
 	// weekly progress state
@@ -55,6 +56,7 @@ interface TimeTrackerState {
 
 	// actions
 	load: (signal?: AbortSignal) => Promise<void>
+	pauseTicking: () => void
 	startWork: () => Promise<void>
 	stopWork: () => Promise<void>
 	abandonSession: (id: string) => Promise<void>
@@ -62,6 +64,7 @@ interface TimeTrackerState {
 }
 
 export const useTimeTrackerStore = create<TimeTrackerState>((set, get) => {
+	let mutationVersion = 0
 	/**
 	 * Clears any running interval and, for an active session, starts a 1s tick
 	 * that recomputes `elapsed` from the session's `startedAt`. Returns the new
@@ -85,89 +88,132 @@ export const useTimeTrackerStore = create<TimeTrackerState>((set, get) => {
 		loading: true,
 		submitting: false,
 		elapsed: 0,
+		error: null,
 		_intervalId: null,
 
 		weeklyData: [],
 		weeklyLoading: true,
 
 		load: async (signal) => {
-			const [{ data: active }, { data: today }] = await Promise.all([
-				fetchActiveSession(),
-				fetchTodaySummary(signal),
-			])
-			if (signal?.aborted) return
+			if (get().submitting || signal?.aborted) return
+			const version = mutationVersion
+			try {
+				const [active, today] = await Promise.all([
+					fetchActiveSession(signal),
+					fetchTodaySummary(signal),
+				])
+				// A poll that began before a button action must not overwrite its result.
+				if (signal?.aborted || version !== mutationVersion) return
+				if (active.error || today.error) {
+					set({
+						loading: false,
+						error:
+							'Unable to refresh the timer. Your last confirmed session is still shown.',
+					})
+					return
+				}
+				const activeSession = active.data ?? null
+				get().pauseTicking()
+				set({
+					activeSession,
+					todaySummary: today.data ?? null,
+					loading: false,
+					error: null,
+					elapsed: activeSession ? elapsedSince(activeSession.startedAt) : 0,
+					_intervalId: activeSession ? startTicking() : null,
+				})
+			} catch {
+				if (!signal?.aborted && version === mutationVersion) {
+					set({
+						loading: false,
+						error: 'Unable to reach your API. Try again when connected.',
+					})
+				}
+			}
+		},
 
-			const activeSession = active ?? null
-
-			// Start or clear the tick interval based on whether there is an active
-			// session. elapsed is derived from startedAt so it reflects real time
-			// already spent, not time since this component mounted.
-			const existing = get()._intervalId
-			if (existing) clearInterval(existing)
-
-			set({
-				activeSession,
-				todaySummary: today ?? null,
-				loading: false,
-				elapsed: activeSession ? elapsedSince(activeSession.startedAt) : 0,
-				_intervalId: activeSession ? startTicking() : null,
-			})
+		pauseTicking: () => {
+			const interval = get()._intervalId
+			if (interval) clearInterval(interval)
+			set({ _intervalId: null })
 		},
 
 		startWork: async () => {
 			const { submitting } = get()
 			if (submitting) return
-			set({ submitting: true })
-
-			const { data, error } = await startSession('work')
-			if (!error && data) {
+			mutationVersion += 1
+			set({ submitting: true, error: null })
+			try {
+				const { data, error } = await startSession('work')
+				if (error || !data) {
+					set({ error: 'Unable to start work. Please try again.' })
+					return
+				}
 				set({
 					activeSession: data,
 					elapsed: elapsedSince(data.startedAt),
 					_intervalId: startTicking(),
 				})
+			} catch {
+				set({
+					error: 'Unable to start work. Check your connection and try again.',
+				})
+			} finally {
+				set({ submitting: false })
 			}
-			set({ submitting: false })
 		},
 
 		stopWork: async () => {
 			const { activeSession, submitting } = get()
 			if (!activeSession || submitting) return
-			set({ submitting: true })
-
-			await endSession(activeSession.id)
-
-			const existing = get()._intervalId
-			if (existing) clearInterval(existing)
-
-			const { data: today } = await fetchTodaySummary()
-			set({
-				activeSession: null,
-				todaySummary: today ?? null,
-				elapsed: 0,
-				_intervalId: null,
-				submitting: false,
-			})
+			mutationVersion += 1
+			set({ submitting: true, error: null })
+			try {
+				const { error } = await endSession(activeSession.id)
+				if (error) {
+					set({
+						error:
+							'Unable to stop work. Your session is still active; please try again.',
+					})
+					return
+				}
+				get().pauseTicking()
+				set({ activeSession: null, elapsed: 0 })
+				const { data: today, error: summaryError } = await fetchTodaySummary()
+				if (!summaryError && today) set({ todaySummary: today })
+			} catch {
+				set({
+					error:
+						'Unable to update the tracker. Check your connection and try again.',
+				})
+			} finally {
+				set({ submitting: false })
+			}
 		},
 
 		abandonSession: async (id: string) => {
 			const { submitting } = get()
 			if (submitting) return
-			set({ submitting: true })
-
-			await deleteSession(id)
-
-			const existing = get()._intervalId
-			if (existing) clearInterval(existing)
-
-			const { data: today } = await fetchTodaySummary()
-			set({
-				activeSession: null,
-				todaySummary: today ?? null,
-				elapsed: 0,
-				_intervalId: null,
-				submitting: false,
-			})
+			mutationVersion += 1
+			set({ submitting: true, error: null })
+			try {
+				const { error } = await deleteSession(id)
+				if (error) {
+					set({ error: 'Unable to delete this session. Please try again.' })
+					return
+				}
+				get().pauseTicking()
+				set({ activeSession: null, elapsed: 0 })
+				const { data: today, error: summaryError } = await fetchTodaySummary()
+				if (!summaryError && today) set({ todaySummary: today })
+			} catch {
+				set({
+					error:
+						'Unable to delete this session. Check your connection and try again.',
+				})
+			} finally {
+				set({ submitting: false })
+			}
 		},
 
 		loadWeekly: async (signal) => {

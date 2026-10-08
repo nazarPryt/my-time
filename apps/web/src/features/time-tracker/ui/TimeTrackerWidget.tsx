@@ -1,11 +1,11 @@
 import { Trash2 } from 'lucide-react'
-import { useEffect } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
 import { formatElapsed } from '../lib/format-elapsed'
 import { useTimeTrackerStore } from '../model/store'
+import { useTimeTrackerSync } from '../model/use-time-tracker-sync'
 import { TIME_TRACKER_TEST_IDS } from '../testIds'
 import { SessionList } from './SessionList'
 import { TodayStats } from './TodayStats'
@@ -18,16 +18,12 @@ export function TimeTrackerWidget() {
 	const loading = useTimeTrackerStore((s) => s.loading)
 	const submitting = useTimeTrackerStore((s) => s.submitting)
 	const elapsed = useTimeTrackerStore((s) => s.elapsed)
-	const load = useTimeTrackerStore((s) => s.load)
+	const error = useTimeTrackerStore((s) => s.error)
 	const startWork = useTimeTrackerStore((s) => s.startWork)
 	const stopWork = useTimeTrackerStore((s) => s.stopWork)
 	const abandonSession = useTimeTrackerStore((s) => s.abandonSession)
 
-	useEffect(() => {
-		const controller = new AbortController()
-		void load(controller.signal)
-		return () => controller.abort()
-	}, [load])
+	useTimeTrackerSync()
 
 	// Ring pulses once per minute while working
 	const progress = activeSession ? (elapsed % 60) / 60 : 0
@@ -44,6 +40,15 @@ export function TimeTrackerWidget() {
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-105 mx-auto space-y-4">
+					{error && (
+						<p
+							role="alert"
+							data-testid={TIME_TRACKER_TEST_IDS.error}
+							className="text-sm text-destructive"
+						>
+							{error}
+						</p>
+					)}
 					{loading ? (
 						<div
 							className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-64"

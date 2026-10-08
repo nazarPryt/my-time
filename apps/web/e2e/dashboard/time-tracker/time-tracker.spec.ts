@@ -3,12 +3,15 @@ import type { TimeTrackerPage } from './TimeTrackerPage'
 import { TIME_TRACKER_PATH } from './TimeTrackerPage'
 import { expect, test } from './time-tracker.fixtures'
 import {
+	API_TIME_ACTIVE,
+	API_TIME_END,
 	API_TIME_TODAY,
 	activeSessionStartedSecondsAgo,
 	MOCK_SESSION_ACTIVE,
 	MOCK_TODAY_EMPTY,
 	MOCK_TODAY_WITH_SESSIONS,
 	mockTimeActive,
+	mockTimeFailure,
 	mockTimeToday,
 } from './time-tracker.mocks'
 
@@ -22,6 +25,58 @@ async function readTimerSeconds(timeTrackerPage: TimeTrackerPage) {
 }
 
 test.describe('Time Tracker page', () => {
+	test.describe('Desktop synchronization', () => {
+		test('updates the timer and saved history after changes in another client', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await page.clock.install()
+			await mockTimeToday(page, MOCK_TODAY_EMPTY)
+			await timeTrackerPage.goto()
+			await expect(timeTrackerPage.statusBadge).toHaveText('Ready')
+			await mockTimeActive(page, activeSessionStartedSecondsAgo(125))
+			await page.clock.runFor(5100)
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+			expect(await readTimerSeconds(timeTrackerPage)).toBeGreaterThanOrEqual(
+				125,
+			)
+			await mockTimeActive(page, null)
+			await mockTimeToday(page, MOCK_TODAY_WITH_SESSIONS)
+			await page.clock.runFor(5100)
+			await expect(timeTrackerPage.statusBadge).toHaveText('Ready')
+			await expect(timeTrackerPage.timer).toHaveText('00:00')
+			await expect(timeTrackerPage.sessionRows).toHaveCount(3)
+			await expect(timeTrackerPage.statToday).toHaveText('2h')
+		})
+
+		test('preserves the running session when background refresh fails', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await page.clock.install()
+			await mockTimeActive(page, activeSessionStartedSecondsAgo(125))
+			await timeTrackerPage.goto()
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+			await mockTimeFailure(page, API_TIME_ACTIVE)
+			await page.clock.runFor(5100)
+			await expect(timeTrackerPage.error).toBeVisible()
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+			await expect(timeTrackerPage.stopBtn).toBeVisible()
+		})
+
+		test('preserves the running session when Stop is rejected', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await mockTimeActive(page, MOCK_SESSION_ACTIVE)
+			await timeTrackerPage.goto()
+			await mockTimeFailure(page, API_TIME_END)
+			await timeTrackerPage.stop()
+			await expect(timeTrackerPage.error).toBeVisible()
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+			await expect(timeTrackerPage.stopBtn).toBeEnabled()
+		})
+	})
 	test.describe('Loading state', () => {
 		test('shows the loading placeholder until data resolves', async ({
 			page,
