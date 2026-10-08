@@ -1,0 +1,26 @@
+{
+	"name": "desktop",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "GNOME panel controls for the my-time tracker.",
+	"scripts": {
+		"build": "bun run typecheck && bun scripts/build.ts",
+		"package": "bun run build && bun scripts/package.ts",
+		"install": "bun run package && bun scripts/install.ts",
+		"typecheck": "tsc --noEmit",
+		"test": "bun test src"
+	},
+	"dependencies": {
+		"contracts": "workspace:*",
+		"date-fns": "4.4.0"
+	},
+	"devDependencies": {
+		"@girs/gjs": "4.0.0-beta.12",
+		"@girs/gnome-shell": "46.0.2",
+		"@girs/secret-1": "0.21.0-4.0.0-beta.12",
+		"@girs/soup-3.0": "3.4.4-4.0.0-beta.12",
+		"bun-types": "1.4.2",
+		"typescript": "5.9.3"
+	}
+}

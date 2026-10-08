@@ -1,0 +1,8 @@
+{
+	"uuid": "my-time@my-time.local",
+	"name": "my·time",
+	"description": "Start and stop your my-time work sessions from the GNOME panel.",
+	"shell-version": ["46"],
+	"settings-schema": "org.gnome.shell.extensions.my-time",
+	"version": 1
+}

@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"lib": ["ES2022"],
+		"types": [],
+		"strict": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"paths": { "contracts": ["../../contracts/src/index.ts"] }
+	},
+	"include": ["src"],
+	"exclude": ["src/**/*.test.ts"]
+}

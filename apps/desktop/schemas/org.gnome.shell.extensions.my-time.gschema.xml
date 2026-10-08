@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.my-time" path="/org/gnome/shell/extensions/my-time/">
+    <key name="api-url" type="s">
+      <default>'http://localhost:3000/api/v1'</default>
+      <summary>API base URL including /api/v1</summary>
+    </key>
+    <key name="web-url" type="s">
+      <default>'http://localhost:5173'</default>
+      <summary>Web application URL</summary>
+    </key>
+    <key name="account-email" type="s">
+      <default>''</default>
+      <summary>Email of the connected account</summary>
+    </key>
+    <key name="connected" type="b">
+      <default>false</default>
+      <summary>Whether the user has connected an account</summary>
+    </key>
+    <key name="account-revision" type="i">
+      <default>0</default>
+      <summary>Signals credential changes to the panel process</summary>
+    </key>
+  </schema>
+</schemalist>

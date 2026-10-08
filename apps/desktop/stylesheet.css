@@ -1,0 +1,32 @@
+.my-time-panel {
+	/* biome-ignore lint/correctness/noUnknownProperty: GNOME St.BoxLayout uses spacing. */
+	spacing: 6px;
+}
+
+.my-time-control {
+	padding: 4px 6px;
+	border-radius: 6px;
+}
+
+.my-time-control:hover,
+.my-time-control:focus {
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.my-time-control:disabled {
+	opacity: 0.3;
+}
+
+.my-time-timer {
+	font-family: monospace;
+	font-weight: bold;
+	padding: 0 4px;
+}
+
+.my-time-working {
+	color: #8ff0a4;
+}
+
+.my-time-offline {
+	color: #f9c36b;
+}
