@@ -1,8 +1,8 @@
 import Gio from 'gi://Gio'
 import Secret from 'gi://Secret?version=1'
 import { ExchangeExtensionTokenResponseSchema } from 'contracts'
-import type { TokenStore, Tokens } from '../api/client.js'
-import { normalizeApiUrl } from '../model/config.js'
+import { normalizeApiUrl } from '@/shared/urls'
+import type { TokenStore, Tokens } from './api-client.js'
 
 export class KeyringTokenStore implements TokenStore {
 	private cancellable = new Gio.Cancellable()

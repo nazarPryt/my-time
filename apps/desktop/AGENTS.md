@@ -10,17 +10,44 @@ Run from the monorepo root with Bun:
 - `bun run desktop:build` — bundle the extension and preferences, compile settings.
 - `bun run desktop:package` — build an installable GNOME extension zip.
 - `bun run desktop:install` — package and install into the user's GNOME extensions.
+- `bun run desktop:update` — tests → build/typecheck → repository lint → package
+  → install; stops on failure. Use `--skip-install` to verify without installation.
 - `bun --filter desktop typecheck` — check TypeScript against GNOME 46 definitions.
 - `bun --filter desktop test` — test the controller and HTTP client with fake adapters.
 - `bun run lint:check` — repository Biome checks.
 
 ## Structure and runtime
 
-- `src/extension.ts`: panel UI, settings signals, polling, and lifecycle wiring.
-- `src/prefs.ts`: GTK4/libadwaita connection window; runs in a separate process.
-- `src/model/`: runtime-independent timer controller and session display logic.
-- `src/api/`: HTTP client and authentication; receives transport and token storage.
-- `src/platform/`: GJS adapters for asynchronous Soup HTTP and libsecret storage.
+- `src/extension.ts` and `src/prefs.ts`: thin GNOME entry points / composition roots.
+- `src/shell/application.ts`: Shell lifecycle, settings subscription, and polling.
+- `src/shell/ui/`: St panel widgets; only imported by the Shell entry point.
+- `src/shell/browser-launch.ts`: browser launch and Shell notifications.
+- `src/preferences/ui/`: GTK/libadwaita widgets; only imported by preferences.
+- `src/bll/`: runtime-independent account and tracker controllers.
+- `src/dal/`: API client, Soup transport, Secret Service token store, GSettings
+  store, and shared service factories.
+- `src/shared/`: URL validation, elapsed-time formatting, and error helpers.
+
+Use `@/` (mapped to `src/` in `tsconfig.json`) for imports across folders;
+use relative imports for files in the same folder. Bun resolves aliases when
+bundling; keep `gi://`, `resource://`, and package imports unchanged.
+
+Entry points assemble controllers, adapters, and views. Controllers accept plain
+input and publish plain state; views render that state and forward user actions.
+UI must not perform persistence/network operations or construct controllers.
+BLL may import DAL interfaces/types and API errors, but must not import GNOME
+APIs or UI. DAL must not import BLL or UI. Shared helpers depend on no application
+layer. Keep all GSettings keys and writes in `dal/settings-store.ts`.
+
+Shell and preferences execute in different processes. Never import GTK/Adwaita
+from Shell modules or St/Clutter from preferences modules. Shared runtime modules
+must not import either UI toolkit. Each resource's owner handles its cleanup.
+
+Architecture references:
+- [Extension anatomy](https://gjs.guide/extensions/overview/anatomy.html)
+- [GNOME extension best practices](https://gjs.guide/extensions/review-guidelines/best-practices.html)
+- [TypeScript setup](https://gjs.guide/extensions/development/typescript.html)
+
 - `schemas/`: GSettings definitions for nonsecret configuration.
 - `scripts/`: Bun build, packaging, and installation tooling.
 - `metadata.json`: extension identifier and supported GNOME versions.

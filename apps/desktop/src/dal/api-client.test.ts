@@ -4,7 +4,7 @@ import {
 	AuthenticationError,
 	type HttpResponse,
 	type Tokens,
-} from './client'
+} from './api-client'
 
 const oldTokens: Tokens = {
 	accessToken: 'old-access',

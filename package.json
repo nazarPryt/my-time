@@ -18,6 +18,7 @@
 		"desktop:build": "bun --filter desktop build",
 		"desktop:package": "bun --filter desktop package",
 		"desktop:install": "bun --filter desktop install",
+		"desktop:update": "bun apps/desktop/scripts/update.ts",
 		"graph": "bun scripts/graph/index.ts",
 		"lint:check": "biome check .",
 		"lint:fix": "biome check --write --unsafe . && biome format --write .",

@@ -1,5 +1,6 @@
 import type { SessionResponse } from 'contracts'
-import { AuthenticationError } from '../api/client.js'
+import { AuthenticationError } from '@/dal/api-client'
+import { errorMessage } from '@/shared/errors'
 
 export interface TrackerApi {
 	getActive(): Promise<SessionResponse | null>
@@ -72,10 +73,7 @@ export class TrackerController {
 		} catch (error) {
 			this.update({
 				status: error instanceof AuthenticationError ? 'signed-out' : 'offline',
-				message:
-					error instanceof Error
-						? error.message
-						: 'Unable to connect. Try again.',
+				message: errorMessage(error, 'Unable to connect. Try again.'),
 			})
 		} finally {
 			this.update({ busy: false })

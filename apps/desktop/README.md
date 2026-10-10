@@ -70,6 +70,22 @@ The API remains responsible for session history and its existing session rules.
 
 ## Develop and update
 
+To test, build/typecheck, lint the repository, package, and install in one command:
+
+```bash
+bun run desktop:update
+```
+
+Each step must pass before the next runs. The build runs once. After installation,
+reload GNOME as described above; this command does not restart your desktop.
+To run the same checks and packaging without installing:
+
+```bash
+bun run desktop:update --skip-install
+```
+
+Individual commands:
+
 ```bash
 bun --filter desktop typecheck
 bun --filter desktop test
@@ -112,3 +128,42 @@ gnome-extensions uninstall my-time@my-time.local
 - [GNOME TypeScript setup](https://gjs.guide/extensions/development/typescript.html)
 - [Panel widgets](https://gjs.guide/extensions/topics/st-widgets.html)
 - [Preferences](https://gjs.guide/extensions/development/preferences.html)
+
+## Source architecture
+
+```text
+src/
+├── extension.ts               # Shell composition root
+├── prefs.ts                   # Preferences composition root
+├── shell/
+│   ├── application.ts         # Lifecycle, polling, settings subscription
+│   ├── browser-launch.ts      # Browser launch and notifications
+│   └── ui/tracker-panel.ts    # St widgets and rendering
+├── preferences/
+│   └── ui/account-page.ts     # GTK/libadwaita widgets and rendering
+├── bll/
+│   ├── account-controller.ts  # Sign-in/sign-out workflow and state
+│   └── tracker-controller.ts  # Session workflow and state
+├── dal/                       # HTTP, keyring, settings, client factories
+└── shared/                    # URLs, elapsed display, error helpers
+```
+
+Imports across source folders use the `@/` alias, for example
+`@/bll/account-controller`; imports within the same folder remain relative.
+Bun resolves these paths during bundling.
+
+Shell and preferences run in separate processes with different UI toolkits.
+The entry points assemble the dependencies. Views receive state and callbacks;
+controllers receive plain input and publish plain state. Controllers never read
+or mutate widgets. The settings store translates GSettings keys into application
+values, and API/keyring adapters handle data access.
+
+For example, a sign-in click passes a plain input object to the account
+controller. The controller validates it, calls the API, and persists confirmed
+connection settings. Its state updates tell the view which controls are enabled
+and which message to display. Closing the window disposes the controller, which
+unsubscribes from settings and cancels its active adapters.
+
+This layout follows the process separation and module ownership recommendations
+in the [GNOME extension best practices](https://gjs.guide/extensions/review-guidelines/best-practices.html).
+The folder names are our convention, not an official GNOME template.

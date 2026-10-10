@@ -10,7 +10,10 @@
 		"noEmit": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"paths": { "contracts": ["../../contracts/src/index.ts"] }
+		"paths": {
+			"contracts": ["../../contracts/src/index.ts"],
+			"@/*": ["./src/*"]
+		}
 	},
 	"include": ["src"],
 	"exclude": ["src/**/*.test.ts"]

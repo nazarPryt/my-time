@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test'
 import type { SessionResponse } from 'contracts'
-import { AuthenticationError } from '../api/client'
-import { TrackerController } from './tracker'
+import { AuthenticationError } from '@/dal/api-client'
+import { TrackerController } from './tracker-controller'
 
 const session: SessionResponse = {
 	id: 'session-1',

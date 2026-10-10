@@ -1,8 +1,8 @@
 import Gio from 'gi://Gio'
 import GLib from 'gi://GLib'
 import Soup from 'gi://Soup?version=3.0'
-import type { HttpResponse, HttpTransport } from '../api/client.js'
-import { normalizeApiUrl } from '../model/config.js'
+import { normalizeApiUrl } from '@/shared/urls'
+import type { HttpResponse, HttpTransport } from './api-client.js'
 
 export class SoupTransport implements HttpTransport {
 	private session = new Soup.Session({

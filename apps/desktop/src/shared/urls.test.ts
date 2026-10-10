@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import { normalizeApiUrl, normalizeUrl } from './config'
 import { elapsedSeconds, formatElapsed } from './elapsed'
+import { normalizeApiUrl, normalizeUrl } from './urls'
 
 test('normalizes API addresses without duplicating the version prefix', () => {
 	expect(normalizeApiUrl(' https://example.com/ ')).toBe(
