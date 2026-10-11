@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { type LoginRequest, LoginRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { tokenStorage } from '@/shared/lib/token-storage'
@@ -8,6 +8,7 @@ import { loginUser } from '../api/login'
 
 export function useLogin() {
 	const navigate = useNavigate()
+	const { desktopRequest } = useSearch({ from: '/auth/login' })
 	const form = useForm<LoginRequest>({
 		resolver: zodResolver(LoginRequestSchema),
 	})
@@ -20,7 +21,11 @@ export function useLogin() {
 			return
 		}
 		tokenStorage.setAccessToken(res.tokens.accessToken)
-		await navigate({ to: '/dashboard' })
+		await navigate(
+			desktopRequest
+				? { to: '/dashboard/time-tracker', search: { desktopRequest } }
+				: { to: '/dashboard' },
+		)
 	}
 
 	return { form, onSubmit }

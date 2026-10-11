@@ -7,8 +7,17 @@ export class TimeTrackerPage extends TimeTrackerLocators {
 	async goto() {
 		await this.page.goto(TIME_TRACKER_PATH)
 		// Wait past the loading placeholder — the status badge only renders once
-		// the active/today requests have resolved.
+		// the initial authoritative session snapshot has arrived.
 		await this.statusBadge.waitFor({ state: 'visible' })
+	}
+
+	async connectDesktop(requestId: string) {
+		await this.page.goto(`${TIME_TRACKER_PATH}?desktopRequest=${requestId}`)
+		await this.desktopCard.waitFor({ state: 'visible' })
+	}
+
+	async approveDesktop() {
+		await this.desktopConnect.click()
 	}
 
 	async start() {

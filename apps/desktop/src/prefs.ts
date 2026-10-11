@@ -1,7 +1,12 @@
 import type Adw from 'gi://Adw?version=1'
+import Gio from 'gi://Gio'
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js'
 import { AccountController } from '@/bll/account-controller'
-import { createApiClient, createTokenStore } from '@/dal/services'
+import {
+	createApiClient,
+	createBrowserLogin,
+	createTokenStore,
+} from '@/dal/services'
 import { GSettingsStore } from '@/dal/settings-store'
 import { createAccountPage } from '@/preferences/ui/account-page'
 
@@ -11,8 +16,17 @@ export default class MyTimePreferences extends ExtensionPreferences {
 		let controller: AccountController
 		const page = createAccountPage(
 			window,
-			{ ...settings.read(), busy: false, status: 'idle', message: '' },
 			{
+				...settings.read(),
+				busy: false,
+				browserConfirmationCode: null,
+				status: 'idle',
+				message: '',
+			},
+			{
+				signInWithBrowser: () => {
+					void controller.signInWithBrowser()
+				},
 				signIn: (input) => {
 					void controller.signIn(input)
 				},
@@ -26,6 +40,27 @@ export default class MyTimePreferences extends ExtensionPreferences {
 			settings,
 			{
 				createClient: createApiClient,
+				createBrowserLogin,
+				openBrowser: (url) =>
+					new Promise<void>((resolve, reject) => {
+						Gio.AppInfo.launch_default_for_uri_async(
+							url,
+							null,
+							null,
+							(_source, result) => {
+								try {
+									Gio.AppInfo.launch_default_for_uri_finish(result)
+									resolve()
+								} catch {
+									reject(
+										new Error(
+											'Unable to open your browser. Try email and password instead.',
+										),
+									)
+								}
+							},
+						)
+					}),
 				createStorage: createTokenStore,
 			},
 			(state) => page.render(state),

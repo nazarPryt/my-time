@@ -1,6 +1,7 @@
 export const TIME_TRACKER_TEST_IDS = {
 	// Page shell
 	page: 'time-tracker-page',
+	desktopStatusBadge: 'tt-desktop-status-badge',
 	loading: 'time-tracker-loading',
 	error: 'time-tracker-error',
 

@@ -4,6 +4,7 @@ import { scheduleAuthJobs } from '@features/auth/jobs'
 import { schedulePermessoJobs } from '@features/permesso/jobs'
 import { startTelegramBot } from '@features/permesso/telegram-bot'
 import { startTelegramLinkListener } from '@features/permesso/telegram-link-events'
+import { startSessionListener } from '@features/time-tracker/session-listener'
 import { API_CONFIG } from '@shared/api-config'
 import { logger } from '@shared/logger'
 import { app } from './app'
@@ -15,6 +16,7 @@ await runMigrations()
 scheduleAuthJobs()
 schedulePermessoJobs()
 await startTelegramLinkListener()
+await startSessionListener()
 await startTelegramBot()
 
 app.listen({ hostname: API_CONFIG.API_HOST, port: API_CONFIG.API_PORT })

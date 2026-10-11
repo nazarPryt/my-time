@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test'
 import type { SessionResponse } from 'contracts'
 import { AuthenticationError } from '@/dal/api-client'
-import { TrackerController } from './tracker-controller'
+import { reconnectDelay, TrackerController } from './tracker-controller'
 
 const session: SessionResponse = {
 	id: 'session-1',
@@ -13,6 +13,8 @@ const session: SessionResponse = {
 
 function fixture(initial: SessionResponse | null = null) {
 	let active = initial
+	let emit: ((session: SessionResponse | null) => void) | undefined
+	let finish: (() => void) | undefined
 	const api = {
 		getActive: mock(async () => active),
 		start: mock(async () => {
@@ -22,7 +24,16 @@ function fixture(initial: SessionResponse | null = null) {
 		end: mock(async (_id: string) => {
 			active = null
 		}),
-		dispose: mock(() => {}),
+		watch: mock((onSession: (session: SessionResponse | null) => void) => {
+			emit = onSession
+			onSession(active)
+			return new Promise<void>((resolve) => {
+				finish = resolve
+			})
+		}),
+		dispose: mock(() => {
+			finish?.()
+		}),
 	}
 	const changed = mock(() => {})
 	return {
@@ -32,6 +43,11 @@ function fixture(initial: SessionResponse | null = null) {
 		setActive: (next: SessionResponse | null) => {
 			active = next
 		},
+		emit: (next: SessionResponse | null) => {
+			active = next
+			emit?.(next)
+		},
+		finish: () => finish?.(),
 	}
 }
 
@@ -63,7 +79,7 @@ describe('desktop session controller', () => {
 		expect(api.end).toHaveBeenCalledWith('new-session')
 	})
 
-	test('polling reconciles a stop made in the web app', async () => {
+	test('manual refresh reconciles a stop made in the web app', async () => {
 		const { tracker, setActive } = fixture(session)
 		await tracker.refresh()
 		setActive(null)
@@ -83,11 +99,11 @@ describe('desktop session controller', () => {
 		expect(tracker.state.status).toBe('ready')
 	})
 
-	test('serializes double clicks and concurrent polling', async () => {
+	test('serializes double clicks and queues a concurrent refresh', async () => {
 		const { tracker, api } = fixture()
 		await Promise.all([tracker.start(), tracker.start(), tracker.refresh()])
 		expect(api.start).toHaveBeenCalledTimes(1)
-		expect(api.getActive).toHaveBeenCalledTimes(1)
+		expect(api.getActive).toHaveBeenCalledTimes(2)
 	})
 
 	test('does not publish a pending result after the extension is disabled', async () => {
@@ -116,4 +132,167 @@ describe('desktop session controller', () => {
 		await tracker.refresh()
 		expect(tracker.state.status).toBe('signed-out')
 	})
+
+	test('pushes update the session without idle HTTP reads', async () => {
+		const { tracker, api, emit } = fixture()
+		const retry = { wait: mock(async () => {}), dispose: mock(() => {}) }
+		const connected = tracker.connect(retry)
+		emit(session)
+		expect(tracker.state.activeSession).toEqual(session)
+		emit(null)
+		expect(tracker.state.status).toBe('ready')
+		expect(api.getActive).not.toHaveBeenCalled()
+		tracker.dispose()
+		await connected
+		expect(retry.dispose).toHaveBeenCalledTimes(1)
+	})
+
+	test('does not overwrite a newer push with a delayed HTTP result', async () => {
+		const { tracker, api, emit } = fixture()
+		const connected = tracker.connect({
+			wait: async () => {},
+			dispose: () => {},
+		})
+		let resolve!: (value: SessionResponse | null) => void
+		api.getActive.mockImplementationOnce(
+			() =>
+				new Promise((done) => {
+					resolve = done
+				}),
+		)
+		const pending = tracker.refresh()
+		emit(session)
+		resolve(null)
+		await pending
+		expect(tracker.state.activeSession).toEqual(session)
+		expect(api.getActive).toHaveBeenCalledTimes(1)
+		tracker.dispose()
+		await connected
+	})
+
+	test('uses pushes during start and stop without follow-up reads', async () => {
+		const { tracker, api, emit } = fixture()
+		const connected = tracker.connect({
+			wait: async () => {},
+			dispose: () => {},
+		})
+		api.start.mockImplementationOnce(async () => {
+			emit(session)
+			return session
+		})
+		api.end.mockImplementationOnce(async () => {
+			emit(null)
+		})
+		await tracker.start()
+		expect(tracker.state.activeSession).toEqual(session)
+		await tracker.stop()
+		expect(tracker.state.activeSession).toBeNull()
+		expect(api.getActive).not.toHaveBeenCalled()
+		expect(api.start).toHaveBeenCalledTimes(1)
+		expect(api.end).toHaveBeenCalledTimes(1)
+		tracker.dispose()
+		await connected
+	})
+
+	test('preserves a newer session pushed while stop is completing', async () => {
+		const { tracker, api, emit } = fixture(session)
+		const connected = tracker.connect({
+			wait: async () => {},
+			dispose: () => {},
+		})
+		const newer = { ...session, id: 'new-session' }
+		api.end.mockImplementationOnce(async () => {
+			emit(null)
+			emit(newer)
+		})
+		await tracker.stop()
+		expect(tracker.state.activeSession).toEqual(newer)
+		expect(api.getActive).not.toHaveBeenCalled()
+		tracker.dispose()
+		await connected
+	})
+
+	test('retains confirmed state on disconnect and restores it on reconnect', async () => {
+		const { tracker, api, finish, setActive } = fixture(session)
+		let resume!: () => void
+		let waiting!: () => void
+		const enteredRetry = new Promise<void>((resolve) => {
+			waiting = resolve
+		})
+		const retry = {
+			wait: mock(
+				() =>
+					new Promise<void>((resolve) => {
+						resume = resolve
+						waiting()
+					}),
+			),
+			dispose: () => resume?.(),
+		}
+		const connected = tracker.connect(retry)
+		finish()
+		await enteredRetry
+		expect(tracker.state.status).toBe('offline')
+		expect(tracker.state.activeSession).toEqual(session)
+		setActive(null)
+		resume()
+		await Promise.resolve()
+		expect(api.watch).toHaveBeenCalledTimes(2)
+		expect(tracker.state.status).toBe('ready')
+		tracker.dispose()
+		await connected
+	})
+
+	test('stops reconnecting after authentication rejection', async () => {
+		const { tracker, api } = fixture(session)
+		api.watch.mockRejectedValueOnce(new AuthenticationError('Sign in again'))
+		const retry = { wait: mock(async () => {}), dispose: mock(() => {}) }
+		await tracker.connect(retry)
+		expect(tracker.state.status).toBe('signed-out')
+		expect(retry.wait).not.toHaveBeenCalled()
+		tracker.dispose()
+	})
+
+	test('uses bounded jittered backoff', () => {
+		expect(reconnectDelay(0, 0)).toBe(750)
+		expect(reconnectDelay(1, 1)).toBe(2000)
+		expect(reconnectDelay(100, 1)).toBe(30_000)
+	})
+})
+
+test('does not start a session after disposal during the pre-command read', async () => {
+	const { tracker, api } = fixture()
+	let resolve!: (session: SessionResponse | null) => void
+	api.getActive.mockImplementationOnce(
+		() =>
+			new Promise((done) => {
+				resolve = done
+			}),
+	)
+	const pending = tracker.start()
+	tracker.dispose()
+	resolve(null)
+	await pending
+	expect(api.start).not.toHaveBeenCalled()
+})
+
+test('confirms a successful Stop even when streaming disconnects during it', async () => {
+	const { tracker, api, finish } = fixture(session)
+	let resume: (() => void) | undefined
+	const connected = tracker.connect({
+		wait: () =>
+			new Promise<void>((resolve) => {
+				resume = resolve
+			}),
+		dispose: () => resume?.(),
+	})
+	api.end.mockImplementationOnce(async () => {
+		finish()
+		await Promise.resolve()
+	})
+	api.getActive.mockResolvedValue(null)
+	await tracker.stop()
+	expect(tracker.state.activeSession).toBeNull()
+	tracker.dispose()
+	await connected
 })

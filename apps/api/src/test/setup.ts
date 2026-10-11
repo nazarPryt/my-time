@@ -1,5 +1,10 @@
 import { db } from '@db'
-import { refreshTokens, users } from '@db/schema'
+import {
+	desktopPairings,
+	desktopPresence,
+	refreshTokens,
+	users,
+} from '@db/schema'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 
 export async function runMigrations() {
@@ -10,6 +15,8 @@ export async function runMigrations() {
 
 export async function cleanDatabase() {
 	// Order matters: FK constraint (refresh_tokens.user_id → users.id)
+	await db.delete(desktopPresence)
+	await db.delete(desktopPairings)
 	await db.delete(refreshTokens)
 	await db.delete(users)
 }

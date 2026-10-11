@@ -6,4 +6,7 @@ export const WEB_CONFIG = {
 	// Zip of the built extension for the manual install path.
 	EXTENSION_DOWNLOAD_URL:
 		import.meta.env.VITE_EXTENSION_DOWNLOAD_URL ?? '/my-time-extension.zip',
+	DESKTOP_EXTENSION_DOWNLOAD_URL:
+		import.meta.env.VITE_DESKTOP_EXTENSION_DOWNLOAD_URL ??
+		'/my-time@my-time.local.shell-extension.zip',
 } as const

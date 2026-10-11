@@ -67,10 +67,21 @@ my-time/
 │   ├── web/        — React + Vite SPA
 │   ├── extension/  — Browser extension (WXT + React)
 │   └── desktop/    — GNOME Shell extension (TypeScript + GJS; see its AGENTS.md)
-└── contracts/      — Shared Zod schemas (source of truth for API shapes)
+├── contracts/      — Shared Zod schemas (source of truth for API shapes)
+└── packages/       — Shared features and runtime-independent session synchronization
 ```
 
 Package manager: **bun** with workspaces. Linter/formatter: **Biome** (no ESLint, no Prettier).
+
+### Shared session synchronization
+
+`packages/session-sync` contains runtime-independent SSE parsing, reconnect
+backoff, reconnect loop, connection state, and revision/lifecycle guards reused
+by web and desktop. Use confirmed SSE state before commands while connected; fetch current
+state when disconnected. Keep fetch/Soup, token storage, UI, and timers in their
+client adapters. Keep React synchronization hooks as thin lifecycle adapters;
+separate browser listeners, command handlers, and per-mount summary queues.
+Do not duplicate shared rules in either client.
 
 ### Date & time
 
@@ -123,6 +134,16 @@ To share code between two slices, move it *down* a layer, don't import sideways.
   sidebar + mobile nav; the layout route `src/app/routes/dashboard.tsx` renders
   `<DashboardShell><Outlet/></DashboardShell>`. Add nav items to `NAV_ITEMS` in the shell.
 - **API client:** `src/shared/lib/api.ts` — Eden Treaty typed client (`treaty<App>`). The `App` type is imported from `@my-time/api` (the api package's public export). This gives end-to-end type safety with zero code generation.
+- **Time-tracker synchronization:** The feature receives session snapshots from
+  `/time-tracker/events` through an authenticated fetch SSE stream. Reuse the
+  shared token-refresh handler; streaming requests time out connection setup,
+  not the entire response body. Refresh today's summary on changes/reconnects
+  and at local midnight, and keep elapsed ticks local. Do not poll unchanged
+  session state. Cancel streams on unmount and guard delayed mutation/summary
+  responses against newer snapshots. Desktop availability is account-wide and
+  comes from `desktop-presence` events on the same SSE stream; do not infer it
+  from browser storage or successful pairing. Presence events must not trigger
+  work-session or summary refreshes.
 - **Auth guard:** `dashboard.tsx` `beforeLoad` calls `fetchMe()` (`@/features/auth/shared/api`) and redirects to login on failure. Tokens stored via `src/shared/lib/token-storage.ts`.
 - **UI components:** Shadcn-style components in `src/shared/ui/` (Button, Input, Card, etc.). Use these before reaching for raw HTML.
 - **Styling:** Tailwind v4 with CSS variables. Use design tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, etc.) to stay consistent with the design system.

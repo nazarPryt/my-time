@@ -17,6 +17,14 @@ export const SessionResponseSchema = z.object({
 })
 export type SessionResponse = z.infer<typeof SessionResponseSchema>
 
+/** Every snapshot is authoritative; reconnects do not replay past events. */
+export const SESSION_STREAM_EVENT = 'session-state' as const
+export const SessionStreamStateSchema = z.object({
+	version: z.literal(1),
+	activeSession: SessionResponseSchema.nullable(),
+})
+export type SessionStreamState = z.infer<typeof SessionStreamStateSchema>
+
 export const TodaySummaryResponseSchema = z.object({
 	sessions: z.array(SessionResponseSchema),
 	totalWorkSeconds: z.number(),

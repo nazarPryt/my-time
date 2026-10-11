@@ -1,8 +1,21 @@
 import type { Locator, Page } from '@playwright/test'
 import { TIME_TRACKER_TEST_IDS as TT } from '@/features/time-tracker/testIds'
+import { DESKTOP_SETUP_TEST_IDS as DS } from '@/pages/desktop/testIds'
+import { DESKTOP_CONNECTION_TEST_IDS as DC } from '@/pages/time-tracker/testIds'
 import { BaseLocators } from '../BaseLocators'
 
 export class TimeTrackerLocators extends BaseLocators {
+	readonly desktopStatus: Locator
+	readonly desktopBack: Locator
+	readonly desktopSetup: Locator
+	readonly desktopCard: Locator
+	readonly desktopCode: Locator
+	readonly desktopAccount: Locator
+	readonly desktopConnect: Locator
+	readonly desktopApproved: Locator
+	readonly desktopDismiss: Locator
+	readonly desktopError: Locator
+
 	// Page shell
 	readonly timeTrackerPage: Locator
 	readonly loading: Locator
@@ -27,6 +40,16 @@ export class TimeTrackerLocators extends BaseLocators {
 
 	constructor(page: Page) {
 		super(page)
+		this.desktopStatus = page.getByTestId(TT.desktopStatusBadge)
+		this.desktopBack = page.getByTestId(DS.back)
+		this.desktopSetup = page.getByTestId(DS.setupCard)
+		this.desktopCard = page.getByTestId(DC.card)
+		this.desktopCode = page.getByTestId(DC.code)
+		this.desktopAccount = page.getByTestId(DC.account)
+		this.desktopConnect = page.getByTestId(DC.connect)
+		this.desktopApproved = page.getByTestId(DC.approved)
+		this.desktopDismiss = page.getByTestId(DC.dismiss)
+		this.desktopError = page.getByTestId(DC.error)
 
 		this.timeTrackerPage = page.getByTestId(TT.page)
 		this.loading = this.timeTrackerPage.getByTestId(TT.loading)

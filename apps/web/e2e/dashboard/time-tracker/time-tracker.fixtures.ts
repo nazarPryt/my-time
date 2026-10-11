@@ -11,6 +11,11 @@ import {
 
 export const test = base.extend<{ timeTrackerPage: TimeTrackerPage }>({
 	timeTrackerPage: async ({ page }, use) => {
+		// The SSE client authenticates before opening its stream. These are mock
+		// credentials only; the base dashboard fixture stubs /auth/me separately.
+		await page.addInitScript(() =>
+			localStorage.setItem('access_token', 'test-access-token'),
+		)
 		// Default state: idle (no active session) with a populated "today".
 		// Order matters — the DELETE `/:id` glob also matches the GET routes, so
 		// it is registered LAST and falls back to these more specific handlers.

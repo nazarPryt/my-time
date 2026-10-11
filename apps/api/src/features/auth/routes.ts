@@ -6,6 +6,11 @@ import {
 	AUTH_ROUTES,
 	AuthErrorSchema,
 	AuthResponseSchema,
+	DesktopPairingInfoSchema,
+	DesktopPairingPollRequestSchema,
+	DesktopPairingPollSchema,
+	DesktopPairingRequestSchema,
+	DesktopPairingStartSchema,
 	ExchangeExtensionTokenRequestSchema,
 	ExtensionRefreshRequestSchema,
 	LoginRequestSchema,
@@ -14,6 +19,7 @@ import {
 } from 'contracts'
 import { type CookieOptions, Elysia, t } from 'elysia'
 import { REFRESH_TOKEN } from './constants'
+import { desktopPairingService } from './desktop-pairing'
 import { authService } from './service'
 
 const jwtPlugin = jwt({
@@ -132,6 +138,67 @@ export const authPlugin = new Elysia({ prefix: AUTH_ROUTES.prefix })
 					response: { Unauthorized: AuthErrorSchema },
 				},
 			),
+	)
+	.post(
+		AUTH_ROUTES.desktopPairingStart,
+		async ({ request, server, status, set }) => {
+			set.headers['Cache-Control'] = 'no-store'
+			const result = await desktopPairingService.start(
+				server?.requestIP(request)?.address ?? 'unknown',
+			)
+			return (
+				result ??
+				status('Too Many Requests', 'Wait a minute before trying again.')
+			)
+		},
+		{ response: { 200: DesktopPairingStartSchema, 429: t.String() } },
+	)
+	.post(
+		AUTH_ROUTES.desktopPairingInfo,
+		async ({ body, status, set }) => {
+			set.headers['Cache-Control'] = 'no-store'
+			const result = await desktopPairingService.info(body.requestId)
+			return (
+				result ??
+				status(
+					'Not Found',
+					'This connection request expired. Start again from desktop Settings.',
+				)
+			)
+		},
+		{
+			auth: true,
+			body: DesktopPairingRequestSchema,
+			response: { 200: DesktopPairingInfoSchema, 404: t.String() },
+		},
+	)
+	.post(
+		AUTH_ROUTES.desktopPairingApprove,
+		async ({ body, userId, status, set }) => {
+			set.headers['Cache-Control'] = 'no-store'
+			const approved = await desktopPairingService.approve(
+				body.requestId,
+				userId,
+			)
+			return approved
+				? { connected: true }
+				: status(
+						'Not Found',
+						'This connection request expired or was already approved.',
+					)
+		},
+		{ auth: true, body: DesktopPairingRequestSchema },
+	)
+	.post(
+		AUTH_ROUTES.desktopPairingPoll,
+		async ({ body, jwt, set }) => {
+			set.headers['Cache-Control'] = 'no-store'
+			return desktopPairingService.poll(jwt, body.requestId, body.deviceSecret)
+		},
+		{
+			body: DesktopPairingPollRequestSchema,
+			response: DesktopPairingPollSchema,
+		},
 	)
 	// Exchanges a one-time extension token for a JWT access + refresh token pair.
 	// Returns tokens in the response body (not cookies) for extension storage.

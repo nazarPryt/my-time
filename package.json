@@ -17,6 +17,7 @@
 		"extension:package": "./scripts/package-extension.sh",
 		"desktop:build": "bun --filter desktop build",
 		"desktop:package": "bun --filter desktop package",
+		"desktop:web-package": "bun run desktop:package && cp apps/desktop/build/my-time@my-time.local.shell-extension.zip apps/web/public/",
 		"desktop:install": "bun --filter desktop install",
 		"desktop:update": "bun apps/desktop/scripts/update.ts",
 		"graph": "bun scripts/graph/index.ts",

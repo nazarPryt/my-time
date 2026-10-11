@@ -3,6 +3,7 @@ import Gtk from 'gi://Gtk?version=4.0'
 import type { AccountState, SignInInput } from '@/bll/account-controller'
 
 interface AccountActions {
+	signInWithBrowser(): void
 	signIn(input: SignInInput): void
 	signOut(): void
 	close(): void
@@ -22,23 +23,23 @@ export function createAccountPage(
 	const connection = new Adw.PreferencesGroup({
 		title: 'Connect your account',
 		description:
-			'Use the same account as your web tracker. Sign-in tokens are saved in the Linux keyring.',
+			'Use your signed-in browser account, or enter your email and password. Tokens are saved in the Linux keyring.',
 	})
 	page.add(connection)
-	const apiUrl = new Adw.EntryRow({
-		title: 'API server URL',
-		text: initial.apiUrl,
+	const browserSignIn = new Gtk.Button({
+		label: 'Sign in with browser',
+		css_classes: ['suggested-action'],
+		margin_top: 12,
+		margin_bottom: 12,
 	})
-	const webUrl = new Adw.EntryRow({
-		title: 'Web application URL',
-		text: initial.webUrl,
-	})
+	browserSignIn.connect('clicked', () => actions.signInWithBrowser())
+	connection.add(browserSignIn)
 	const email = new Adw.EntryRow({
 		title: 'Email',
 		text: initial.email,
 	})
 	const password = new Adw.PasswordEntryRow({ title: 'Password' })
-	for (const row of [apiUrl, webUrl, email, password]) connection.add(row)
+	for (const row of [email, password]) connection.add(row)
 	const status = new Adw.ActionRow({
 		title: 'Account',
 		subtitle: 'Sign in to start tracking from the panel.',
@@ -61,15 +62,75 @@ export function createAccountPage(
 	const info = new Adw.PreferencesGroup({
 		title: 'Track from your panel',
 		description:
-			'▶ starts work. ■ finishes and saves it. Click the timer for Settings or to open the web tracker. Both clients check for changes every five seconds.',
+			'▶ starts work. ■ finishes and saves it. Click the timer for Settings or to open the web tracker. Changes sync automatically between desktop and web.',
 	})
 	page.add(info)
 
+	const confirmationPage = new Adw.PreferencesPage({
+		title: 'Connect your desktop',
+	})
+	const confirmationGroup = new Adw.PreferencesGroup()
+	confirmationPage.add(confirmationGroup)
+	const confirmation = new Gtk.Box({
+		orientation: Gtk.Orientation.VERTICAL,
+		spacing: 24,
+		margin_top: 48,
+		margin_bottom: 24,
+	})
+	confirmationGroup.add(confirmation)
+	confirmation.append(
+		new Gtk.Image({
+			icon_name: 'computer-symbolic',
+			pixel_size: 64,
+			css_classes: ['dim-label'],
+		}),
+	)
+	confirmation.append(
+		new Gtk.Label({
+			label: 'Confirm in your browser',
+			css_classes: ['title-1'],
+			wrap: true,
+			justify: Gtk.Justification.CENTER,
+		}),
+	)
+	confirmation.append(
+		new Gtk.Label({
+			label:
+				'Check that this code matches the code shown in your browser, then click “Connect desktop”.',
+			wrap: true,
+			justify: Gtk.Justification.CENTER,
+			css_classes: ['dim-label'],
+		}),
+	)
+	const confirmationCode = new Gtk.Label({
+		selectable: true,
+		margin_top: 12,
+		margin_bottom: 12,
+	})
+	confirmation.append(confirmationCode)
+	const waiting = new Gtk.Label({
+		label: 'Opening browser sign-in…',
+		wrap: true,
+		justify: Gtk.Justification.CENTER,
+	})
+	confirmation.append(waiting)
+	confirmation.append(
+		new Gtk.Label({
+			label:
+				'Keep Settings open until connected.\nClose this window to cancel.',
+			wrap: true,
+			justify: Gtk.Justification.CENTER,
+			css_classes: ['dim-label'],
+		}),
+	)
+	let showingConfirmation = false
+
+	let previous = initial
 	const submit = () => {
 		if (!signIn.sensitive) return
 		const input = {
-			apiUrl: apiUrl.text,
-			webUrl: webUrl.text,
+			apiUrl: previous.apiUrl,
+			webUrl: previous.webUrl,
 			email: email.text,
 			password: password.text,
 		}
@@ -84,17 +145,33 @@ export function createAccountPage(
 		password.text = ''
 		return false
 	})
-	let previous = initial
 	return {
 		render(state: AccountState): void {
-			for (const row of [apiUrl, webUrl, email, password])
+			const showConfirmation = state.browserConfirmationCode !== null
+			if (showConfirmation !== showingConfirmation) {
+				window.remove(showingConfirmation ? confirmationPage : page)
+				window.add(showConfirmation ? confirmationPage : page)
+				showingConfirmation = showConfirmation
+			}
+			const code = state.browserConfirmationCode
+			confirmationCode.visible = Boolean(code)
+			if (code) {
+				// Only schema-validated hexadecimal codes enter this markup.
+				confirmationCode.set_markup(
+					`<span font_family="monospace" size="32768" weight="bold">${code}</span>`,
+				)
+			}
+			waiting.label = code
+				? 'Waiting for browser confirmation…'
+				: 'Opening browser sign-in…'
+
+			for (const row of [email, password])
 				row.sensitive = !state.busy && !state.connected
+			browserSignIn.sensitive = !state.busy && !state.connected
 			signIn.sensitive = !state.busy && !state.connected
 			signOut.sensitive = !state.busy
 			status.subtitle = state.message
 			// Preserve unsaved input while reflecting confirmed account changes.
-			if (state.apiUrl !== previous.apiUrl) apiUrl.text = state.apiUrl
-			if (state.webUrl !== previous.webUrl) webUrl.text = state.webUrl
 			if (
 				state.email !== previous.email ||
 				(state.status === 'signed-out' && previous.status !== 'signed-out')

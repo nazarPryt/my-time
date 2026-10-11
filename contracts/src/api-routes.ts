@@ -11,6 +11,10 @@ export const AUTH_ROUTES = {
 	exchangeExtensionToken: '/exchange-extension-token',
 	loginExtension: '/login-extension',
 	refreshExtension: '/refresh-extension',
+	desktopPairingStart: '/desktop-pairing/start',
+	desktopPairingInfo: '/desktop-pairing/info',
+	desktopPairingApprove: '/desktop-pairing/approve',
+	desktopPairingPoll: '/desktop-pairing/poll',
 } as const
 
 export const WORKOUT_ROUTES = {
@@ -24,6 +28,7 @@ export const WORKOUT_ROUTES = {
 
 export const TIME_TRACKER_ROUTES = {
 	prefix: '/time-tracker',
+	events: '/events',
 	active: '/active',
 	today: '/today',
 	weekly: '/weekly',

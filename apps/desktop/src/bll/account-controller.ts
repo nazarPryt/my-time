@@ -1,4 +1,8 @@
-import { type LoginRequest, LoginRequestSchema } from 'contracts'
+import {
+	type DesktopPairingStart,
+	type LoginRequest,
+	LoginRequestSchema,
+} from 'contracts'
 import type { TokenStore } from '@/dal/api-client'
 import type { ConnectionSettings, SettingsStore } from '@/dal/settings-store'
 import { errorMessage } from '@/shared/errors'
@@ -8,7 +12,15 @@ export interface AccountClient {
 	login(credentials: LoginRequest): Promise<void>
 	dispose(): void
 }
+export interface BrowserLoginClient {
+	login(
+		onRequest: (request: DesktopPairingStart) => Promise<void>,
+	): Promise<string>
+	dispose(): void
+}
 export interface AccountServices {
+	createBrowserLogin?(server: string): BrowserLoginClient
+	openBrowser?(url: string): Promise<void>
 	createClient(server: string): AccountClient
 	createStorage(server: string): TokenStore
 }
@@ -20,6 +32,7 @@ export interface SignInInput {
 }
 export interface AccountState extends ConnectionSettings {
 	busy: boolean
+	browserConfirmationCode: string | null
 	status:
 		| 'idle'
 		| 'signing-in'
@@ -35,6 +48,7 @@ export class AccountController {
 	state: AccountState
 	private disposed = false
 	private client: AccountClient | null = null
+	private browserLogin: BrowserLoginClient | null = null
 	private storage: TokenStore | null = null
 	private unsubscribe: () => void
 	constructor(
@@ -45,6 +59,7 @@ export class AccountController {
 		this.state = {
 			...settings.read(),
 			busy: false,
+			browserConfirmationCode: null,
 			status: 'idle',
 			message: '',
 		}
@@ -83,6 +98,53 @@ export class AccountController {
 			this.update({ busy: false })
 		}
 	}
+	async signInWithBrowser(): Promise<void> {
+		if (this.disposed || this.state.busy || this.state.connected) return
+		this.update({
+			busy: true,
+			status: 'signing-in',
+			message: 'Opening browser sign-in…',
+			browserConfirmationCode: '',
+		})
+		try {
+			if (!this.services.createBrowserLogin || !this.services.openBrowser)
+				throw new Error('Browser sign-in is unavailable.')
+			const connection = this.settings.read()
+			const apiUrl = normalizeApiUrl(connection.apiUrl)
+			const webUrl = normalizeUrl(connection.webUrl)
+			this.browserLogin = this.services.createBrowserLogin(apiUrl)
+			const email = await this.browserLogin.login(async (request) => {
+				if (this.disposed) return
+				this.update({
+					message: `Confirm code ${request.confirmationCode} in your browser. Keep Settings open until connected.`,
+					browserConfirmationCode: request.confirmationCode,
+				})
+				await this.services.openBrowser?.(
+					`${webUrl}/dashboard/time-tracker?desktopRequest=${request.requestId}`,
+				)
+			})
+			if (this.disposed) return
+			this.settings.connectAccount({ apiUrl, webUrl, email })
+			this.update({
+				...this.settings.read(),
+				status: 'signed-in',
+				browserConfirmationCode: null,
+				message: `Connected as ${email}`,
+			})
+		} catch (error) {
+			this.update({
+				status: 'error',
+				message: errorMessage(
+					error,
+					'Unable to sign in with browser. Try again.',
+				),
+			})
+		} finally {
+			this.browserLogin?.dispose()
+			this.browserLogin = null
+			this.update({ busy: false, browserConfirmationCode: null })
+		}
+	}
 	async signOut(): Promise<void> {
 		if (this.disposed || this.state.busy) return
 		this.update({ busy: true, status: 'signing-out', message: 'Signing out…' })
@@ -115,6 +177,8 @@ export class AccountController {
 		this.unsubscribe()
 		this.client?.dispose()
 		this.client = null
+		this.browserLogin?.dispose()
+		this.browserLogin = null
 		this.storage?.dispose()
 		this.storage = null
 	}

@@ -1,3 +1,4 @@
+import { reconnectSessions, SessionSyncState } from '@my-time/session-sync'
 import type { SessionResponse } from 'contracts'
 import { AuthenticationError } from '@/dal/api-client'
 import { errorMessage } from '@/shared/errors'
@@ -6,8 +7,16 @@ export interface TrackerApi {
 	getActive(): Promise<SessionResponse | null>
 	start(): Promise<SessionResponse>
 	end(id: string): Promise<void>
+	watch(onSession: (session: SessionResponse | null) => void): Promise<void>
 	dispose(): void
 }
+
+export interface SyncRetryDelay {
+	wait(milliseconds: number): Promise<void>
+	dispose(): void
+}
+
+export { reconnectDelay } from '@my-time/session-sync'
 
 export interface TrackerState {
 	activeSession: SessionResponse | null
@@ -16,7 +25,7 @@ export interface TrackerState {
 	message: string
 }
 
-/** Serializes polling and button actions, and ignores results after teardown. */
+/** Serializes commands and reconciles pushes received during in-flight HTTP work. */
 export class TrackerController {
 	state: TrackerState = {
 		activeSession: null,
@@ -25,6 +34,9 @@ export class TrackerController {
 		message: 'Connecting…',
 	}
 	private disposed = false
+	private sync = new SessionSyncState()
+	private pendingRefresh = false
+	private retry: SyncRetryDelay | undefined
 
 	constructor(
 		private api: TrackerApi,
@@ -32,23 +44,63 @@ export class TrackerController {
 	) {}
 
 	async refresh(): Promise<void> {
+		if (this.state.busy) {
+			this.pendingRefresh = true
+			return
+		}
 		await this.run(() => this.api.getActive())
 	}
 
+	async connect(retry: SyncRetryDelay): Promise<void> {
+		if (this.retry || this.disposed) {
+			retry.dispose()
+			return
+		}
+		this.retry = retry
+		await reconnectSessions({
+			watch: (onSession) => this.api.watch(onSession),
+			onSession: (session) => {
+				this.sync.receiveSnapshot()
+				this.confirm(session)
+			},
+			onDisconnected: (error) => this.connectionFailed(error),
+			isAuthenticationError: (error) => error instanceof AuthenticationError,
+			isStopped: () => this.disposed,
+			wait: (milliseconds) => retry.wait(milliseconds),
+		})
+	}
+
 	async start(): Promise<void> {
-		await this.run(async () => (await this.api.getActive()) ?? this.api.start())
+		await this.run(async () => {
+			const active = await this.currentSession()
+			if (this.disposed) return null
+			return active ?? this.api.start()
+		})
 	}
 
 	async stop(): Promise<void> {
 		await this.run(async () => {
-			const active = await this.api.getActive()
+			const active = await this.currentSession()
+			if (this.disposed) return null
 			if (active) await this.api.end(active.id)
-			return this.api.getActive()
+			if (this.disposed) return null
+			// The confirmed end response and live snapshots make a follow-up read
+			// redundant. Reconcile explicitly when streaming is unavailable.
+			return this.sync.connected ? null : this.api.getActive()
 		})
+	}
+
+	private currentSession(): Promise<SessionResponse | null> {
+		return this.sync.currentSession(
+			() => this.state.activeSession,
+			() => this.api.getActive(),
+		)
 	}
 
 	dispose(): void {
 		this.disposed = true
+		this.sync.reset()
+		this.retry?.dispose()
 		this.api.dispose()
 	}
 
@@ -58,18 +110,34 @@ export class TrackerController {
 		this.onChange(this.state)
 	}
 
+	private confirm(activeSession: SessionResponse | null): void {
+		const offline = Boolean(this.retry && !this.sync.connected)
+		let status: TrackerState['status'] = activeSession ? 'working' : 'ready'
+		let message = activeSession ? 'Working' : 'Ready to work'
+		if (offline) {
+			status = 'offline'
+			message = 'Updates disconnected. Reconnecting…'
+		}
+		this.update({ activeSession, status, message })
+	}
+
+	private connectionFailed(error: unknown): void {
+		this.sync.disconnect()
+		this.update({
+			status: error instanceof AuthenticationError ? 'signed-out' : 'offline',
+			message: errorMessage(error, 'Updates disconnected. Reconnecting…'),
+		})
+	}
+
 	private async run(
 		action: () => Promise<SessionResponse | null>,
 	): Promise<void> {
 		if (this.disposed || this.state.busy) return
+		const checkpoint = this.sync.checkpoint()
 		this.update({ busy: true })
 		try {
 			const activeSession = await action()
-			this.update({
-				activeSession,
-				status: activeSession ? 'working' : 'ready',
-				message: activeSession ? 'Working' : 'Ready to work',
-			})
+			if (this.sync.isCurrent(checkpoint)) this.confirm(activeSession)
 		} catch (error) {
 			this.update({
 				status: error instanceof AuthenticationError ? 'signed-out' : 'offline',
@@ -77,6 +145,14 @@ export class TrackerController {
 			})
 		} finally {
 			this.update({ busy: false })
+		}
+		if (
+			this.pendingRefresh &&
+			!this.disposed &&
+			this.state.status !== 'signed-out'
+		) {
+			this.pendingRefresh = false
+			await this.refresh()
 		}
 	}
 }

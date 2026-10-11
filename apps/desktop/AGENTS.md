@@ -19,7 +19,7 @@ Run from the monorepo root with Bun:
 ## Structure and runtime
 
 - `src/extension.ts` and `src/prefs.ts`: thin GNOME entry points / composition roots.
-- `src/shell/application.ts`: Shell lifecycle, settings subscription, and polling.
+- `src/shell/application.ts`: Shell lifecycle, settings subscription, and SSE setup.
 - `src/shell/ui/`: St panel widgets; only imported by the Shell entry point.
 - `src/shell/browser-launch.ts`: browser launch and Shell notifications.
 - `src/preferences/ui/`: GTK/libadwaita widgets; only imported by preferences.
@@ -65,12 +65,22 @@ cancel in-flight work, remove GLib sources, disconnect settings signals, and
 destroy every actor. Ignore async results from a disabled or replaced controller.
 Use asynchronous network/keyring APIs so GNOME Shell stays responsive.
 
-The existing API owns work sessions. Fetch the current session before acting,
-and only show a successful change after the API confirms it. Preserve confirmed
-session state on network errors. Poll every five seconds; derive elapsed time
-from the server's start timestamp with `date-fns`.
+The existing API owns work sessions. Use confirmed SSE session state before
+acting while connected; fetch the current session when disconnected. Only show success after API confirmation. Shared
+parsing, retry policy, and synchronization guards live in `packages/session-sync`;
+keep GNOME transport and UI adapters local. Preserve confirmed
+session state on network errors. Receive authoritative session snapshots through
+the authenticated SSE endpoint, reconnect with bounded backoff, and reconcile
+pushes arriving during commands without applying stale HTTP results. Do not poll
+for unchanged session state. Keep the `my-time-desktop/` user agent on the
+session stream: the API uses it to track desktop presence for the web badge.
+Presence notifications are separate from session snapshots; older desktop
+parsers may ignore them. Keep the one-second local render timer and derive
+elapsed time from the server's start timestamp with `date-fns`.
 
-Reuse `contracts` schemas, types, and route constants. Desktop auth uses the
+Reuse `contracts` schemas, types, and route constants. Browser sign-in uses short-lived API pairing requests approved by the signed-in
+web account. Keep the device secret out of browser URLs; cancel polling and
+keyring operations when preferences close. Desktop password auth uses the
 existing `/auth/login-extension` and `/auth/refresh-extension` routes. Store token
 pairs in the Linux Secret Service keyring, scoped to the API URL. Never store
 passwords or tokens in GSettings, files, logs, or the repository. Stop requests
@@ -82,7 +92,13 @@ requests without writing real work sessions to the user's account.
 
 ## Installation and verification
 
-Build artifacts live in ignored `dist/` and `build/` directories. Installation
+Build artifacts live in ignored `dist/` and `build/` directories. Bake public
+server URL defaults into the generated GSettings schema using `VITE_API_URL`
+and `FRONTEND_WEB_URL` (fallback `VITE_WEB_URL`). Reuse deployment values and
+local web env files; never embed credentials or decrypt secrets in build scripts.
+Server URLs are build configuration; account preferences expose only email
+and password plus browser sign-in, with no editable server URL fields. Preserve
+existing user settings when updating the extension. Installation
 changes files outside this workspace; obey the session's sandbox permissions.
 Do not restart the user's desktop session automatically. Document activation
 and GNOME reload instructions in `README.md`.

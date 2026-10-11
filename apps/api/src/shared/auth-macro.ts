@@ -21,7 +21,7 @@ export const authMacro = new Elysia({ name: 'auth-macro' })
 				if (!payload || typeof payload.sub !== 'string') {
 					return status('Unauthorized', AUTH_ERRORS.UNAUTHORIZED)
 				}
-				return { userId: payload.sub }
+				return { userId: payload.sub, tokenExpiresAt: payload.exp }
 			},
 		},
 	})

@@ -43,6 +43,7 @@
       "name": "desktop",
       "version": "0.1.0",
       "dependencies": {
+        "@my-time/session-sync": "workspace:*",
         "contracts": "workspace:*",
         "date-fns": "4.4.0",
       },
@@ -122,6 +123,7 @@
         "@elysiajs/eden": "1.4.9",
         "@fontsource-variable/inter": "5.3.0",
         "@hookform/resolvers": "5.9.1",
+        "@my-time/session-sync": "workspace:*",
         "@tailwindcss/vite": "4.3.3",
         "@tanstack/react-router": "1.170.35",
         "@tanstack/react-router-devtools": "1.167.1",
@@ -174,6 +176,13 @@
       "peerDependencies": {
         "date-fns": "^4.1.0",
         "zustand": "^5.0.12",
+      },
+    },
+    "packages/session-sync": {
+      "name": "@my-time/session-sync",
+      "version": "0.0.0",
+      "dependencies": {
+        "contracts": "workspace:*",
       },
     },
   },
@@ -751,6 +760,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.27.1", "", { "dependencies": { "@hono/node-server": "^1.19.9", "ajv": "^8.17.1", "ajv-formats": "^3.0.1", "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.5", "eventsource": "^3.0.2", "eventsource-parser": "^3.0.0", "express": "^5.2.1", "express-rate-limit": "^8.2.1", "hono": "^4.11.4", "jose": "^6.1.3", "json-schema-typed": "^8.0.2", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.25 || ^4.0", "zod-to-json-schema": "^3.25.1" }, "peerDependencies": { "@cfworker/json-schema": "^4.1.1" }, "optionalPeers": ["@cfworker/json-schema"] }, "sha512-sr6GbP+4edBwFndLbM60gf07z0FQ79gaExpnsjMGePXqFcSSb7t6iscpjk9DhFhwd+mTEQrzNafGP8/iGGFYaA=="],
+
+    "@my-time/session-sync": ["@my-time/session-sync@workspace:packages/session-sync"],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@0.2.12", "", { "dependencies": { "@emnapi/core": "^1.4.3", "@emnapi/runtime": "^1.4.3", "@tybys/wasm-util": "^0.10.0" } }, "sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ=="],
 

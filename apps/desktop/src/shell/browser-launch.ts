@@ -15,12 +15,15 @@ export function openWebTracker(webUrl: string): void {
 				} catch {
 					Main.notify(
 						'my·time',
-						'Unable to open the web tracker. Check your browser and web URL.',
+						'Unable to open the web tracker. Check your browser and try again.',
 					)
 				}
 			},
 		)
 	} catch {
-		Main.notify('my·time', 'Set your web application URL in Settings.')
+		Main.notify(
+			'my·time',
+			'Unable to open the web tracker. Reinstall the latest extension and try again.',
+		)
 	}
 }

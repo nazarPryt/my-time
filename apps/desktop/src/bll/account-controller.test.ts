@@ -3,6 +3,7 @@ import type { ConnectionSettings, SettingsStore } from '@/dal/settings-store'
 import {
 	AccountController,
 	type AccountState,
+	type BrowserLoginClient,
 	type SignInInput,
 } from './account-controller.js'
 
@@ -15,6 +16,7 @@ const input: SignInInput = {
 function fixture(
 	login: () => Promise<void> = async () => {},
 	clear: () => Promise<void> = async () => {},
+	createBrowserLogin?: () => BrowserLoginClient,
 ) {
 	let connection: ConnectionSettings = { ...input, email: '', connected: false }
 	const events: string[] = []
@@ -48,6 +50,10 @@ function fixture(
 	const controller = new AccountController(
 		settings,
 		{
+			createBrowserLogin,
+			openBrowser: async (url) => {
+				events.push(`browser:${url}`)
+			},
 			createClient: () => ({
 				login,
 				dispose() {
@@ -180,4 +186,87 @@ test('closing during sign-out ignores late completion', async () => {
 	expect(f.events.filter((event) => event === 'dispose-storage')).toHaveLength(
 		1,
 	)
+})
+
+const browserRequest = {
+	requestId: 'b1537b0a-47c7-4a28-bbc6-b4bb5c2b3e7d',
+	deviceSecret: 'a'.repeat(64),
+	confirmationCode: 'ABC12345',
+	expiresIn: 300,
+	interval: 5,
+}
+
+test('browser sign-in uses configured URLs and connects only after confirmed approval', async () => {
+	let approve: ((email: string) => void) | undefined
+	const f = fixture(undefined, undefined, () => ({
+		login: async (onRequest) => {
+			await onRequest(browserRequest)
+			return new Promise<string>((resolve) => {
+				approve = resolve
+			})
+		},
+		dispose() {},
+	}))
+	const pending = f.controller.signInWithBrowser()
+	await Promise.resolve()
+	await Promise.resolve()
+	expect(f.controller.state.busy).toBe(true)
+	expect(f.controller.state.browserConfirmationCode).toBe(
+		browserRequest.confirmationCode,
+	)
+	expect(f.settings.read().connected).toBe(false)
+	expect(f.events).toContain(
+		`browser:${input.webUrl}/dashboard/time-tracker?desktopRequest=${browserRequest.requestId}`,
+	)
+	await f.controller.signInWithBrowser()
+	expect(f.events.filter((event) => event.startsWith('browser:'))).toHaveLength(
+		1,
+	)
+	approve?.('browser@example.com')
+	await pending
+	expect(f.controller.state.browserConfirmationCode).toBeNull()
+	expect(f.settings.read().email).toBe('browser@example.com')
+	expect(f.settings.read().connected).toBe(true)
+})
+
+test('closing settings ignores late browser approval', async () => {
+	let approve: ((email: string) => void) | undefined
+	let disposed = false
+	const f = fixture(undefined, undefined, () => ({
+		login: () =>
+			new Promise<string>((resolve) => {
+				approve = resolve
+			}),
+		dispose() {
+			disposed = true
+		},
+	}))
+	const pending = f.controller.signInWithBrowser()
+	f.controller.dispose()
+	approve?.('browser@example.com')
+	await pending
+	expect(disposed).toBe(true)
+	expect(f.settings.read().connected).toBe(false)
+})
+
+test('failed browser sign-in clears the confirmation screen and allows retry', async () => {
+	const f = fixture(undefined, undefined, () => ({
+		login: async (onRequest) => {
+			await onRequest(browserRequest)
+			throw new Error('Request expired. Try again.')
+		},
+		dispose() {},
+	}))
+	await f.controller.signInWithBrowser()
+	expect(
+		f.states.some(
+			(state) =>
+				state.browserConfirmationCode === browserRequest.confirmationCode,
+		),
+	).toBe(true)
+	expect(f.controller.state.browserConfirmationCode).toBeNull()
+	expect(f.controller.state.busy).toBe(false)
+	expect(f.controller.state.status).toBe('error')
+	expect(f.controller.state.message).toBe('Request expired. Try again.')
+	expect(f.settings.read().connected).toBe(false)
 })

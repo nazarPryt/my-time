@@ -1,11 +1,17 @@
 import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
+import {
+	delayTimeEvents,
+	failTimeEvents,
+	pushTimeSession,
+	recoverTimeEvents,
+	timeStreamStats,
+} from './session-stream.mocks'
 import type { TimeTrackerPage } from './TimeTrackerPage'
 import { TIME_TRACKER_PATH } from './TimeTrackerPage'
 import { expect, test } from './time-tracker.fixtures'
 import {
-	API_TIME_ACTIVE,
 	API_TIME_END,
-	API_TIME_TODAY,
+	API_TIME_START,
 	activeSessionStartedSecondsAgo,
 	MOCK_SESSION_ACTIVE,
 	MOCK_TODAY_EMPTY,
@@ -34,22 +40,20 @@ test.describe('Time Tracker page', () => {
 			await mockTimeToday(page, MOCK_TODAY_EMPTY)
 			await timeTrackerPage.goto()
 			await expect(timeTrackerPage.statusBadge).toHaveText('Ready')
-			await mockTimeActive(page, activeSessionStartedSecondsAgo(125))
-			await page.clock.runFor(5100)
+			pushTimeSession(page, activeSessionStartedSecondsAgo(125))
 			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
 			expect(await readTimerSeconds(timeTrackerPage)).toBeGreaterThanOrEqual(
 				125,
 			)
-			await mockTimeActive(page, null)
 			await mockTimeToday(page, MOCK_TODAY_WITH_SESSIONS)
-			await page.clock.runFor(5100)
+			pushTimeSession(page, null)
 			await expect(timeTrackerPage.statusBadge).toHaveText('Ready')
 			await expect(timeTrackerPage.timer).toHaveText('00:00')
 			await expect(timeTrackerPage.sessionRows).toHaveCount(3)
 			await expect(timeTrackerPage.statToday).toHaveText('2h')
 		})
 
-		test('preserves the running session when background refresh fails', async ({
+		test('preserves the running session when the stream disconnects', async ({
 			page,
 			timeTrackerPage,
 		}) => {
@@ -57,11 +61,95 @@ test.describe('Time Tracker page', () => {
 			await mockTimeActive(page, activeSessionStartedSecondsAgo(125))
 			await timeTrackerPage.goto()
 			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
-			await mockTimeFailure(page, API_TIME_ACTIVE)
-			await page.clock.runFor(5100)
+			failTimeEvents(page)
 			await expect(timeTrackerPage.error).toBeVisible()
 			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
 			await expect(timeTrackerPage.stopBtn).toBeVisible()
+		})
+
+		test('does not poll while idle and sends the Bearer token on the stream', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await page.clock.install()
+			let activeRequests = 0
+			let todayRequests = 0
+			page.on('request', (request) => {
+				if (request.url().endsWith('/time-tracker/active')) activeRequests++
+				if (request.url().endsWith('/time-tracker/today')) todayRequests++
+			})
+			await timeTrackerPage.goto()
+			await expect(timeTrackerPage.statToday).toHaveText('2h')
+			await expect.poll(() => timeStreamStats(page).clients).toBe(1)
+			const before = todayRequests
+			const streamsBefore = timeStreamStats(page).requests
+			await page.clock.runFor(12_000)
+			expect(activeRequests).toBe(0)
+			expect(todayRequests).toBe(before)
+			expect(timeStreamStats(page).requests).toBe(streamsBefore)
+			expect(timeStreamStats(page).clients).toBe(1)
+			expect(timeStreamStats(page).authorization).toMatch(/^Bearer /)
+		})
+
+		test('reconnects and restores changes made while offline', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await timeTrackerPage.goto()
+			await expect(timeTrackerPage.statusBadge).toHaveText('Ready')
+			failTimeEvents(page)
+			await expect(timeTrackerPage.error).toBeVisible()
+			recoverTimeEvents(page, activeSessionStartedSecondsAgo(125))
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+			await expect(timeTrackerPage.error).toBeHidden()
+		})
+
+		test('keeps an idle stream open beyond the ordinary HTTP timeout', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await timeTrackerPage.goto()
+			await expect(timeTrackerPage.statToday).toHaveText('2h')
+			const initialRequests = timeStreamStats(page).requests
+			// Wait across the 15s HTTP timeout and the server's 20s heartbeat.
+			await page.waitForTimeout(21_000)
+			expect(timeStreamStats(page).requests).toBe(initialRequests)
+			await expect(timeTrackerPage.error).toBeHidden()
+			pushTimeSession(page, activeSessionStartedSecondsAgo(125))
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+		})
+
+		test('ignores an older Start response after a newer pushed session', async ({
+			page,
+			timeTrackerPage,
+		}) => {
+			await timeTrackerPage.goto()
+			let release!: () => void
+			let requested!: () => void
+			const requestStarted = new Promise<void>((resolve) => {
+				requested = resolve
+			})
+			const released = new Promise<void>((resolve) => {
+				release = resolve
+			})
+			await page.route(API_TIME_START, async (route) => {
+				requested()
+				await released
+				await route.fulfill({
+					contentType: 'application/json',
+					body: JSON.stringify(MOCK_SESSION_ACTIVE),
+				})
+			})
+			await timeTrackerPage.start()
+			await requestStarted
+			pushTimeSession(page, {
+				...activeSessionStartedSecondsAgo(125),
+				id: 'newer-session',
+			})
+			await expect(timeTrackerPage.statusBadge).toHaveText('Working')
+			release()
+			await expect(timeTrackerPage.stopBtn).toBeEnabled()
+			expect(await readTimerSeconds(timeTrackerPage)).toBeLessThan(150)
 		})
 
 		test('preserves the running session when Stop is rejected', async ({
@@ -82,15 +170,8 @@ test.describe('Time Tracker page', () => {
 			page,
 			timeTrackerPage,
 		}) => {
-			// Delay /today so the loading branch stays mounted long enough to assert.
-			await page.route(API_TIME_TODAY, async (route) => {
-				await new Promise((resolve) => setTimeout(resolve, 400))
-				await route.fulfill({
-					status: 200,
-					contentType: 'application/json',
-					body: JSON.stringify(MOCK_TODAY_WITH_SESSIONS),
-				})
-			})
+			// Hold the initial authoritative snapshot, not an ordinary summary read.
+			delayTimeEvents(page, 400)
 
 			await page.goto(TIME_TRACKER_PATH)
 

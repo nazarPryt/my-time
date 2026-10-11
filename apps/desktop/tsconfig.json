@@ -12,7 +12,8 @@
 		"noUnusedParameters": true,
 		"paths": {
 			"contracts": ["../../contracts/src/index.ts"],
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@my-time/session-sync": ["../../packages/session-sync/src/index.ts"]
 		}
 	},
 	"include": ["src"],

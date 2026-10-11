@@ -7,6 +7,7 @@ import { formatElapsed } from '../lib/format-elapsed'
 import { useTimeTrackerStore } from '../model/store'
 import { useTimeTrackerSync } from '../model/use-time-tracker-sync'
 import { TIME_TRACKER_TEST_IDS } from '../testIds'
+import { DesktopStatusBadge } from './DesktopStatusBadge'
 import { SessionList } from './SessionList'
 import { TodayStats } from './TodayStats'
 
@@ -34,8 +35,9 @@ export function TimeTrackerWidget() {
 			className="h-full flex flex-col"
 			data-testid={TIME_TRACKER_TEST_IDS.page}
 		>
-			<div className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
+			<div className="min-h-14 flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-medium text-foreground">Time Tracker</h1>
+				<DesktopStatusBadge />
 			</div>
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">

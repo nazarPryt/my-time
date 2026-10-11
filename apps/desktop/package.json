@@ -13,7 +13,8 @@
 	},
 	"dependencies": {
 		"contracts": "workspace:*",
-		"date-fns": "4.4.0"
+		"date-fns": "4.4.0",
+		"@my-time/session-sync": "workspace:*"
 	},
 	"devDependencies": {
 		"@girs/gjs": "4.0.0-beta.12",

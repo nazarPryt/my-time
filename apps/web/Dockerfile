@@ -5,18 +5,22 @@ COPY package.json bun.lock* ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 COPY apps/extension/package.json ./apps/extension/
+COPY apps/desktop/package.json ./apps/desktop/
 COPY contracts/package.json ./contracts/
 COPY packages/features/package.json ./packages/features/
+COPY packages/session-sync/package.json ./packages/session-sync/
 # --ignore-scripts: the extension's postinstall (`wxt prepare`) needs its
 # sources, which aren't copied yet — `wxt zip` below runs it anyway.
 RUN bun install --ignore-scripts
 
 COPY contracts ./contracts
 COPY packages/features ./packages/features
+COPY packages/session-sync ./packages/session-sync
 COPY apps/api/src ./apps/api/src
 COPY apps/api/tsconfig.json ./apps/api/
 COPY apps/web ./apps/web
 COPY apps/extension ./apps/extension
+COPY apps/desktop ./apps/desktop
 
 ARG VITE_API_URL=http://localhost:3000
 ARG FRONTEND_WEB_URL=http://localhost:5173
@@ -35,6 +39,12 @@ RUN cd apps/extension \
 	&& export VITE_API_URL="${VITE_API_URL%/}/api/v1" \
 	&& bun --bun wxt zip \
 	&& cp .output/*-chrome.zip ../web/dist/my-time-extension.zip
+
+# Build the GNOME download without installing a desktop environment.
+RUN apk add --no-cache glib-dev zip \
+	&& FRONTEND_WEB_URL="$FRONTEND_WEB_URL" bun apps/desktop/scripts/build.ts \
+	&& cd apps/desktop/dist \
+	&& zip -r ../../web/dist/my-time@my-time.local.shell-extension.zip .
 
 FROM nginx:alpine
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html

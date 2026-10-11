@@ -5,6 +5,7 @@ import {
 	type HttpResponse,
 	type Tokens,
 } from './api-client'
+import type { SessionStreamTransport, StreamConnection } from './session-stream'
 
 const oldTokens: Tokens = {
 	accessToken: 'old-access',
@@ -22,7 +23,11 @@ const wireSession = {
 	abandonedAt: null,
 }
 
-function fixture(responses: HttpResponse[], tokens: Tokens | null = oldTokens) {
+function fixture(
+	responses: HttpResponse[],
+	tokens: Tokens | null = oldTokens,
+	streams?: SessionStreamTransport,
+) {
 	const transport = {
 		send: mock(
 			async (
@@ -44,7 +49,11 @@ function fixture(responses: HttpResponse[], tokens: Tokens | null = oldTokens) {
 		clear: mock(async () => {}),
 		dispose: mock(() => {}),
 	}
-	return { transport, storage, client: new ApiClient(transport, storage) }
+	return {
+		transport,
+		storage,
+		client: new ApiClient(transport, storage, streams),
+	}
 }
 
 describe('desktop API client', () => {
@@ -141,5 +150,126 @@ describe('desktop API client', () => {
 		await expect(client.getActive()).rejects.toThrow('Connection closed')
 		expect(transport.dispose).toHaveBeenCalledTimes(1)
 		expect(storage.dispose).toHaveBeenCalledTimes(1)
+	})
+
+	test('consumes snapshots and heartbeats without making HTTP reads', async () => {
+		const chunks = [
+			new TextEncoder().encode(
+				': heartbeat\n\nevent: session-state\ndata: {"version":1,"activeSession":null}\n\n',
+			),
+			null,
+		]
+		const connection: StreamConnection = {
+			status: 200,
+			contentType: 'text/event-stream; charset=utf-8',
+			read: mock(async () => chunks.shift() ?? null),
+			close: mock(() => {}),
+		}
+		const streams = {
+			open: mock(async (_path: string, _token: string) => connection),
+			dispose: mock(() => {}),
+		}
+		const { client, transport } = fixture([], oldTokens, streams)
+		const received = mock((_session: unknown) => {})
+		await client.watch(received)
+		expect(received).toHaveBeenCalledWith(null)
+		expect(streams.open).toHaveBeenCalledWith(
+			'/time-tracker/events',
+			'old-access',
+		)
+		expect(transport.send).not.toHaveBeenCalled()
+		expect(connection.close).toHaveBeenCalledTimes(1)
+		client.dispose()
+		expect(streams.dispose).toHaveBeenCalledTimes(1)
+	})
+
+	test('shares token refresh between unauthorized HTTP and SSE connections', async () => {
+		const closed = mock(() => {})
+		const streams = {
+			open: mock(
+				async (_path: string, token: string): Promise<StreamConnection> => ({
+					status: token === 'old-access' ? 401 : 200,
+					contentType: 'text/event-stream',
+					read: async () => null,
+					close: closed,
+				}),
+			),
+			dispose: mock(() => {}),
+		}
+		const { client, transport, storage } = fixture([], oldTokens, streams)
+		transport.send.mockImplementation(async (_method, path, _body, token) => {
+			if (path === '/auth/refresh-extension')
+				return { status: 200, body: newTokens }
+			return { status: token === 'new-access' ? 200 : 401, body: null }
+		})
+		await Promise.all([client.watch(() => {}), client.getActive()])
+		expect(storage.load).toHaveBeenCalledTimes(1)
+		expect(storage.save).toHaveBeenCalledTimes(1)
+		expect(
+			transport.send.mock.calls.filter(
+				(call) => call[1] === '/auth/refresh-extension',
+			),
+		).toHaveLength(1)
+		expect(streams.open.mock.calls.map((call) => call[1])).toEqual([
+			'old-access',
+			'new-access',
+		])
+	})
+
+	test('closes non-stream responses and preserves credentials on server failure', async () => {
+		for (const [status, contentType] of [
+			[503, 'application/json'],
+			[200, 'application/json'],
+		] as const) {
+			const close = mock(() => {})
+			const streams = {
+				open: async () => ({
+					status,
+					contentType,
+					read: async () => null,
+					close,
+				}),
+				dispose: () => {},
+			}
+			const { client, storage } = fixture([], oldTokens, streams)
+			await expect(client.watch(() => {})).rejects.toThrow()
+			expect(close).toHaveBeenCalledTimes(1)
+			expect(storage.clear).not.toHaveBeenCalled()
+		}
+	})
+
+	test('ignores bytes arriving after disposal', async () => {
+		let resolve!: (chunk: Uint8Array | null) => void
+		let reading!: () => void
+		const readStarted = new Promise<void>((done) => {
+			reading = done
+		})
+		const close = mock(() => {})
+		const streams = {
+			open: async () => ({
+				status: 200,
+				contentType: 'text/event-stream',
+				close,
+				read: () =>
+					new Promise<Uint8Array | null>((done) => {
+						resolve = done
+						reading()
+					}),
+			}),
+			dispose: mock(() => {}),
+		}
+		const { client } = fixture([], oldTokens, streams)
+		const received = mock(() => {})
+		const watching = client.watch(received)
+		await readStarted
+		client.dispose()
+		resolve(
+			new TextEncoder().encode(
+				'event: session-state\ndata: {"version":1,"activeSession":null}\n\n',
+			),
+		)
+		await expect(watching).rejects.toThrow('Connection closed')
+		expect(received).not.toHaveBeenCalled()
+		expect(close).toHaveBeenCalledTimes(1)
 	})
 })

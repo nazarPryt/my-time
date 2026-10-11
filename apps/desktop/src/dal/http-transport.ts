@@ -61,7 +61,7 @@ export class SoupTransport implements HttpTransport {
 					} catch {
 						reject(
 							new Error(
-								'Cannot reach your API. Check the server address and connection.',
+								'Cannot reach your API. Check your connection and try again.',
 							),
 						)
 					}

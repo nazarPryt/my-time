@@ -8,6 +8,11 @@ import {
 	SessionResponseSchema,
 	TIME_TRACKER_ROUTES,
 } from 'contracts'
+import {
+	readSessionSnapshots,
+	type SessionStreamTransport,
+	type StreamConnection,
+} from './session-stream.js'
 
 export type Tokens = ExchangeExtensionTokenResponse
 
@@ -48,10 +53,12 @@ export class ApiClient {
 	private tokens: Tokens | null = null
 	private refreshPromise: Promise<Tokens> | null = null
 	private disposed = false
+	private loadingTokens: Promise<Tokens | null> | null = null
 
 	constructor(
 		private transport: HttpTransport,
 		private storage: TokenStore,
+		private streams?: SessionStreamTransport,
 	) {}
 
 	async login(credentials: LoginRequest): Promise<void> {
@@ -68,6 +75,7 @@ export class ApiClient {
 		)
 		this.assertActive()
 		await this.storage.save(tokens)
+		this.assertActive()
 		this.tokens = tokens
 	}
 
@@ -100,10 +108,39 @@ export class ApiClient {
 		)
 	}
 
+	/** A single connection; the controller owns retries and user-visible status. */
+	async watch(
+		onSession: (session: SessionResponse | null) => void,
+	): Promise<void> {
+		if (!this.streams) throw new Error('Session streaming is unavailable.')
+		let connection: StreamConnection | undefined
+		try {
+			const token = (await this.loadTokens()).accessToken
+			const path = `${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.events}`
+			connection = await this.streams.open(path, token)
+			this.assertActive()
+			if (connection.status === 401) {
+				connection.close()
+				const tokens = await this.tokensAfterRejection(token)
+				connection = await this.streams.open(path, tokens.accessToken)
+				this.assertActive()
+			}
+			requireSuccess({ status: connection.status, body: null })
+			if (!/^text\/event-stream(?:;|$)/i.test(connection.contentType))
+				throw new Error('The API did not return a session event stream.')
+			await readSessionSnapshots(connection, onSession, () =>
+				this.assertActive(),
+			)
+		} finally {
+			connection?.close()
+		}
+	}
+
 	dispose(): void {
 		this.disposed = true
 		this.tokens = null
 		this.transport.dispose()
+		this.streams?.dispose()
 		this.storage.dispose()
 	}
 
@@ -117,18 +154,12 @@ export class ApiClient {
 		body?: unknown,
 	): Promise<unknown> {
 		this.assertActive()
-		this.tokens ??= await this.storage.load()
-		if (!this.tokens)
-			throw new AuthenticationError('Sign in to connect your account.')
-		const accessToken = this.tokens.accessToken
+		const accessToken = (await this.loadTokens()).accessToken
 		let response = await this.transport.send(method, path, body, accessToken)
 		this.assertActive()
 		if (response.status === 401) {
 			// Another request may already have rotated this access token.
-			const tokens =
-				this.tokens.accessToken !== accessToken
-					? this.tokens
-					: await this.refresh()
+			const tokens = await this.tokensAfterRejection(accessToken)
 			response = await this.transport.send(
 				method,
 				path,
@@ -138,6 +169,32 @@ export class ApiClient {
 			this.assertActive()
 		}
 		return requireSuccess(response)
+	}
+
+	private async loadTokens(): Promise<Tokens> {
+		this.assertActive()
+		if (!this.tokens) {
+			this.loadingTokens ??= this.storage.load()
+			try {
+				const tokens = await this.loadingTokens
+				this.assertActive()
+				this.tokens ??= tokens
+			} finally {
+				this.loadingTokens = null
+			}
+		}
+		if (!this.tokens)
+			throw new AuthenticationError('Sign in to connect your account.')
+		return this.tokens
+	}
+
+	private async tokensAfterRejection(accessToken: string): Promise<Tokens> {
+		this.assertActive()
+		if (!this.tokens)
+			throw new AuthenticationError('Sign in to connect your account.')
+		return this.tokens.accessToken !== accessToken
+			? this.tokens
+			: this.refresh()
 	}
 
 	private async refresh(): Promise<Tokens> {
