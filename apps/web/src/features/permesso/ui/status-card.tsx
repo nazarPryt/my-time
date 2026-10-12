@@ -10,6 +10,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shared/ui/card'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	status: PermessoStatusResponse
@@ -21,7 +22,7 @@ export function StatusCard({ status, checking, onCheck }: Props) {
 	const hasPracticeNumber = !!status.practiceNumber
 
 	return (
-		<Card>
+		<Card data-testid={PERMESSO_TEST_IDS.status}>
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					<FileCheck2 size={16} className="text-muted-foreground" />
@@ -30,6 +31,7 @@ export function StatusCard({ status, checking, onCheck }: Props) {
 				<CardAction>
 					<Button
 						size="sm"
+						data-testid={PERMESSO_TEST_IDS.check}
 						onClick={onCheck}
 						disabled={!hasPracticeNumber || checking}
 						isLoading={checking}

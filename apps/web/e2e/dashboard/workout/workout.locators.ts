@@ -72,6 +72,12 @@ export class WorkoutLocators extends BaseLocators {
 		this.setRows = this.setsLog.getByTestId(WORKOUT_TEST_IDS.setRow)
 	}
 
+	deleteSetTrigger(index: number) {
+		return this.setRows
+			.nth(index)
+			.getByTestId(WORKOUT_TEST_IDS.deleteSetTrigger)
+	}
+
 	quickAddBtn(reps: number) {
 		return this.quickAddButtons.getByTestId(WORKOUT_TEST_IDS.quickAddBtn(reps))
 	}

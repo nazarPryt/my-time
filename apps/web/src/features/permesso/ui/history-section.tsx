@@ -1,4 +1,5 @@
 import type { PermessoCheckHistoryResponse } from 'contracts'
+import { PERMESSO_TEST_IDS } from '../testIds'
 import { CheckHistory } from './check-history'
 
 type Props = {
@@ -8,7 +9,10 @@ type Props = {
 
 export function HistorySection({ history, loading }: Props) {
 	return (
-		<div className="rounded-xl border border-border bg-card overflow-hidden">
+		<div
+			data-testid={PERMESSO_TEST_IDS.history}
+			className="rounded-xl border border-border bg-card overflow-hidden"
+		>
 			<div className="px-4 py-3 border-b border-border">
 				<h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
 					History

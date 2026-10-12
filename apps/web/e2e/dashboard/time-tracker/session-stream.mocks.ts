@@ -6,24 +6,31 @@ import {
 	SESSION_STREAM_EVENT,
 	type SessionResponse,
 	TIME_TRACKER_ROUTES,
+	type TimerSnapshot,
 } from 'contracts'
 
 export const API_TIME_EVENTS = `**${API_PREFIX}${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.events}`
 
 type StreamMock = {
 	initial: SessionResponse | null
+	timer?: TimerSnapshot
 	desktopConnected: boolean
 	clients: Set<ServerResponse>
 	requests: number
 	authorization: string | undefined
 	delay: number
 	failure: boolean
+	acceptedToken?: string
 }
 const mocks = new WeakMap<Page, StreamMock>()
 
-function snapshot(response: ServerResponse, session: SessionResponse | null) {
+function snapshot(
+	response: ServerResponse,
+	session: SessionResponse | null,
+	timer?: TimerSnapshot,
+) {
 	response.write(
-		`event: ${SESSION_STREAM_EVENT}\ndata: ${JSON.stringify({ version: 1, activeSession: session })}\n\n`,
+		`event: ${SESSION_STREAM_EVENT}\ndata: ${JSON.stringify({ version: 1, activeSession: session, timer })}\n\n`,
 	)
 }
 
@@ -31,14 +38,17 @@ function snapshot(response: ServerResponse, session: SessionResponse | null) {
 export async function mockTimeEvents(
 	page: Page,
 	initial: SessionResponse | null,
+	timer?: TimerSnapshot,
 ) {
 	const existing = mocks.get(page)
 	if (existing) {
 		existing.initial = initial
+		existing.timer = timer
 		return
 	}
 	const mock: StreamMock = {
 		initial,
+		timer,
 		desktopConnected: false,
 		clients: new Set(),
 		requests: 0,
@@ -64,6 +74,14 @@ export async function mockTimeEvents(
 		}
 		mock.requests++
 		mock.authorization = request.headers.authorization
+		if (
+			mock.acceptedToken &&
+			mock.authorization !== `Bearer ${mock.acceptedToken}`
+		) {
+			response.writeHead(401)
+			response.end()
+			return
+		}
 		if (mock.failure) {
 			response.writeHead(503)
 			response.end()
@@ -76,7 +94,7 @@ export async function mockTimeEvents(
 		response.flushHeaders()
 		mock.clients.add(response)
 		const timer = setTimeout(() => {
-			snapshot(response, mock.initial)
+			snapshot(response, mock.initial, mock.timer)
 			response.write(
 				`event: ${DESKTOP_PRESENCE_EVENT}\ndata: ${JSON.stringify({ connected: mock.desktopConnected })}\n\n`,
 			)
@@ -104,11 +122,16 @@ export async function mockTimeEvents(
 	})
 }
 
-export function pushTimeSession(page: Page, session: SessionResponse | null) {
+export function pushTimeSession(
+	page: Page,
+	session: SessionResponse | null,
+	timer?: TimerSnapshot,
+) {
 	const mock = mocks.get(page)
 	if (!mock) throw new Error('Session stream mock is not initialized')
 	mock.initial = session
-	for (const client of mock.clients) snapshot(client, session)
+	mock.timer = timer
+	for (const client of mock.clients) snapshot(client, session, timer)
 }
 
 export function failTimeEvents(page: Page) {
@@ -148,4 +171,12 @@ export function pushDesktopPresence(page: Page, connected: boolean) {
 		client.write(
 			`event: ${DESKTOP_PRESENCE_EVENT}\ndata: ${JSON.stringify({ connected })}\n\n`,
 		)
+}
+
+/** Simulate credentials expiring while a live connection is interrupted. */
+export function expireTimeEvents(page: Page, acceptedToken: string) {
+	const mock = mocks.get(page)
+	if (!mock) throw new Error('Session stream mock is not initialized')
+	mock.acceptedToken = acceptedToken
+	for (const client of mock.clients) client.destroy()
 }

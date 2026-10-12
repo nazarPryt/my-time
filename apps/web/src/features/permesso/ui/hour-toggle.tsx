@@ -1,5 +1,6 @@
 import { cn } from '@/shared/lib/cn.ts'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	hour: number
@@ -27,6 +28,7 @@ export function HourToggle({
 	if (!active) {
 		return (
 			<button
+				data-testid={PERMESSO_TEST_IDS.hour(hour)}
 				type="button"
 				disabled={pending}
 				onClick={() => onEnable(hour)}
@@ -42,6 +44,7 @@ export function HourToggle({
 		<ConfirmDialog
 			trigger={
 				<button
+					data-testid={PERMESSO_TEST_IDS.hour(hour)}
 					type="button"
 					disabled={pending}
 					aria-pressed={active}

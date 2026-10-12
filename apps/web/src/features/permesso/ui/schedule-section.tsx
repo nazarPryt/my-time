@@ -5,6 +5,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shared/ui/card'
+import { PERMESSO_TEST_IDS } from '../testIds'
 import { ScheduleEditor } from './schedule-editor'
 
 type Props = {
@@ -21,7 +22,7 @@ export function ScheduleSection({
 	onChange,
 }: Props) {
 	return (
-		<Card>
+		<Card data-testid={PERMESSO_TEST_IDS.schedule}>
 			<CardHeader>
 				<CardTitle>Automatic checks</CardTitle>
 				<CardDescription>

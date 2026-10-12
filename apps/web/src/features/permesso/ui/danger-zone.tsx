@@ -8,6 +8,7 @@ import {
 	CardTitle,
 } from '@/shared/ui/card'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	resetting: boolean
@@ -33,6 +34,7 @@ export function DangerZone({ resetting, onReset }: Props) {
 					<ConfirmDialog
 						trigger={
 							<Button
+								data-testid={PERMESSO_TEST_IDS.reset}
 								variant="destructive"
 								size="sm"
 								disabled={resetting}
@@ -53,6 +55,7 @@ export function DangerZone({ resetting, onReset }: Props) {
 			</Card>
 
 			<ConfirmDialog
+				testId={PERMESSO_TEST_IDS.resetFinalDialog}
 				open={confirmingSecond}
 				onOpenChange={setConfirmingSecond}
 				title="Are you absolutely sure?"

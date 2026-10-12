@@ -9,6 +9,14 @@ export class LoginPage extends LoginLocators {
 		await this.loginForm.waitFor({ state: 'visible' })
 	}
 
+	async submit() {
+		await this.loginSubmit.click()
+	}
+
+	async submitWithEnter() {
+		await this.loginPassword.press('Enter')
+	}
+
 	async fill(email: string, password: string) {
 		await this.loginEmail.fill(email)
 		await this.loginPassword.fill(password)

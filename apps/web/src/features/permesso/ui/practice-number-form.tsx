@@ -15,6 +15,7 @@ import {
 	FieldLabel,
 } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	defaultValue: string
@@ -68,17 +69,26 @@ export function PracticeNumberForm({
 					)}
 					<div className="flex gap-2">
 						<Input
+							data-testid={PERMESSO_TEST_IDS.practiceInput}
 							id="practiceNumber"
 							placeholder="e.g. ABC1234567"
 							disabled={submitting}
 							className="flex-1"
 							{...register('practiceNumber')}
 						/>
-						<Button type="submit" disabled={submitting} isLoading={submitting}>
+						<Button
+							data-testid={PERMESSO_TEST_IDS.practiceSave}
+							type="submit"
+							disabled={submitting}
+							isLoading={submitting}
+						>
 							Save
 						</Button>
 					</div>
-					<FieldError errors={[errors.practiceNumber]} />
+					<FieldError
+						data-testid={PERMESSO_TEST_IDS.practiceError}
+						errors={[errors.practiceNumber]}
+					/>
 				</Field>
 			</form>
 

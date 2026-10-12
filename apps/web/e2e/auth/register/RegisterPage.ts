@@ -9,6 +9,10 @@ export class RegisterPage extends RegisterLocators {
 		await this.registerForm.waitFor({ state: 'visible' })
 	}
 
+	async submit() {
+		await this.registerSubmit.click()
+	}
+
 	async fill(name: string, email: string, password: string) {
 		await this.registerName.fill(name)
 		await this.registerEmail.fill(email)

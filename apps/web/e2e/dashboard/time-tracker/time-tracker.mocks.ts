@@ -106,9 +106,11 @@ const json = (body: unknown, status = 200) => ({
 })
 
 export async function mockTimeFailure(page: Page, path: string) {
-	await page.route(path, (route) =>
-		route.fulfill(json({ message: 'Unavailable' }, 503)),
-	)
+	await page.route(path, (route) => {
+		if (path === API_TIME_DELETE && route.request().method() !== 'DELETE')
+			return route.fallback()
+		return route.fulfill(json({ message: 'Unavailable' }, 503))
+	})
 }
 
 /** GET /active — pass `null` for the idle (no running session) case. */
