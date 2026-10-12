@@ -34,6 +34,7 @@ derby.log
 # playwright
 apps/web/playwright-report/
 apps/web/test-results/
+apps/web/test-results-extension/
 .playwright-mcp
 # built extension zip, produced by `bun run extension:package`
 apps/web/public/my-time-extension.zip

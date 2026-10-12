@@ -48,6 +48,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run --filter api typecheck
       - run: bun run --filter web typecheck
+      - run: bun --filter web typecheck:e2e
       - run: bun --filter desktop typecheck
 
   # Check only — nothing ships from here. The release zip is built inside the
@@ -175,18 +176,43 @@ jobs:
       # webServer config (apps/web/playwright.config.ts) starts Vite, no
       # Postgres/API service needed here.
       - run: bun --filter web test:e2e
+      - run: bun run test:web:e2e:extension
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: apps/web/playwright-report/
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results-extension/
+          retention-days: 14
+
+  test-cross-client-e2e:
+    name: Real API and desktop synchronization
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+        working-directory: apps/web
+      # The runner creates and removes its own isolated Postgres container.
+      - run: bun run test:web:e2e:integration
+      - name: Upload integration traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-client-e2e-report
+          path: apps/web/playwright-report/integration-artifacts/
           retention-days: 14
 
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [test-api, test-web, test-web-e2e, test-desktop]
+    needs: [test-api, test-web, test-web-e2e, test-desktop, test-cross-client-e2e]
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2

@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
 	testDir: './e2e',
+	testIgnore: '**/site-blocking/runtime/**',
 	tsconfig: './tsconfig.e2e.json',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,

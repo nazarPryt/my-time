@@ -54,6 +54,7 @@ function App() {
 					style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
 				>
 					<input
+						data-testid="extension-email"
 						type="email"
 						placeholder="Email"
 						value={email}
@@ -62,6 +63,7 @@ function App() {
 						disabled={submitting}
 					/>
 					<input
+						data-testid="extension-password"
 						type="password"
 						placeholder="Password"
 						value={password}
@@ -71,6 +73,7 @@ function App() {
 					/>
 					{loginError && <p className="error">{loginError}</p>}
 					<button
+						data-testid="extension-login"
 						type="submit"
 						className="btn btn-primary"
 						disabled={submitting}
@@ -88,7 +91,9 @@ function App() {
 
 			<div className="stat">
 				<span className="stat-label">Sites blocked</span>
-				<span className="stat-value">{blockedCount ?? '—'}</span>
+				<span data-testid="extension-blocked-count" className="stat-value">
+					{blockedCount ?? '—'}
+				</span>
 			</div>
 
 			<div className="divider" />
@@ -97,6 +102,7 @@ function App() {
 				<button
 					type="button"
 					className="btn btn-primary"
+					data-testid="extension-sync"
 					onClick={sync}
 					disabled={syncing}
 				>
@@ -113,7 +119,12 @@ function App() {
 				>
 					Manage in dashboard
 				</button>
-				<button type="button" className="btn btn-ghost" onClick={onSignOut}>
+				<button
+					data-testid="extension-signout"
+					type="button"
+					className="btn btn-ghost"
+					onClick={onSignOut}
+				>
 					Sign out
 				</button>
 			</div>

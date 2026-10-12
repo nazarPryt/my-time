@@ -38,6 +38,9 @@ bun run test:ci          # Full CI sequence: up → test → down
 # Web e2e
 bun --filter web test:e2e       # Playwright headless
 bun --filter web test:e2e:ui    # Playwright with UI
+bun run test:web:e2e:extension # Packaged Chrome extension (builds automatically)
+bun run test:web:e2e:integration # Real API + desktop controller + disposable Postgres
+bun --filter web typecheck:e2e # Browser and integration test types
 
 # Docker (uses apps/api/.env)
 bun run docker:db        # Start only the Postgres container
@@ -138,7 +141,9 @@ To share code between two slices, move it *down* a layer, don't import sideways.
   `/time-tracker/events` through an authenticated fetch SSE stream. Reuse the
   shared token-refresh handler; streaming requests time out connection setup,
   not the entire response body. Refresh today's summary on changes/reconnects
-  and at local midnight, and keep elapsed ticks local. Do not poll unchanged
+  and at server midnight, and keep elapsed ticks local. Use backend-computed
+  timer snapshots and shared display projection; the API server timezone defines
+  daily accounting and sessions are split at day boundaries. Do not poll unchanged
   session state. Cancel streams on unmount and guard delayed mutation/summary
   responses against newer snapshots. Desktop availability is account-wide and
   comes from `desktop-presence` events on the same SSE stream; do not infer it
