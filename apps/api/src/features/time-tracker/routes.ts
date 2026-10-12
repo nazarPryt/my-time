@@ -37,6 +37,9 @@ export const timeTrackerPlugin = new Elysia({
 			.get(TIME_TRACKER_ROUTES.active, async ({ userId }) => {
 				return timeTrackerService.getActive(userId)
 			})
+			.get(TIME_TRACKER_ROUTES.timer, ({ userId }) =>
+				timeTrackerService.getTimer(userId),
+			)
 			.get(TIME_TRACKER_ROUTES.today, async ({ userId }) => {
 				return timeTrackerService.getToday(userId)
 			})

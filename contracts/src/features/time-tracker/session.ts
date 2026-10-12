@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { TimerSnapshotSchema } from './timer'
 
 export const SessionTypeSchema = z.enum(['work'])
 export type SessionType = z.infer<typeof SessionTypeSchema>
@@ -17,11 +18,19 @@ export const SessionResponseSchema = z.object({
 })
 export type SessionResponse = z.infer<typeof SessionResponseSchema>
 
+export const TimerStateSchema = z.object({
+	activeSession: SessionResponseSchema.nullable(),
+	timer: TimerSnapshotSchema,
+})
+export type TimerState = z.infer<typeof TimerStateSchema>
+
 /** Every snapshot is authoritative; reconnects do not replay past events. */
 export const SESSION_STREAM_EVENT = 'session-state' as const
 export const SessionStreamStateSchema = z.object({
 	version: z.literal(1),
 	activeSession: SessionResponseSchema.nullable(),
+	// Optional during rolling upgrades; new servers always provide this.
+	timer: TimerSnapshotSchema.optional(),
 })
 export type SessionStreamState = z.infer<typeof SessionStreamStateSchema>
 
@@ -30,6 +39,7 @@ export const TodaySummaryResponseSchema = z.object({
 	totalWorkSeconds: z.number(),
 	sessionsCompleted: z.number(),
 	longestSessionSeconds: z.number(),
+	timer: TimerSnapshotSchema.optional(),
 })
 export type TodaySummaryResponse = z.infer<typeof TodaySummaryResponseSchema>
 

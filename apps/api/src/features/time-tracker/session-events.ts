@@ -32,6 +32,7 @@ class SessionStream {
 	private wake: (() => void) | undefined
 	private heartbeat: ReturnType<typeof setTimeout> | undefined
 	private expiry: ReturnType<typeof setTimeout> | undefined
+	private midnight: ReturnType<typeof setTimeout> | undefined
 	private presenceExpiry: ReturnType<typeof setTimeout> | undefined
 	private controller: ReadableStreamDefaultController<Uint8Array> | undefined
 	private unsubscribe: () => void
@@ -95,6 +96,7 @@ class SessionStream {
 		if (this.closed) return this.releasing ?? Promise.resolve()
 		this.closed = true
 		clearTimeout(this.expiry)
+		clearTimeout(this.midnight)
 		clearTimeout(this.heartbeat)
 		clearTimeout(this.presenceExpiry)
 		this.signal.removeEventListener('abort', this.close)
@@ -131,56 +133,82 @@ class SessionStream {
 		try {
 			await this.waitForChange()
 			if (this.closed) return
-			if (
-				this.desktopId &&
-				differenceInMilliseconds(new Date(), this.lastRenewal) >= HEARTBEAT_MS
-			) {
-				await desktopPresenceService.renew(this.desktopId, this.tokenExpiry)
-				this.lastRenewal = new Date()
-				if (this.closed) return
-			}
-			let sent = false
-			if (this.dirty) {
-				// Changes received during the read remain pending.
-				this.dirty = false
-				const activeSession = await timeTrackerService.getActive(this.userId)
-				if (this.closed) return
-				const state: SessionStreamState = { version: 1, activeSession }
-				controller.enqueue(
-					encoder.encode(
-						`event: ${SESSION_STREAM_EVENT}\ndata: ${JSON.stringify(state)}\n\n`,
-					),
-				)
-				sent = true
-			}
-			if (this.presenceDirty) {
-				this.presenceDirty = false
-				const expiresAt = await desktopPresenceService.snapshot(this.userId)
-				if (this.closed) return
-				clearTimeout(this.presenceExpiry)
-				if (expiresAt)
-					this.presenceExpiry = setTimeout(
-						this.markPresenceDirty,
-						Math.max(1, differenceInMilliseconds(expiresAt, new Date()) + 1),
-					)
-				const connected = expiresAt !== null
-				if (connected !== this.lastPresence) {
-					this.lastPresence = connected
-					controller.enqueue(
-						encoder.encode(
-							`event: ${DESKTOP_PRESENCE_EVENT}\ndata: ${JSON.stringify({ connected })}\n\n`,
-						),
-					)
-					sent = true
-				}
-			}
-			if (!sent) controller.enqueue(encoder.encode(': heartbeat\n\n'))
+			await this.renewPresence()
+			if (this.closed) return
+			const sessionSent = await this.sendSession(controller)
+			const presenceSent = await this.sendPresence(controller)
+			if (!this.closed && !sessionSent && !presenceSent)
+				controller.enqueue(encoder.encode(': heartbeat\n\n'))
 		} catch (error) {
 			if (this.closed) return
 			logger.error({ err: error, userId: this.userId }, 'Session stream failed')
 			void this.cleanup()
 			controller.error(error)
 		}
+	}
+
+	private async renewPresence(): Promise<void> {
+		if (
+			!this.desktopId ||
+			differenceInMilliseconds(new Date(), this.lastRenewal) < HEARTBEAT_MS
+		)
+			return
+		await desktopPresenceService.renew(this.desktopId, this.tokenExpiry)
+		this.lastRenewal = new Date()
+	}
+
+	private sendEvent(
+		controller: ReadableStreamDefaultController<Uint8Array>,
+		event: string,
+		data: unknown,
+	): void {
+		controller.enqueue(
+			encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+		)
+	}
+
+	private async sendSession(
+		controller: ReadableStreamDefaultController<Uint8Array>,
+	): Promise<boolean> {
+		if (!this.dirty || this.closed) return false
+		// Changes received during the read remain pending.
+		this.dirty = false
+		const snapshot = await timeTrackerService.getTimer(this.userId)
+		if (this.closed) return false
+		this.scheduleMidnight(snapshot.timer.nextDayAt)
+		const state: SessionStreamState = { version: 1, ...snapshot }
+		this.sendEvent(controller, SESSION_STREAM_EVENT, state)
+		return true
+	}
+
+	private async sendPresence(
+		controller: ReadableStreamDefaultController<Uint8Array>,
+	): Promise<boolean> {
+		if (!this.presenceDirty || this.closed) return false
+		this.presenceDirty = false
+		const expiresAt = await desktopPresenceService.snapshot(this.userId)
+		if (this.closed) return false
+		clearTimeout(this.presenceExpiry)
+		if (expiresAt)
+			this.presenceExpiry = setTimeout(
+				this.markPresenceDirty,
+				Math.max(1, differenceInMilliseconds(expiresAt, new Date()) + 1),
+			)
+		const connected = expiresAt !== null
+		if (connected === this.lastPresence) return false
+		this.lastPresence = connected
+		this.sendEvent(controller, DESKTOP_PRESENCE_EVENT, { connected })
+		return true
+	}
+	private scheduleMidnight(nextDayAt: Date): void {
+		clearTimeout(this.midnight)
+		this.midnight = setTimeout(
+			() => {
+				this.dirty = true
+				this.wake?.()
+			},
+			Math.max(1, differenceInMilliseconds(nextDayAt, new Date())),
+		)
 	}
 }
 

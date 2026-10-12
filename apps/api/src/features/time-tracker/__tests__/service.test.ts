@@ -78,7 +78,7 @@ describe('timeTrackerService', () => {
 			expect(sessions).toHaveLength(1)
 		})
 
-		it('abandons a stale (>2h) session and creates a fresh one in its place', async () => {
+		it('preserves long-running work until explicitly stopped or discarded', async () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
 			const stale = await seedSession({
 				userId,
@@ -86,7 +86,8 @@ describe('timeTrackerService', () => {
 			})
 
 			const result = await timeTrackerService.startSession(userId, 'work')
-			expect(result.id).not.toBe(stale.id)
+			expect(result.id).toBe(stale.id)
+			expect(result.abandonedAt).toBeNull()
 
 			const active = await timeTrackerService.getActive(userId)
 			expect(active?.id).toBe(result.id)

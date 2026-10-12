@@ -1,4 +1,6 @@
+export { createClockCheck } from './clock-check'
 export { SessionStreamParser } from './parser'
 export { reconnectSessions, type SessionReconnectOptions } from './reconnect'
 export { reconnectDelay } from './retry'
 export { SessionSyncState, type SyncCheckpoint } from './state'
+export { TimerDisplay } from './timer-display'

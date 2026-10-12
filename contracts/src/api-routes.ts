@@ -30,6 +30,7 @@ export const TIME_TRACKER_ROUTES = {
 	prefix: '/time-tracker',
 	events: '/events',
 	active: '/active',
+	timer: '/timer',
 	today: '/today',
 	weekly: '/weekly',
 	start: '/start',

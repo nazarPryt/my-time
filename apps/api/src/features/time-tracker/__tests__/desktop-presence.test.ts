@@ -82,7 +82,7 @@ describe('desktop connection presence', () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
 		const web = await open(userId, 'web')
 		expect(await presence(web)).toEqual({ connected: false })
-		const read = spyOn(timeTrackerService, 'getActive')
+		const read = spyOn(timeTrackerService, 'getTimer')
 		try {
 			const desktop = await open(userId, 'desktop')
 			await event(desktop, 'session-state')

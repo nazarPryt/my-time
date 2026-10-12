@@ -7,7 +7,9 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"contracts": "workspace:*"
+		"@date-fns/tz": "^1.5.0",
+		"contracts": "workspace:*",
+		"date-fns": "4.4.0"
 	},
 	"scripts": {
 		"test": "bun test src"

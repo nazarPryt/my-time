@@ -5,6 +5,7 @@ import {
 	SESSION_STREAM_EVENT,
 	type SessionResponse,
 	SessionStreamStateSchema,
+	type TimerSnapshot,
 } from 'contracts'
 
 /** Decode complete lines so split UTF-8 works without GJS decoder streaming. */
@@ -17,12 +18,15 @@ export class SessionStreamParser {
 	private firstLine = true
 	private decoder = new TextDecoder()
 
-	private onSession: (session: SessionResponse | null) => void
+	private onSession: (
+		session: SessionResponse | null,
+		timer?: TimerSnapshot,
+	) => void
 
 	private onDesktopPresence: ((presence: DesktopPresence) => void) | undefined
 
 	constructor(
-		onSession: (session: SessionResponse | null) => void,
+		onSession: (session: SessionResponse | null, timer?: TimerSnapshot) => void,
 		onDesktopPresence?: (presence: DesktopPresence) => void,
 	) {
 		this.onSession = onSession
@@ -57,7 +61,8 @@ export class SessionStreamParser {
 				const state = SessionStreamStateSchema.parse(
 					JSON.parse(this.data.join('\n')),
 				)
-				this.onSession(state.activeSession)
+				if (state.timer) this.onSession(state.activeSession, state.timer)
+				else this.onSession(state.activeSession)
 			}
 			if (
 				this.event === DESKTOP_PRESENCE_EVENT &&

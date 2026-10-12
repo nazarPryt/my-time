@@ -1,9 +1,11 @@
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse, TimerSnapshot } from 'contracts'
 import { reconnectDelay } from './retry'
 
 export interface SessionReconnectOptions {
-	watch(onSession: (session: SessionResponse | null) => void): Promise<void>
-	onSession(session: SessionResponse | null): void
+	watch(
+		onSession: (session: SessionResponse | null, timer?: TimerSnapshot) => void,
+	): Promise<void>
+	onSession(session: SessionResponse | null, timer?: TimerSnapshot): void
 	onDisconnected(error: unknown): void
 	isAuthenticationError(error: unknown): boolean
 	isStopped(): boolean
@@ -21,10 +23,10 @@ export async function reconnectSessions(
 			'Session updates disconnected. Reconnecting…',
 		)
 		try {
-			await options.watch((session) => {
+			await options.watch((session, timer) => {
 				if (options.isStopped()) return
 				connectedAt ??= Date.now()
-				options.onSession(session)
+				options.onSession(session, timer)
 			})
 		} catch (error) {
 			failure = error

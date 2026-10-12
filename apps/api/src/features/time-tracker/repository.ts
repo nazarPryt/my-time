@@ -1,8 +1,9 @@
 import { db } from '@db'
 import { timeSessions } from '@db/schema'
 import type { SessionType } from 'contracts'
-import { and, asc, eq, gte, isNull, lt, lte } from 'drizzle-orm'
+import { and, asc, eq, gt, isNull, lt, lte, or } from 'drizzle-orm'
 import { mutateSessions } from './session-notifications'
+import { activeRecord, dailyMilliseconds } from './timer-query'
 
 const openSession = and(
 	isNull(timeSessions.endedAt),
@@ -28,8 +29,12 @@ export const timeSessionsRepository = {
 			.where(
 				and(
 					eq(timeSessions.userId, userId),
-					gte(timeSessions.startedAt, start),
-					lte(timeSessions.startedAt, end),
+					lt(timeSessions.startedAt, end),
+					or(
+						gt(timeSessions.endedAt, start),
+						gt(timeSessions.abandonedAt, start),
+						openSession,
+					),
 				),
 			)
 			.orderBy(asc(timeSessions.startedAt))
@@ -42,12 +47,31 @@ export const timeSessionsRepository = {
 			.where(
 				and(
 					eq(timeSessions.userId, userId),
-					gte(timeSessions.startedAt, start),
-					lte(timeSessions.startedAt, end),
+					lt(timeSessions.startedAt, end),
+					or(gt(timeSessions.endedAt, start), openSession),
 					isNull(timeSessions.abandonedAt),
 				),
 			)
 			.orderBy(asc(timeSessions.startedAt))
+	},
+
+	/** One statement observes the active session and total in the same DB snapshot. */
+	getTimer: async (userId: string, start: Date, now: Date) => {
+		const [row] = await db
+			.select({
+				milliseconds: dailyMilliseconds(start, now),
+				active: activeRecord(),
+			})
+			.from(timeSessions)
+			.where(
+				and(
+					eq(timeSessions.userId, userId),
+					isNull(timeSessions.abandonedAt),
+					lte(timeSessions.startedAt, now),
+					or(gt(timeSessions.endedAt, start), openSession),
+				),
+			)
+		return { milliseconds: row?.milliseconds ?? 0, active: row?.active ?? null }
 	},
 
 	// Returns null if the user already has an open session — the insert is
@@ -99,21 +123,5 @@ export const timeSessionsRepository = {
 				.returning(),
 		)
 		return session ?? null
-	},
-
-	abandonStale: async (userId: string, olderThan: Date) => {
-		await mutateSessions(userId, async (transaction) =>
-			transaction
-				.update(timeSessions)
-				.set({ abandonedAt: new Date() })
-				.where(
-					and(
-						eq(timeSessions.userId, userId),
-						openSession,
-						lt(timeSessions.startedAt, olderThan),
-					),
-				)
-				.returning(),
-		)
 	},
 }

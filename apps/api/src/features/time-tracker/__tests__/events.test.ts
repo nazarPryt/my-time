@@ -11,7 +11,7 @@ import { client, db } from '@db'
 import { timeSessions } from '@db/schema'
 import { API_CONFIG } from '@shared/api-config'
 import { SessionStreamStateSchema } from 'contracts'
-import { subHours } from 'date-fns'
+import { addMilliseconds, subHours } from 'date-fns'
 import { eq, sql } from 'drizzle-orm'
 import { SignJWT } from 'jose'
 import postgres from 'postgres'
@@ -25,6 +25,7 @@ import {
 	mutateSessions,
 	SESSION_EVENTS_CHANNEL,
 } from '../session-notifications'
+import { buildTimerSnapshot } from '../timer-snapshot'
 import {
 	OTHER_USER,
 	registerAndGetToken,
@@ -94,6 +95,34 @@ async function open(userId: string, lifetime = 60_000) {
 }
 
 describe('session SSE', () => {
+	it('refreshes computed totals at the server boundary without a session mutation', async () => {
+		const { userId } = await registerAndGetToken(VALID_USER)
+		const activeSession = await timeTrackerService.startSession(userId, 'work')
+		const before = buildTimerSnapshot(600_000, activeSession, new Date())
+		const boundary = addMilliseconds(new Date(), 100)
+		const after = {
+			...before,
+			asOf: boundary,
+			dayStartedAt: boundary,
+			dailyWorkSeconds: 0,
+		}
+		const read = spyOn(timeTrackerService, 'getTimer')
+			.mockResolvedValueOnce({
+				activeSession,
+				timer: { ...before, nextDayAt: boundary },
+			})
+			.mockResolvedValue({ activeSession, timer: after })
+		try {
+			const reader = await open(userId)
+			expect((await state(reader)).timer?.dailyWorkSeconds).toBe(600)
+			const midnight = await state(reader)
+			expect(midnight.timer?.dailyWorkSeconds).toBe(0)
+			expect(midnight.activeSession?.id).toBe(activeSession.id)
+			expect(read).toHaveBeenCalledTimes(2)
+		} finally {
+			read.mockRestore()
+		}
+	})
 	it('rejects unauthenticated, invalid, expired, and non-expiring tokens', async () => {
 		const secret = new TextEncoder().encode(API_CONFIG.JWT_SECRET)
 		const expired = await new SignJWT({ sub: 'user' })
@@ -133,14 +162,14 @@ describe('session SSE', () => {
 		)
 	})
 
-	it('pushes committed start, end, abandon, and stale cleanup to the owner only', async () => {
+	it('pushes committed start, end, and explicit discard to the owner only', async () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
 		const { userId: otherId } = await registerAndGetToken(OTHER_USER)
 		const owner = await open(userId)
 		const other = await open(otherId)
 		expect((await state(owner)).activeSession).toBeNull()
 		expect((await state(other)).activeSession).toBeNull()
-		const read = spyOn(timeTrackerService, 'getActive')
+		const read = spyOn(timeTrackerService, 'getTimer')
 		try {
 			const started = await timeTrackerService.startSession(userId, 'work')
 			expect((await state(owner)).activeSession?.id).toBe(started.id)
@@ -156,7 +185,7 @@ describe('session SSE', () => {
 				subHours(new Date(), 3),
 			)
 			expect((await state(owner)).activeSession?.id).toBe(stale?.id)
-			await timeSessionsRepository.abandonStale(userId, subHours(new Date(), 2))
+			await timeTrackerService.abandonSession(userId, stale!.id)
 			expect((await state(owner)).activeSession).toBeNull()
 			expect(read.mock.calls.some(([id]) => id === otherId)).toBe(false)
 		} finally {
@@ -166,12 +195,14 @@ describe('session SSE', () => {
 
 	it('keeps a change arriving during initial snapshot acquisition pending', async () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
-		let finishRead!: (value: null) => void
+		let finishRead!: (
+			value: Awaited<ReturnType<typeof timeTrackerService.getTimer>>,
+		) => void
 		let readStarted!: () => void
 		const startedRead = new Promise<void>((resolve) => {
 			readStarted = resolve
 		})
-		const read = spyOn(timeTrackerService, 'getActive').mockImplementationOnce(
+		const read = spyOn(timeTrackerService, 'getTimer').mockImplementationOnce(
 			() =>
 				new Promise((resolve) => {
 					finishRead = resolve
@@ -193,7 +224,10 @@ describe('session SSE', () => {
 				new Date(),
 			)
 			await notification
-			finishRead(null)
+			finishRead({
+				activeSession: null,
+				timer: buildTimerSnapshot(0, null, new Date()),
+			})
 			expect((await state(reader)).activeSession).toBeNull()
 			expect((await state(reader)).activeSession?.id).toBe(session?.id)
 			await listener.unlisten()
@@ -262,7 +296,7 @@ describe('session SSE', () => {
 
 	it('closes at token expiry and releases subscriptions on cancellation', async () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
-		const read = spyOn(timeTrackerService, 'getActive')
+		const read = spyOn(timeTrackerService, 'getTimer')
 		try {
 			const reader = await open(userId, 100)
 			await state(reader)
@@ -283,7 +317,7 @@ describe('session SSE', () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
 		const reader = await open(userId)
 		await state(reader)
-		const read = spyOn(timeTrackerService, 'getActive')
+		const read = spyOn(timeTrackerService, 'getTimer')
 		try {
 			const heartbeat = await next(reader, 25_000)
 			expect(new TextDecoder().decode(heartbeat.value)).toBe(': heartbeat\n\n')
