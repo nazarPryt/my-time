@@ -75,8 +75,12 @@ pushes arriving during commands without applying stale HTTP results. Do not poll
 for unchanged session state. Keep the `my-time-desktop/` user agent on the
 session stream: the API uses it to track desktop presence for the web badge.
 Presence notifications are separate from session snapshots; older desktop
-parsers may ignore them. Keep the one-second local render timer and derive
-elapsed time from the server's start timestamp with `date-fns`.
+parsers may ignore them. Keep the one-second local render timer. New snapshots
+include backend-computed session/daily totals and server day boundaries; use the
+shared TimerDisplay to advance presentation between snapshots. The API server
+timezone defines days, including offline rollover. Current session is the default
+GSettings timer mode; Daily total includes account-wide work. Mode changes must
+not reconnect or mutate sessions. Never automatically discard work based on age.
 
 Reuse `contracts` schemas, types, and route constants. Browser sign-in uses short-lived API pairing requests approved by the signed-in
 web account. Keep the device secret out of browser URLs; cancel polling and

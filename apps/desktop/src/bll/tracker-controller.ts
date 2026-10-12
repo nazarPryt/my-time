@@ -1,13 +1,21 @@
-import { reconnectSessions, SessionSyncState } from '@my-time/session-sync'
-import type { SessionResponse } from 'contracts'
+import {
+	reconnectSessions,
+	SessionSyncState,
+	TimerDisplay,
+} from '@my-time/session-sync'
+import type { SessionResponse, TimerSnapshot, TimerState } from 'contracts'
 import { AuthenticationError } from '@/dal/api-client'
+import { elapsedSeconds } from '@/shared/elapsed'
 import { errorMessage } from '@/shared/errors'
 
 export interface TrackerApi {
 	getActive(): Promise<SessionResponse | null>
+	getTimer?(): Promise<TimerState>
 	start(): Promise<SessionResponse>
 	end(id: string): Promise<void>
-	watch(onSession: (session: SessionResponse | null) => void): Promise<void>
+	watch(
+		onSession: (session: SessionResponse | null, timer?: TimerSnapshot) => void,
+	): Promise<void>
 	dispose(): void
 }
 
@@ -37,6 +45,7 @@ export class TrackerController {
 	private sync = new SessionSyncState()
 	private pendingRefresh = false
 	private retry: SyncRetryDelay | undefined
+	private timer: TimerDisplay | null = null
 
 	constructor(
 		private api: TrackerApi,
@@ -48,7 +57,7 @@ export class TrackerController {
 			this.pendingRefresh = true
 			return
 		}
-		await this.run(() => this.api.getActive())
+		await this.run(() => this.api.getTimer?.() ?? this.api.getActive())
 	}
 
 	async connect(retry: SyncRetryDelay): Promise<void> {
@@ -59,9 +68,9 @@ export class TrackerController {
 		this.retry = retry
 		await reconnectSessions({
 			watch: (onSession) => this.api.watch(onSession),
-			onSession: (session) => {
+			onSession: (session, timer) => {
 				this.sync.receiveSnapshot()
-				this.confirm(session)
+				this.confirm(session, timer)
 			},
 			onDisconnected: (error) => this.connectionFailed(error),
 			isAuthenticationError: (error) => error instanceof AuthenticationError,
@@ -102,6 +111,15 @@ export class TrackerController {
 		this.sync.reset()
 		this.retry?.dispose()
 		this.api.dispose()
+		this.timer = null
+	}
+
+	displayedSeconds(mode: 'session' | 'daily'): number | null {
+		if (!this.timer)
+			return mode === 'daily' ? null : elapsedSeconds(this.state.activeSession)
+		return mode === 'daily'
+			? this.timer.dailySeconds()
+			: this.timer.sessionSeconds()
 	}
 
 	private update(next: Partial<TrackerState>): void {
@@ -110,7 +128,13 @@ export class TrackerController {
 		this.onChange(this.state)
 	}
 
-	private confirm(activeSession: SessionResponse | null): void {
+	private confirm(
+		activeSession: SessionResponse | null,
+		timer?: TimerSnapshot,
+	): void {
+		if (timer) this.timer = new TimerDisplay(timer)
+		else if (activeSession?.id !== this.state.activeSession?.id)
+			this.timer = null
 		const offline = Boolean(this.retry && !this.sync.connected)
 		let status: TrackerState['status'] = activeSession ? 'working' : 'ready'
 		let message = activeSession ? 'Working' : 'Ready to work'
@@ -130,19 +154,22 @@ export class TrackerController {
 	}
 
 	private async run(
-		action: () => Promise<SessionResponse | null>,
+		action: () => Promise<SessionResponse | TimerState | null>,
 	): Promise<void> {
 		if (this.disposed || this.state.busy) return
 		const checkpoint = this.sync.checkpoint()
 		this.update({ busy: true })
 		try {
-			const activeSession = await action()
-			if (this.sync.isCurrent(checkpoint)) this.confirm(activeSession)
+			const result = await action()
+			if (this.sync.isCurrent(checkpoint))
+				await this.confirmResult(result, checkpoint)
 		} catch (error) {
-			this.update({
-				status: error instanceof AuthenticationError ? 'signed-out' : 'offline',
-				message: errorMessage(error, 'Unable to connect. Try again.'),
-			})
+			if (this.sync.isCurrent(checkpoint))
+				this.update({
+					status:
+						error instanceof AuthenticationError ? 'signed-out' : 'offline',
+					message: errorMessage(error, 'Unable to connect. Try again.'),
+				})
 		} finally {
 			this.update({ busy: false })
 		}
@@ -154,5 +181,20 @@ export class TrackerController {
 			this.pendingRefresh = false
 			await this.refresh()
 		}
+	}
+
+	private async confirmResult(
+		result: SessionResponse | TimerState | null,
+		checkpoint: ReturnType<SessionSyncState['checkpoint']>,
+	): Promise<void> {
+		if (result && 'timer' in result) {
+			this.confirm(result.activeSession, result.timer)
+			return
+		}
+		this.confirm(result)
+		if (!this.api.getTimer) return
+		const snapshot = await this.api.getTimer()
+		if (this.sync.isCurrent(checkpoint))
+			this.confirm(snapshot.activeSession, snapshot.timer)
 	}
 }

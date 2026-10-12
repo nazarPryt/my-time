@@ -7,6 +7,9 @@ import {
 	type SessionResponse,
 	SessionResponseSchema,
 	TIME_TRACKER_ROUTES,
+	type TimerSnapshot,
+	type TimerState,
+	TimerStateSchema,
 } from 'contracts'
 import {
 	readSessionSnapshots,
@@ -98,6 +101,15 @@ export class ApiClient {
 		)
 	}
 
+	async getTimer(): Promise<TimerState> {
+		return TimerStateSchema.parse(
+			await this.request(
+				'GET',
+				`${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.timer}`,
+			),
+		)
+	}
+
 	async end(id: string): Promise<void> {
 		const path = TIME_TRACKER_ROUTES.endById.replace(
 			':id',
@@ -110,7 +122,7 @@ export class ApiClient {
 
 	/** A single connection; the controller owns retries and user-visible status. */
 	async watch(
-		onSession: (session: SessionResponse | null) => void,
+		onSession: (session: SessionResponse | null, timer?: TimerSnapshot) => void,
 	): Promise<void> {
 		if (!this.streams) throw new Error('Session streaming is unavailable.')
 		let connection: StreamConnection | undefined

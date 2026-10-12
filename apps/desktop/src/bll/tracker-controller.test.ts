@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse, TimerSnapshot, TimerState } from 'contracts'
 import { AuthenticationError } from '@/dal/api-client'
 import { reconnectDelay, TrackerController } from './tracker-controller'
 
@@ -13,7 +13,9 @@ const session: SessionResponse = {
 
 function fixture(initial: SessionResponse | null = null) {
 	let active = initial
-	let emit: ((session: SessionResponse | null) => void) | undefined
+	let emit:
+		| ((session: SessionResponse | null, timer?: TimerSnapshot) => void)
+		| undefined
 	let finish: (() => void) | undefined
 	const api = {
 		getActive: mock(async () => active),
@@ -43,9 +45,9 @@ function fixture(initial: SessionResponse | null = null) {
 		setActive: (next: SessionResponse | null) => {
 			active = next
 		},
-		emit: (next: SessionResponse | null) => {
+		emit: (next: SessionResponse | null, timer?: TimerSnapshot) => {
 			active = next
-			emit?.(next)
+			emit?.(next, timer)
 		},
 		finish: () => finish?.(),
 	}
@@ -258,6 +260,77 @@ describe('desktop session controller', () => {
 		expect(reconnectDelay(1, 1)).toBe(2000)
 		expect(reconnectDelay(100, 1)).toBe(30_000)
 	})
+})
+
+function timerSnapshot(running: boolean, seconds: number): TimerSnapshot {
+	return {
+		asOf: new Date('2026-10-12T10:00:00Z'),
+		dayStartedAt: new Date('2026-10-12T00:00:00Z'),
+		nextDayAt: new Date('2026-10-13T00:00:00Z'),
+		timeZone: 'UTC',
+		dailyWorkSeconds: seconds,
+		sessionWorkSeconds: running ? 60 : 0,
+		running,
+	}
+}
+
+test('daily mode keeps the stopped total and mode changes make no API calls', async () => {
+	const f = fixture()
+	const connected = f.tracker.connect({
+		wait: async () => {},
+		dispose: () => {},
+	})
+	f.emit(null, timerSnapshot(false, 300))
+	expect(f.tracker.displayedSeconds('daily')).toBe(300)
+	expect(f.tracker.displayedSeconds('session')).toBe(0)
+	f.emit(session, timerSnapshot(true, 360))
+	expect(f.tracker.displayedSeconds('daily')).toBe(360)
+	expect(f.tracker.displayedSeconds('session')).toBe(60)
+	expect(f.api.getActive).not.toHaveBeenCalled()
+	f.tracker.dispose()
+	await connected
+})
+
+test('a late timer read cannot replace a newer pushed total', async () => {
+	const f = fixture()
+	let resolve!: (state: TimerState) => void
+	const getTimer = mock(
+		() =>
+			new Promise<TimerState>((done) => {
+				resolve = done
+			}),
+	)
+	const tracker = new TrackerController({ ...f.api, getTimer }, () => {})
+	const connected = tracker.connect({ wait: async () => {}, dispose: () => {} })
+	const reading = tracker.refresh()
+	f.emit(session, timerSnapshot(true, 900))
+	resolve({ activeSession: null, timer: timerSnapshot(false, 100) })
+	await reading
+	expect(tracker.displayedSeconds('daily')).toBe(900)
+	expect(tracker.state.activeSession?.id).toBe(session.id)
+	tracker.dispose()
+	await connected
+})
+
+test('a stale timer read failure cannot mark a newly confirmed snapshot offline', async () => {
+	const f = fixture()
+	let reject!: (error: Error) => void
+	const getTimer = mock(
+		() =>
+			new Promise<TimerState>((_done, fail) => {
+				reject = fail
+			}),
+	)
+	const tracker = new TrackerController({ ...f.api, getTimer }, () => {})
+	const connected = tracker.connect({ wait: async () => {}, dispose: () => {} })
+	const reading = tracker.refresh()
+	f.emit(session, timerSnapshot(true, 900))
+	reject(new Error('Old read failed'))
+	await reading
+	expect(tracker.state.status).toBe('working')
+	expect(tracker.displayedSeconds('daily')).toBe(900)
+	tracker.dispose()
+	await connected
 })
 
 test('does not start a session after disposal during the pre-command read', async () => {

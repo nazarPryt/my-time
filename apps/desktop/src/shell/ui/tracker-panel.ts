@@ -4,7 +4,7 @@ import St from 'gi://St'
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js'
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js'
 import type { TrackerState } from '@/bll/tracker-controller'
-import { elapsedSeconds, formatElapsed } from '@/shared/elapsed'
+import { formatElapsed } from '@/shared/elapsed'
 
 // Let the native play/stop buttons handle their own events without opening the menu.
 const Indicator = GObject.registerClass(
@@ -57,6 +57,7 @@ export class TrackerPanel {
 			style_class: 'my-time-timer',
 			y_align: Clutter.ActorAlign.CENTER,
 		})
+		stop.hide()
 		box.add_child(play)
 		box.add_child(stop)
 		box.add_child(timer)
@@ -104,18 +105,20 @@ export class TrackerPanel {
 		return button
 	}
 
-	render(state: TrackerState | undefined): void {
+	render(state: TrackerState | undefined, seconds: number | null): void {
 		if (!this.controls) return
 		const { indicator, timer, play, stop, status, sync } = this.controls
 		const available =
 			state && !state.busy && ['ready', 'working'].includes(state.status)
+		play.visible = !state?.activeSession
+		stop.visible = Boolean(state?.activeSession)
 		play.reactive = play.can_focus = Boolean(available && !state?.activeSession)
 		stop.reactive = stop.can_focus = Boolean(available && state?.activeSession)
 		for (const button of [play, stop]) {
 			if (button.reactive) button.remove_style_pseudo_class('disabled')
 			else button.add_style_pseudo_class('disabled')
 		}
-		timer.text = formatElapsed(elapsedSeconds(state?.activeSession ?? null))
+		timer.text = seconds === null ? 'Loading…' : formatElapsed(seconds)
 		status.label.text =
 			state?.message ?? 'Open Settings to connect your account'
 		sync.setSensitive(Boolean(state && !state.busy))

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.my-time" path="/org/gnome/shell/extensions/my-time/">
+    <key name="timer-mode" type="s">
+      <choices><choice value="session"/><choice value="daily"/></choices>
+      <default>'session'</default>
+      <summary>Display the current session or total work today</summary>
+    </key>
     <key name="api-url" type="s">
       <default>'http://localhost:3000/api/v1'</default>
       <summary>API base URL including /api/v1</summary>

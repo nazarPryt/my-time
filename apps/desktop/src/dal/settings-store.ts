@@ -1,5 +1,7 @@
 import type Gio from 'gi://Gio'
 
+export type TimerMode = 'session' | 'daily'
+
 export interface ConnectionSettings {
 	apiUrl: string
 	webUrl: string
@@ -18,6 +20,19 @@ export interface SettingsStore {
 /** Owns persistence and translates GSettings keys into application values. */
 export class GSettingsStore implements SettingsStore {
 	constructor(private settings: Gio.Settings) {}
+	readTimerMode(): TimerMode {
+		return this.settings.get_string('timer-mode') === 'daily'
+			? 'daily'
+			: 'session'
+	}
+	setTimerMode(mode: TimerMode): void {
+		this.settings.set_string('timer-mode', mode)
+		this.settings.apply()
+	}
+	subscribeTimerMode(onChange: () => void): () => void {
+		const id = this.settings.connect('changed::timer-mode', onChange)
+		return () => this.settings.disconnect(id)
+	}
 	read(): ConnectionSettings {
 		return {
 			apiUrl: this.settings.get_string('api-url'),

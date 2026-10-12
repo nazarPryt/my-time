@@ -79,20 +79,29 @@ desktop credentials without ending a work session.
 
 - **Play** starts work, or restores the session already running on the server.
 - **Stop** finishes and saves the current work session.
-- The timer shows hours, minutes, and seconds since the server's start timestamp.
+- In **Settings → Timer → Timer mode**, choose **Current session** (default)
+  or **Daily total**. Current session returns to zero after Stop. Daily total
+  keeps all work recorded for your account today, including web sessions, and
+  resumes accumulating after Play. The setting survives restarts and updates.
 - Click the timer for connection status, **Refresh now**, **Open web tracker**,
   and **Settings**.
 
 The extension listens to an authenticated Server-Sent Events (SSE) stream. The API
-sends the current session on connection and pushes new snapshots when a session
-starts, ends, or is abandoned in any client. There is no five-second desktop
-polling. The one-second timer updates the elapsed display locally.
+sends the current session and computed timer totals on connection and pushes new
+snapshots when a session starts, ends, or is abandoned in any client, and at
+server midnight. The one-second display ticks locally without API requests.
+
+The API server's timezone defines a day. Work from 23:50 to 00:05 contributes
+ten minutes to the previous day and five to the next. Daily total resets at
+server midnight while Current session continues uninterrupted. Sleep, shutdown,
+and disconnection do not stop work; stop or explicitly discard the session when
+needed. Discarded sessions contribute zero. Session age alone never discards work.
 
 The stream reconnects with jittered backoff after network failures and receives
 a fresh snapshot after reconnection. It renews authentication when its access
 token expires. The web tracker uses the same SSE endpoint through an authenticated
 fetch stream. Both clients receive pushed updates; the web refreshes today's
-statistics after changes, on reconnection, and at local midnight. HTTP remains
+statistics after changes, on reconnection, and at server midnight. HTTP remains
 the transport for start/stop commands.
 
 Controls are disabled until the session state is confirmed, while requests are
@@ -208,8 +217,13 @@ The folder names are our convention, not an official GNOME template.
 
 Deploy the API changes before using this extension version. The desktop uses
 `GET /api/v1/time-tracker/events` with a Bearer token in the Authorization header.
-The `session-state` event contains protocol version `1` and `activeSession`
-(the existing session shape or `null`). HTTP endpoints still handle commands.
+The `session-state` event contains protocol version `1`, `activeSession`
+(the existing session shape or `null`), and a `timer` snapshot with server totals,
+capture time, timezone, and day boundaries. The authenticated
+`GET /api/v1/time-tracker/timer` endpoint returns the same session/timer pair for
+manual reconciliation without transferring session history. New clients accept
+older events during rolling upgrades, but Daily total requires the updated API.
+HTTP endpoints still handle commands.
 An idle stream sends a comment heartbeat every 20 seconds without reading the
 database. A stream closes at its access token's expiry; the desktop reconnects
 and shares refresh-token rotation with ordinary requests.

@@ -92,3 +92,14 @@ test('settings subscription filters unrelated signals and disconnects its owned 
 	expect(count).toBe(2)
 	expect(f.events).toContain('disconnect:17')
 })
+
+test('timer mode persists independently of account connection and sign-out', () => {
+	const f = fixture()
+	expect(f.store.readTimerMode()).toBe('session')
+	f.store.setTimerMode('daily')
+	f.store.disconnectAccount()
+	f.store.clearAccount()
+	expect(f.store.readTimerMode()).toBe('daily')
+	f.store.setTimerMode('session')
+	expect(f.store.readTimerMode()).toBe('session')
+})

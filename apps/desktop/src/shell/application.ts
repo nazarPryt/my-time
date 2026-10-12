@@ -1,6 +1,7 @@
 import GLib from 'gi://GLib'
 import type { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
+import { createClockCheck } from '@my-time/session-sync'
 import { TrackerController } from '@/bll/tracker-controller'
 import { RetryDelay } from '@/dal/retry-delay'
 import { createApiClient } from '@/dal/services'
@@ -11,6 +12,7 @@ import { openWebTracker } from './browser-launch.js'
 export class DesktopApplication {
 	private settings: GSettingsStore | null = null
 	private unsubscribe: (() => void) | null = null
+	private unsubscribeTimer: (() => void) | null = null
 	private tickSource = 0
 	private tracker: TrackerController | null = null
 	private panel: TrackerPanel | null = null
@@ -39,8 +41,18 @@ export class DesktopApplication {
 			'right',
 		)
 		this.unsubscribe = this.settings.subscribe(() => this.connectTracker())
+		this.unsubscribeTimer = this.settings.subscribeTimerMode(() =>
+			this.render(),
+		)
 		this.connectTracker()
+		const checkClock = createClockCheck(
+			() => GLib.get_monotonic_time() / 1000,
+			() => {
+				void this.tracker?.refresh()
+			},
+		)
 		this.tickSource = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+			checkClock()
 			this.render()
 			return GLib.SOURCE_CONTINUE
 		})
@@ -50,6 +62,8 @@ export class DesktopApplication {
 		this.tickSource = 0
 		this.unsubscribe?.()
 		this.unsubscribe = null
+		this.unsubscribeTimer?.()
+		this.unsubscribeTimer = null
 		this.tracker?.dispose()
 		this.tracker = null
 		this.settings = null
@@ -78,6 +92,8 @@ export class DesktopApplication {
 		this.render()
 	}
 	private render(): void {
-		this.panel?.render(this.tracker?.state)
+		const mode = this.settings?.readTimerMode() ?? 'session'
+		const seconds = this.tracker ? this.tracker.displayedSeconds(mode) : 0
+		this.panel?.render(this.tracker?.state, seconds)
 	}
 }

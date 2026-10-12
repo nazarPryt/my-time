@@ -9,6 +9,7 @@ import {
 } from '@/dal/services'
 import { GSettingsStore } from '@/dal/settings-store'
 import { createAccountPage } from '@/preferences/ui/account-page'
+import { createTimerPage } from '@/preferences/ui/timer-page'
 
 export default class MyTimePreferences extends ExtensionPreferences {
 	fillPreferencesWindow(window: Adw.PreferencesWindow): void {
@@ -36,6 +37,7 @@ export default class MyTimePreferences extends ExtensionPreferences {
 				close: () => controller.dispose(),
 			},
 		)
+		this.addTimerPage(window, settings)
 		controller = new AccountController(
 			settings,
 			{
@@ -65,5 +67,22 @@ export default class MyTimePreferences extends ExtensionPreferences {
 			},
 			(state) => page.render(state),
 		)
+	}
+
+	private addTimerPage(
+		window: Adw.PreferencesWindow,
+		settings: GSettingsStore,
+	): void {
+		const timer = createTimerPage(settings.readTimerMode(), (mode) => {
+			if (mode !== settings.readTimerMode()) settings.setTimerMode(mode)
+		})
+		window.add(timer.page)
+		const unsubscribe = settings.subscribeTimerMode(() =>
+			timer.render(settings.readTimerMode()),
+		)
+		window.connect('close-request', () => {
+			unsubscribe()
+			return false
+		})
 	}
 }
