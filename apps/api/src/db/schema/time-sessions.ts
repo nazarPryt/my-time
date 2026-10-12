@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+	boolean,
 	index,
 	pgEnum,
 	pgTable,
@@ -22,6 +23,7 @@ export const timeSessions = pgTable(
 		startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
 		endedAt: timestamp('ended_at', { withTimezone: true }),
 		abandonedAt: timestamp('abandoned_at', { withTimezone: true }),
+		offline: boolean('offline').notNull().default(false),
 	},
 	(table) => [
 		index('idx_time_sessions_user_id').on(table.userId),

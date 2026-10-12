@@ -13,6 +13,8 @@ Run from the monorepo root with Bun:
 - `bun run desktop:update` — tests → build/typecheck → repository lint → package
   → install; stops on failure. Use `--skip-install` to verify without installation.
 - `bun --filter desktop typecheck` — check TypeScript against GNOME 46 definitions.
+- `bun --filter desktop typecheck:integration` — check the restartable offline
+  integration workers and adapters against Bun and GNOME settings types.
 - `bun --filter desktop test` — test the controller and HTTP client with fake adapters.
 - `bun run lint:check` — repository Biome checks.
 
@@ -66,7 +68,15 @@ destroy every actor. Ignore async results from a disabled or replaced controller
 Use asynchronous network/keyring APIs so GNOME Shell stays responsive.
 
 The existing API owns work sessions. Use confirmed SSE session state before
-acting while connected; fetch the current session when disconnected. Only show success after API confirmation. Shared
+acting while connected; fetch the current session when disconnected. Offline commands
+must persist timestamp observations before showing local success, and explicitly
+show that work is awaiting synchronization. Scope journals by normalized API URL
+and token subject (account ID). Preserve queued work on sign-out or account changes.
+The API owns overlap merging, day boundaries, and authoritative totals; the desktop
+only projects a provisional elapsed timer while offline. Reconcile through the
+offline sync endpoint using stable observation IDs, and target offline stops only
+at their original session ID. Adopt the current server session after syncing.
+Shared
 parsing, retry policy, and synchronization guards live in `packages/session-sync`;
 keep GNOME transport and UI adapters local. Preserve confirmed
 session state on network errors. Receive authoritative session snapshots through

@@ -8,6 +8,7 @@ function fixture() {
 		'web-url': 'http://localhost:5173',
 		'account-email': '',
 		'account-revision': 4,
+		'offline-work': '{}',
 		connected: false,
 	}
 	const events: string[] = []
@@ -19,6 +20,7 @@ function fixture() {
 		set_string(key: string, value: string) {
 			values[key] = value
 			events.push(key)
+			return true
 		},
 		set_boolean(key: string, value: boolean) {
 			values[key] = value
@@ -102,4 +104,37 @@ test('timer mode persists independently of account connection and sign-out', () 
 	expect(f.store.readTimerMode()).toBe('daily')
 	f.store.setTimerMode('session')
 	expect(f.store.readTimerMode()).toBe('session')
+})
+
+test('offline journals survive sign-out and are isolated by server and account ID', () => {
+	const f = fixture()
+	const mine = f.store.createOfflineStore(
+		'https://api.example.com/api/v1',
+		'account-a',
+	)
+	const journal = mine.load()
+	journal.sessions.push({
+		id: '00000000-0000-4000-8000-000000000001',
+		startedAt: new Date('2026-10-12T10:00:00Z'),
+		endedAt: null,
+		originSessionId: null,
+	})
+	mine.save(journal)
+	f.store.disconnectAccount()
+	f.store.clearAccount()
+	expect(mine.load().sessions).toHaveLength(1)
+	expect(
+		f.store
+			.createOfflineStore('https://api.example.com/api/v1', 'account-b')
+			.load().sessions,
+	).toHaveLength(0)
+	expect(
+		f.store
+			.createOfflineStore('https://other.example.com/api/v1', 'account-a')
+			.load().sessions,
+	).toHaveLength(0)
+	f.values['offline-work'] = 'broken data'
+	expect(() => mine.load()).toThrow()
+	expect(() => mine.save(journal)).toThrow()
+	expect(f.values['offline-work']).toBe('broken data')
 })

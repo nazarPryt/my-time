@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.my-time" path="/org/gnome/shell/extensions/my-time/">
+    <key name="offline-work" type="s">
+      <default>'{}'</default>
+      <summary>Durable work observations and confirmed snapshots scoped by server and account</summary>
+    </key>
     <key name="timer-mode" type="s">
       <choices><choice value="session"/><choice value="daily"/></choices>
       <default>'session'</default>

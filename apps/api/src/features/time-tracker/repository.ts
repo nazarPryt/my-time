@@ -2,8 +2,8 @@ import { db } from '@db'
 import { timeSessions } from '@db/schema'
 import type { SessionType } from 'contracts'
 import { and, asc, eq, gt, isNull, lt, lte, or } from 'drizzle-orm'
+import { mergedWorkMilliseconds } from './helpers/merged-work'
 import { mutateSessions } from './session-notifications'
-import { activeRecord, dailyMilliseconds } from './timer-query'
 
 const openSession = and(
 	isNull(timeSessions.endedAt),
@@ -57,11 +57,8 @@ export const timeSessionsRepository = {
 
 	/** One statement observes the active session and total in the same DB snapshot. */
 	getTimer: async (userId: string, start: Date, now: Date) => {
-		const [row] = await db
-			.select({
-				milliseconds: dailyMilliseconds(start, now),
-				active: activeRecord(),
-			})
+		const rows = await db
+			.select()
 			.from(timeSessions)
 			.where(
 				and(
@@ -71,7 +68,10 @@ export const timeSessionsRepository = {
 					or(gt(timeSessions.endedAt, start), openSession),
 				),
 			)
-		return { milliseconds: row?.milliseconds ?? 0, active: row?.active ?? null }
+		return {
+			milliseconds: mergedWorkMilliseconds(rows, start, now),
+			active: rows.find((row) => !row.endedAt) ?? null,
+		}
 	},
 
 	// Returns null if the user already has an open session — the insert is

@@ -10,6 +10,10 @@ export function mutateSessions<T>(
 	mutate: (transaction: Transaction) => Promise<T[]>,
 ): Promise<T[]> {
 	return db.transaction(async (transaction) => {
+		// Serialize account mutations, including offline imports and live starts.
+		await transaction.execute(
+			sql`select pg_advisory_xact_lock(hashtextextended(${userId}, 0))`,
+		)
 		const rows = await mutate(transaction)
 		if (rows.length)
 			await transaction.execute(

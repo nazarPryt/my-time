@@ -34,6 +34,7 @@ export const TIME_TRACKER_ROUTES = {
 	today: '/today',
 	weekly: '/weekly',
 	start: '/start',
+	syncOffline: '/offline/sync',
 	endById: '/:id/end',
 	deleteById: '/:id',
 } as const

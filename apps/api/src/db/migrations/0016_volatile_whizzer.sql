@@ -1,0 +1,1 @@
+ALTER TABLE "time_sessions" ADD COLUMN "offline" boolean DEFAULT false NOT NULL;

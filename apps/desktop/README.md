@@ -104,14 +104,36 @@ fetch stream. Both clients receive pushed updates; the web refreshes today's
 statistics after changes, on reconnection, and at server midnight. HTTP remains
 the transport for start/stop commands.
 
-Controls are disabled until the session state is confirmed, while requests are
-pending, and after a connection failure. An amber timer indicates a connection
-problem; click it to read the status. The last confirmed session stays visible
-until synchronization recovers. If the stored refresh token is rejected, sign in
-again through Settings.
+When the API is unavailable, Start and Stop save timestamp observations on this
+desktop. The red panel shows **Offline**, or a provisional elapsed timer while
+working. Open the menu to see **Working offline** or **Waiting to sync** after stopping.
+While offline, the panel shows the current session timer even if Daily total is
+selected, then returns to the selected mode on reconnection. Daily totals are
+unavailable offline; the API owns all accounting and day boundaries.
 
-Stopping requires a successful API request. Offline sessions are not queued.
-The API remains responsible for session history and its existing session rules.
+Saved work survives extension reloads and is scoped to the server and account ID.
+It remains saved after sign-out, and resumes synchronization when that same account
+reconnects. Failed uploads retry automatically with bounded backoff and stable IDs.
+If the stored refresh token is rejected, sign in again through Settings.
+
+The API preserves session records and counts overlapping ranges only once in
+daily, weekly, and timer totals. For example, desktop work from 10:00–10:35 and
+web work from 10:20–10:50 contribute 50 minutes. Offline stops target their original
+session; they never stop a newer web session. If a web session is running when
+the desktop reconnects, the desktop adopts it. Otherwise, ongoing offline work
+becomes the active server session.
+
+Deploy the API with its database migration before updating the desktop extension.
+Automated tests cover offline persistence and server reconciliation; a real
+GNOME smoke test (API outage, restart, reconnection, and overlapping web work)
+is still required to verify the panel and dconf behavior on the desktop.
+
+The cross-client suite additionally tests real API/browser synchronization with
+desktop workers restarted from disk-backed GNOME settings, including a simulated
+week offline and a committed upload whose response is lost. Run
+`bun run test:web:e2e:integration offline-sync.spec.ts` from the repository root.
+See [the integration test guide](../web/e2e-integration/README.md) for coverage
+and the distinction between isolated keyfile settings and the native desktop.
 
 ## Develop and update
 

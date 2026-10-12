@@ -50,6 +50,7 @@ jobs:
       - run: bun run --filter web typecheck
       - run: bun --filter web typecheck:e2e
       - run: bun --filter desktop typecheck
+      - run: bun --filter desktop typecheck:integration
 
   # Check only — nothing ships from here. The release zip is built inside the
   # web Docker image (apps/web/Dockerfile) on deploy; this catches a broken
@@ -200,6 +201,8 @@ jobs:
       - run: bunx playwright install --with-deps chromium
         working-directory: apps/web
       # The runner creates and removes its own isolated Postgres container.
+      - name: Install isolated GNOME settings test tools
+        run: sudo apt-get update && sudo apt-get install -y libglib2.0-bin
       - run: bun run test:web:e2e:integration
       - name: Upload integration traces
         if: failure()

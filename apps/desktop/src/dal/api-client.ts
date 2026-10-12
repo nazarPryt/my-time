@@ -4,8 +4,10 @@ import {
 	ExchangeExtensionTokenResponseSchema,
 	type LoginRequest,
 	LoginRequestSchema,
+	type OfflineSession,
 	type SessionResponse,
 	SessionResponseSchema,
+	SyncOfflineSessionsRequestSchema,
 	TIME_TRACKER_ROUTES,
 	type TimerSnapshot,
 	type TimerState,
@@ -42,11 +44,16 @@ export interface HttpTransport {
 }
 
 export class AuthenticationError extends Error {}
+export class ConnectionError extends Error {}
 
 function requireSuccess(response: HttpResponse): unknown {
 	if (response.status === 401)
 		throw new AuthenticationError('Sign in to connect your account.')
 	if (response.status < 200 || response.status >= 300) {
+		if (response.status >= 500)
+			throw new ConnectionError(
+				`The API returned HTTP ${response.status}. Reconnecting…`,
+			)
 		throw new Error(`The API returned HTTP ${response.status}. Try again.`)
 	}
 	return response.body
@@ -87,6 +94,30 @@ export class ApiClient {
 			await this.request(
 				'GET',
 				`${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.active}`,
+			),
+		)
+	}
+	async accountId(decode: (payload: string) => string): Promise<string> {
+		const tokens = await this.loadTokens()
+		const payload = tokens.accessToken.split('.')[1]
+		if (!payload) throw new AuthenticationError('Stored sign-in is invalid.')
+		const identity = JSON.parse(decode(payload)) as { sub?: unknown }
+		const account = SyncOfflineSessionsRequestSchema.shape.ownerId.safeParse(
+			identity.sub,
+		)
+		if (!account.success)
+			throw new AuthenticationError('Stored sign-in is invalid.')
+		return account.data
+	}
+	async syncOffline(
+		ownerId: string,
+		sessions: OfflineSession[],
+	): Promise<TimerState> {
+		return TimerStateSchema.parse(
+			await this.request(
+				'POST',
+				`${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.syncOffline}`,
+				SyncOfflineSessionsRequestSchema.parse({ ownerId, sessions }),
 			),
 		)
 	}

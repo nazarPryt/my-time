@@ -9,6 +9,7 @@
 		"package": "bun run build && bun scripts/package.ts",
 		"install": "bun run package && bun scripts/install.ts",
 		"typecheck": "tsc --noEmit",
+		"typecheck:integration": "tsc --noEmit -p tsconfig.integration.json",
 		"test": "bun test src"
 	},
 	"dependencies": {

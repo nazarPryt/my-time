@@ -1,6 +1,6 @@
 import type { SessionResponse, TodaySummaryResponse } from 'contracts'
 import { computeTodayStats } from './helpers'
-import { workMilliseconds } from './helpers/work-duration'
+import { mergedWorkMilliseconds } from './helpers/merged-work'
 import { buildTimerSnapshot, serverDay } from './timer-snapshot'
 
 export function buildTodaySummary(
@@ -10,10 +10,7 @@ export function buildTodaySummary(
 	const { start } = serverDay(now)
 	const active =
 		sessions.find((session) => !session.endedAt && !session.abandonedAt) ?? null
-	const milliseconds = sessions.reduce(
-		(total, session) => total + workMilliseconds(session, start, now),
-		0,
-	)
+	const milliseconds = mergedWorkMilliseconds(sessions, start, now)
 	return {
 		sessions,
 		...computeTodayStats(sessions, start, now),

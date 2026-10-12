@@ -1,10 +1,18 @@
-import { addDays, format, isBefore, max, min, startOfDay } from 'date-fns'
+import {
+	addDays,
+	format,
+	isBefore,
+	max,
+	min,
+	parseISO,
+	startOfDay,
+} from 'date-fns'
 import { isCompletedWork } from '../isCompletedWork'
+import { mergedWorkMilliseconds } from '../merged-work'
 import type { DayStats, SessionLike } from '../types'
-import { workMilliseconds } from '../work-duration'
 
 interface DayWork {
-	milliseconds: number
+	sessions: SessionLike[]
 	sessionsCompleted: number
 }
 
@@ -24,12 +32,11 @@ function addSessionDays(
 	) {
 		const key = format(day, 'yyyy-MM-dd')
 		const previous = byDay.get(key) ?? {
-			milliseconds: 0,
+			sessions: [],
 			sessionsCompleted: 0,
 		}
 		byDay.set(key, {
-			milliseconds:
-				previous.milliseconds + workMilliseconds(session, day, addDays(day, 1)),
+			sessions: [...previous.sessions, session],
 			sessionsCompleted: previous.sessionsCompleted + 1,
 		})
 	}
@@ -47,7 +54,13 @@ export function groupCompletedWorkByDay(
 		Array.from(byDay, ([day, stats]) => [
 			day,
 			{
-				totalWorkSeconds: Math.floor(stats.milliseconds / 1000),
+				totalWorkSeconds: Math.floor(
+					mergedWorkMilliseconds(
+						stats.sessions,
+						max([parseISO(day), start ?? parseISO(day)]),
+						min([addDays(parseISO(day), 1), end ?? addDays(parseISO(day), 1)]),
+					) / 1000,
+				),
 				sessionsCompleted: stats.sessionsCompleted,
 			},
 		]),

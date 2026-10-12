@@ -1,4 +1,10 @@
 import type Gio from 'gi://Gio'
+import { normalizeApiUrl } from '@/shared/urls'
+import {
+	emptyOfflineJournal,
+	OfflineJournalSchema,
+	type OfflineStore,
+} from './offline-store'
 
 export type TimerMode = 'session' | 'daily'
 
@@ -20,6 +26,34 @@ export interface SettingsStore {
 /** Owns persistence and translates GSettings keys into application values. */
 export class GSettingsStore implements SettingsStore {
 	constructor(private settings: Gio.Settings) {}
+	createOfflineStore(apiUrl: string, ownerId: string): OfflineStore {
+		const key = JSON.stringify([normalizeApiUrl(apiUrl), ownerId])
+		const read = (): Record<string, unknown> => {
+			const value: unknown = JSON.parse(
+				this.settings.get_string('offline-work'),
+			)
+			if (!value || typeof value !== 'object' || Array.isArray(value))
+				throw new Error(
+					'Offline work could not be read. Your saved data has been preserved.',
+				)
+			return value as Record<string, unknown>
+		}
+		return {
+			load: () => {
+				const value = read()[key]
+				return value === undefined
+					? emptyOfflineJournal()
+					: OfflineJournalSchema.parse(value)
+			},
+			save: (journal) => {
+				const records = read()
+				records[key] = journal
+				if (!this.settings.set_string('offline-work', JSON.stringify(records)))
+					throw new Error('Unable to save offline work.')
+				this.settings.apply()
+			},
+		}
+	}
 	readTimerMode(): TimerMode {
 		return this.settings.get_string('timer-mode') === 'daily'
 			? 'daily'

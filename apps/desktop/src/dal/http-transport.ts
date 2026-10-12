@@ -3,6 +3,7 @@ import GLib from 'gi://GLib'
 import Soup from 'gi://Soup?version=3.0'
 import { normalizeApiUrl } from '@/shared/urls'
 import type { HttpResponse, HttpTransport } from './api-client.js'
+import { ConnectionError } from './api-client.js'
 
 export class SoupTransport implements HttpTransport {
 	private session = new Soup.Session({
@@ -60,7 +61,7 @@ export class SoupTransport implements HttpTransport {
 						resolve({ status: message.status_code, body: responseBody })
 					} catch {
 						reject(
-							new Error(
+							new ConnectionError(
 								'Cannot reach your API. Check your connection and try again.',
 							),
 						)

@@ -5,6 +5,7 @@ import {
 } from '../../../scripts/e2e-integration-config'
 import { TrackerController } from '../src/bll/tracker-controller'
 import { ApiClient, type Tokens } from '../src/dal/api-client'
+import { disposeOfflineDevices, offlineDeviceRoute } from './offline-devices'
 
 const controllers = new Map<
 	string,
@@ -15,6 +16,8 @@ Bun.serve({
 	port: INTEGRATION_DESKTOP_PORT,
 	hostname: '127.0.0.1',
 	async fetch(request) {
+		const offlineResponse = await offlineDeviceRoute(request)
+		if (offlineResponse) return offlineResponse
 		const path = new URL(request.url).pathname
 		if (path === '/health') return Response.json({ status: 'ok' })
 		if (path === '/connect') {
@@ -119,4 +122,9 @@ Bun.serve({
 			dailySeconds: desktop.controller.displayedSeconds('daily'),
 		})
 	},
+})
+
+process.on('SIGTERM', async () => {
+	await disposeOfflineDevices()
+	process.exit(0)
 })

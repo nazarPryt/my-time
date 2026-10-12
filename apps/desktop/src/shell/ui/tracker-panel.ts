@@ -109,7 +109,9 @@ export class TrackerPanel {
 		if (!this.controls) return
 		const { indicator, timer, play, stop, status, sync } = this.controls
 		const available =
-			state && !state.busy && ['ready', 'working'].includes(state.status)
+			state &&
+			(!state.busy || state.syncingOffline) &&
+			['ready', 'working', 'offline'].includes(state.status)
 		play.visible = !state?.activeSession
 		stop.visible = Boolean(state?.activeSession)
 		play.reactive = play.can_focus = Boolean(available && !state?.activeSession)
@@ -118,7 +120,14 @@ export class TrackerPanel {
 			if (button.reactive) button.remove_style_pseudo_class('disabled')
 			else button.add_style_pseudo_class('disabled')
 		}
-		timer.text = seconds === null ? 'Loading…' : formatElapsed(seconds)
+		timer.text =
+			state?.status === 'offline'
+				? state.activeSession && seconds !== null
+					? formatElapsed(seconds)
+					: 'Offline'
+				: seconds === null
+					? 'Loading…'
+					: formatElapsed(seconds)
 		status.label.text =
 			state?.message ?? 'Open Settings to connect your account'
 		sync.setSensitive(Boolean(state && !state.busy))

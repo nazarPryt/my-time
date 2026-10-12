@@ -1,6 +1,7 @@
 import { authMacro } from '@shared/auth-macro'
 import { StartSessionRequestSchema, TIME_TRACKER_ROUTES } from 'contracts'
 import { Elysia } from 'elysia'
+import { offlineSessionsPlugin } from './offline-routes'
 import { timeTrackerService } from './service'
 import { createSessionStream } from './session-events'
 
@@ -8,6 +9,7 @@ export const timeTrackerPlugin = new Elysia({
 	prefix: TIME_TRACKER_ROUTES.prefix,
 })
 	.use(authMacro)
+	.use(offlineSessionsPlugin)
 	.guard({ auth: true }, (app) =>
 		app
 			.get(

@@ -1,5 +1,6 @@
 import type { TodaySummaryResponse } from 'contracts'
 import { isCompletedWork } from '../isCompletedWork'
+import { mergedWorkMilliseconds } from '../merged-work'
 import type { SessionLike } from '../types'
 import { workMilliseconds } from '../work-duration'
 
@@ -17,9 +18,10 @@ export function computeTodayStats(
 				end ?? session.endedAt ?? session.startedAt,
 			),
 		)
-	const totalMilliseconds = durations.reduce(
-		(total, duration) => total + duration,
-		0,
+	const totalMilliseconds = mergedWorkMilliseconds(
+		sessions.filter(isCompletedWork),
+		start,
+		end,
 	)
 
 	return {
