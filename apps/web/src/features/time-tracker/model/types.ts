@@ -1,4 +1,8 @@
-import type { SessionResponse, TodaySummaryResponse } from 'contracts'
+import type {
+	SessionResponse,
+	TimerSnapshot,
+	TodaySummaryResponse,
+} from 'contracts'
 
 export type TimeChartEntry = {
 	date: string
@@ -21,10 +25,14 @@ export interface TimeTrackerState {
 	loading: boolean
 	submitting: boolean
 	elapsed: number
+	dailySeconds: number | null
 	error: string | null
 	weeklyData: TimeChartEntry[]
 	weeklyLoading: boolean
-	applySnapshot(activeSession: SessionResponse | null): void
+	applySnapshot(
+		activeSession: SessionResponse | null,
+		timer?: TimerSnapshot,
+	): void
 	beginSync(signal: AbortSignal): void
 	endSync(): void
 	disconnectStream(): void

@@ -236,3 +236,22 @@ test('desktop status becomes unknown on disconnect and is reset for a new owner'
 	store().beginSync(new AbortController().signal)
 	expect(store().desktopStatus).toBe('checking')
 })
+
+test('backend daily totals include active work and are cleared when the owner ends', () => {
+	const store = useTimeTrackerStore.getState
+	store().beginSync(new AbortController().signal)
+	store().applySnapshot(session, {
+		asOf: new Date('2026-10-12T10:00:00Z'),
+		dayStartedAt: new Date('2026-10-12T00:00:00Z'),
+		nextDayAt: new Date('2026-10-13T00:00:00Z'),
+		timeZone: 'UTC',
+		dailyWorkSeconds: 900,
+		sessionWorkSeconds: 300,
+		running: true,
+	})
+	expect(store().dailySeconds).toBe(900)
+	expect(store().elapsed).toBe(300)
+	store().endSync()
+	expect(store().dailySeconds).toBeNull()
+	expect(store().activeSession).toBeNull()
+})

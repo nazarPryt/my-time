@@ -28,6 +28,7 @@ function StatCard({
 
 export function TodayStats() {
 	const todaySummary = useTimeTrackerStore((s) => s.todaySummary)
+	const dailySeconds = useTimeTrackerStore((s) => s.dailySeconds)
 
 	if (!todaySummary) return null
 
@@ -38,7 +39,9 @@ export function TodayStats() {
 		>
 			<StatCard
 				label="Today"
-				value={formatDuration(todaySummary.totalWorkSeconds) || '0m'}
+				value={
+					formatDuration(dailySeconds ?? todaySummary.totalWorkSeconds) || '0m'
+				}
 				testId={TIME_TRACKER_TEST_IDS.statToday}
 			/>
 			<StatCard

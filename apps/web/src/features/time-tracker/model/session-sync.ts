@@ -1,14 +1,10 @@
 import { reconnectSessions } from '@my-time/session-sync'
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse, TimerSnapshot } from 'contracts'
 import {
 	SessionAuthenticationError,
 	watchSessions,
 } from '../api/session-stream'
-import {
-	observeSessionResume,
-	scheduleMidnight,
-	waitForRetry,
-} from '../lib/browser-lifecycle'
+import { observeSessionResume, waitForRetry } from '../lib/browser-lifecycle'
 import type { TimeTrackerState } from './types'
 
 type SyncActions = Pick<
@@ -33,7 +29,7 @@ export function startTimeTrackerSync(actions: SyncActions): () => void {
 	}
 
 	async function watch(
-		onSession: (session: SessionResponse | null) => void,
+		onSession: (session: SessionResponse | null, timer?: TimerSnapshot) => void,
 	): Promise<void> {
 		connection = new AbortController()
 		const signal = AbortSignal.any([lifetime.signal, connection.signal])
@@ -42,8 +38,11 @@ export function startTimeTrackerSync(actions: SyncActions): () => void {
 		})
 	}
 
-	function handleSnapshot(session: SessionResponse | null): void {
-		actions.applySnapshot(session)
+	function handleSnapshot(
+		session: SessionResponse | null,
+		timer?: TimerSnapshot,
+	): void {
+		actions.applySnapshot(session, timer)
 		void actions.refreshSummary(lifetime.signal)
 	}
 
@@ -62,9 +61,6 @@ export function startTimeTrackerSync(actions: SyncActions): () => void {
 	}
 
 	actions.beginSync(lifetime.signal)
-	const stopMidnight = scheduleMidnight(() => {
-		void actions.refreshSummary(lifetime.signal)
-	})
 	const stopResume = observeSessionResume(reconnect)
 	void reconnectSessions({
 		watch,
@@ -81,7 +77,6 @@ export function startTimeTrackerSync(actions: SyncActions): () => void {
 
 	return () => {
 		lifetime.abort()
-		stopMidnight()
 		stopResume()
 		actions.endSync()
 	}

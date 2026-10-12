@@ -4,6 +4,7 @@ import {
 	type DesktopPresence,
 	type SessionResponse,
 	TIME_TRACKER_ROUTES,
+	type TimerSnapshot,
 } from 'contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { fetchStreamWithRefresh } from '@/shared/lib/fetch-with-refresh'
@@ -14,7 +15,7 @@ export class SessionAuthenticationError extends Error {}
 
 export async function watchSessions(
 	signal: AbortSignal,
-	onSession: (session: SessionResponse | null) => void,
+	onSession: (session: SessionResponse | null, timer?: TimerSnapshot) => void,
 	onDesktopPresence?: (presence: DesktopPresence) => void,
 ): Promise<void> {
 	const token = tokenStorage.getAccessToken()

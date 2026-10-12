@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { DesktopConnectionCard } from '@/features/desktop-connection'
 import { TimeTrackerWidget } from '@/features/time-tracker'
-import { DesktopConnectionCard } from './DesktopConnectionCard'
 
 export function TimeTrackerPage({
 	desktopRequest,

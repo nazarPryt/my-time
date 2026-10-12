@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test'
+import { DESKTOP_CONNECTION_TEST_IDS as DC } from '@/features/desktop-connection/testIds'
 import { TIME_TRACKER_TEST_IDS as TT } from '@/features/time-tracker/testIds'
 import { DESKTOP_SETUP_TEST_IDS as DS } from '@/pages/desktop/testIds'
-import { DESKTOP_CONNECTION_TEST_IDS as DC } from '@/pages/time-tracker/testIds'
 import { BaseLocators } from '../BaseLocators'
 
 export class TimeTrackerLocators extends BaseLocators {

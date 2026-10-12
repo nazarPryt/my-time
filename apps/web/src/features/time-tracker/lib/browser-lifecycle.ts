@@ -1,5 +1,3 @@
-import { addDays, differenceInMilliseconds, startOfDay } from 'date-fns'
-
 export function waitForRetry(
 	milliseconds: number,
 	signal: AbortSignal,
@@ -14,23 +12,6 @@ export function waitForRetry(
 		signal.addEventListener('abort', finish, { once: true })
 		if (signal.aborted) finish()
 	})
-}
-
-export function scheduleMidnight(onMidnight: () => void): () => void {
-	let timer: ReturnType<typeof setTimeout>
-	function schedule(): void {
-		const now = new Date()
-		const nextMidnight = startOfDay(addDays(now, 1))
-		timer = setTimeout(
-			() => {
-				onMidnight()
-				schedule()
-			},
-			differenceInMilliseconds(nextMidnight, now),
-		)
-	}
-	schedule()
-	return () => clearTimeout(timer)
 }
 
 export function observeSessionResume(onResume: () => void): () => void {
