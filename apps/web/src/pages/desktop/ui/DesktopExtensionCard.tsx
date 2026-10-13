@@ -1,5 +1,5 @@
+import { DESKTOP_EXTENSION_DOWNLOAD_FILENAME } from 'contracts'
 import { Download, Monitor } from 'lucide-react'
-import { WEB_CONFIG } from '@/shared/config/web-config'
 import {
 	Button,
 	Card,
@@ -35,7 +35,7 @@ export function DesktopExtensionCard() {
 					macOS, KDE, and other desktops can use the web tracker.
 				</p>
 				<Button asChild variant="outline">
-					<a href={WEB_CONFIG.DESKTOP_EXTENSION_DOWNLOAD_URL} download>
+					<a href={`/${DESKTOP_EXTENSION_DOWNLOAD_FILENAME}`} download>
 						<Download aria-hidden="true" />
 						Download GNOME extension (.zip)
 					</a>
@@ -55,8 +55,7 @@ export function DesktopExtensionCard() {
 							without unzipping it:
 							<pre className="mt-2 overflow-x-auto rounded bg-muted p-3 text-xs text-foreground">
 								<code>
-									gnome-extensions install --force
-									my-time@my-time.local.shell-extension.zip
+									{`gnome-extensions install --force ${DESKTOP_EXTENSION_DOWNLOAD_FILENAME}`}
 								</code>
 							</pre>
 						</li>

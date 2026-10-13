@@ -45,6 +45,7 @@ export const OfflineJournalSchema = z
 		sessions: z.array(OfflineSessionSchema),
 		confirmed: SessionResponseSchema.nullable(),
 		timer: TimerSnapshotSchema.optional(),
+		lastSuccessfulSyncAt: z.coerce.date().optional(),
 	})
 	.refine(
 		(journal) =>

@@ -34,6 +34,8 @@ export interface TrackerState {
 	status: 'loading' | 'ready' | 'working' | 'offline' | 'signed-out'
 	busy: boolean
 	syncingOffline?: boolean
+	pendingSessions: number
+	lastSuccessfulSyncAt: Date | null
 	message: string
 }
 
@@ -43,6 +45,8 @@ export class TrackerController {
 		activeSession: null,
 		status: 'loading',
 		busy: false,
+		pendingSessions: 0,
+		lastSuccessfulSyncAt: null,
 		message: 'Connecting…',
 	}
 	private disposed = false
@@ -59,6 +63,11 @@ export class TrackerController {
 		private offline?: OfflineTracker,
 		offlineRetry?: SyncRetryDelay,
 	) {
+		this.state = {
+			...this.state,
+			pendingSessions: offline?.pendingSessions ?? 0,
+			lastSuccessfulSyncAt: offline?.lastSuccessfulSyncAt ?? null,
+		}
 		if (offlineRetry && offline)
 			this.offlineSync = new OfflineSyncLoop(
 				offlineRetry,
@@ -88,6 +97,7 @@ export class TrackerController {
 					const result = await this.offline.flush(
 						{ syncOffline: this.api.syncOffline.bind(this.api) },
 						() => this.disposed,
+						() => this.update({}),
 					)
 					if (this.disposed) return null
 					return result ?? this.api.getTimer?.() ?? this.api.getActive()
@@ -237,7 +247,12 @@ export class TrackerController {
 
 	private update(next: Partial<TrackerState>): void {
 		if (this.disposed) return
-		this.state = { ...this.state, ...next }
+		this.state = {
+			...this.state,
+			...next,
+			pendingSessions: this.offline?.pendingSessions ?? 0,
+			lastSuccessfulSyncAt: this.offline?.lastSuccessfulSyncAt ?? null,
+		}
 		this.onChange(this.state)
 	}
 

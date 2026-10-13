@@ -110,6 +110,12 @@ The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — ne
 
 ### web — React + TanStack Router + Tailwind v4
 
+Web environment variables are validated with Zod during Vite startup/build and
+in the browser using `src/shared/config/web-env.ts`. Set `VITE_API_URL` in
+`apps/web/.env` (copy `.env.example` for local development) or the build environment.
+Missing or invalid values fail the build; the extension store URL remains
+optional. Extension download filenames are fixed constants in `contracts`.
+
 **Architecture: Feature-Sliced Design (FSD).** `src/` is organised into layers, and
 **imports may only point down the stack** — never upward, never sideways between
 slices of the same layer. Boundaries are enforced by Biome (`noRestrictedImports`

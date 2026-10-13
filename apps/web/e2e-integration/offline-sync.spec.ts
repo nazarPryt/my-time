@@ -37,9 +37,12 @@ test('35 minutes offline survives a process restart, reaches the web, and is rem
 	await offlineDesktop.stop()
 	const before = await offlineDesktop.state()
 	expect(before.pending).toBe(1)
+	expect(before.pendingSessions).toBe(1)
+	expect(before.lastSuccessfulSyncAt).toBeNull()
 	const after = await offlineDesktop.restart()
 	expect(after.pid).not.toBe(before.pid)
 	expect(after.pending).toBe(1)
+	expect(after.pendingSessions).toBe(1)
 	expect(after.activeSession).toBeNull()
 	await offlineDesktop.setOnline(true)
 	await expect.poll(async () => (await offlineDesktop.state()).pending).toBe(0)
@@ -66,8 +69,18 @@ test('35 minutes offline survives a process restart, reaches the web, and is rem
 			max([parseISO(formatISO(start)), timer.timer.dayStartedAt]),
 		),
 	)
+	await offlineDesktop.setOnline(false)
+	await expect
+		.poll(async () => (await offlineDesktop.state()).status)
+		.toBe('offline')
+	const lastSuccessfulSyncAt = (await offlineDesktop.state())
+		.lastSuccessfulSyncAt
+	expect(lastSuccessfulSyncAt).toBeTruthy()
 	const cleaned = await offlineDesktop.restart()
 	expect(cleaned.pending).toBe(0)
+	expect(cleaned.pendingSessions).toBe(0)
+	expect(cleaned.lastSuccessfulSyncAt).toBe(lastSuccessfulSyncAt)
+	await offlineDesktop.setOnline(true)
 	await expect
 		.poll(async () => (await offlineDesktop.state()).status)
 		.toBe('ready')
@@ -172,6 +185,7 @@ test('a committed upload with a lost response stays queued across restart and re
 		.poll(async () => (await offlineDesktop.state()).online)
 		.toBe(false)
 	expect((await offlineDesktop.state()).pending).toBe(1)
+	expect((await offlineDesktop.state()).lastSuccessfulSyncAt).toBeNull()
 	await expect(trackerPage.sessionRows).toHaveCount(1)
 	const first = TodaySummaryResponseSchema.parse(
 		await (

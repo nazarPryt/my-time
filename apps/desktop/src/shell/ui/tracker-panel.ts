@@ -5,6 +5,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js'
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js'
 import type { TrackerState } from '@/bll/tracker-controller'
 import { formatElapsed } from '@/shared/elapsed'
+import { lastSyncText, syncStatusText } from '@/shared/sync-status'
 
 // Let the native play/stop buttons handle their own events without opening the menu.
 const Indicator = GObject.registerClass(
@@ -28,6 +29,8 @@ interface PanelControls {
 	play: St.Button
 	stop: St.Button
 	status: PopupMenu.PopupMenuItem
+	syncStatus: PopupMenu.PopupMenuItem
+	lastSync: PopupMenu.PopupMenuItem
 	sync: PopupMenu.PopupMenuItem
 }
 
@@ -67,6 +70,10 @@ export class TrackerPanel {
 			reactive: false,
 		})
 		menu.addMenuItem(status)
+		const syncStatus = new PopupMenu.PopupMenuItem('', { reactive: false })
+		const lastSync = new PopupMenu.PopupMenuItem('', { reactive: false })
+		menu.addMenuItem(syncStatus)
+		menu.addMenuItem(lastSync)
 		menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem())
 		const sync = new PopupMenu.PopupMenuItem('Refresh now')
 		sync.connect('activate', () => {
@@ -75,7 +82,16 @@ export class TrackerPanel {
 		menu.addMenuItem(sync)
 		menu.addAction('Open web tracker', () => actions.openWebTracker())
 		menu.addAction('Settings', () => actions.openPreferences())
-		this.controls = { indicator, timer, play, stop, status, sync }
+		this.controls = {
+			indicator,
+			timer,
+			play,
+			stop,
+			status,
+			syncStatus,
+			lastSync,
+			sync,
+		}
 		play.connect('clicked', () => {
 			void actions.start()
 		})
@@ -107,7 +123,8 @@ export class TrackerPanel {
 
 	render(state: TrackerState | undefined, seconds: number | null): void {
 		if (!this.controls) return
-		const { indicator, timer, play, stop, status, sync } = this.controls
+		const { indicator, timer, play, stop, status, syncStatus, lastSync, sync } =
+			this.controls
 		const available =
 			state &&
 			(!state.busy || state.syncingOffline) &&
@@ -130,6 +147,12 @@ export class TrackerPanel {
 					: formatElapsed(seconds)
 		status.label.text =
 			state?.message ?? 'Open Settings to connect your account'
+		syncStatus.visible = lastSync.visible = Boolean(state)
+		if (state) {
+			syncStatus.label.text = syncStatusText(state)
+			lastSync.label.text = lastSyncText(state.lastSuccessfulSyncAt)
+		}
+		sync.label.text = state?.pendingSessions ? 'Sync now' : 'Refresh now'
 		sync.setSensitive(Boolean(state && !state.busy))
 		indicator.accessible_name = `my-time: ${status.label.text}, ${timer.text}`
 		if (state?.status === 'working')

@@ -82,6 +82,8 @@ test('failed uploads preserve IDs and saved work for retries', async () => {
 	await expect(offline.flush(api, () => false)).rejects.toThrow('Unavailable')
 	expect(f.restore().pending).toBe(true)
 	expect(f.saved().sessions[0]?.startedAt).toEqual(start)
+	expect(offline.pendingSessions).toBe(1)
+	expect(offline.lastSuccessfulSyncAt).toBeNull()
 })
 
 test('a stop during an upload is retained and sent after the running observation is acknowledged', async () => {
@@ -127,6 +129,69 @@ test('disposal after an API response preserves the unacknowledged journal', asyn
 		() => stopped,
 	)
 	expect(f.restore().pending).toBe(true)
+	expect(f.restore().lastSuccessfulSyncAt).toBeNull()
+})
+
+test('queue counts progress after each confirmed batch and successful sync time survives restart', async () => {
+	const f = fixture()
+	const offline = f.restore()
+	for (let index = 0; index < 101; index++) {
+		offline.start(null)
+		offline.stop()
+	}
+	expect(offline.pendingSessions).toBe(101)
+	const counts: number[] = []
+	await offline.flush(
+		{ syncOffline: async () => synced },
+		() => false,
+		() => counts.push(offline.pendingSessions),
+	)
+	expect(counts).toEqual([1, 0])
+	expect(f.restore().pendingSessions).toBe(0)
+	expect(f.restore().lastSuccessfulSyncAt).toEqual(synced.timer.asOf)
+})
+
+test('controller reports in-flight sync, preserves counts on failure, and publishes acknowledgement', async () => {
+	const f = fixture()
+	const offline = f.restore()
+	offline.start(null)
+	offline.stop()
+	let reject!: (error: Error) => void
+	const syncOffline = mock(
+		() =>
+			new Promise<TimerState>((_resolve, fail) => {
+				reject = fail
+			}),
+	)
+	const tracker = new TrackerController(
+		{
+			getActive: async () => null,
+			getTimer: async () => synced,
+			start: async () => {
+				throw new Error('Unexpected start')
+			},
+			end: async () => {},
+			watch: async () => {},
+			dispose: () => {},
+			syncOffline,
+		},
+		() => {},
+		offline,
+	)
+	const upload = tracker.refresh()
+	expect(tracker.state.syncingOffline).toBe(true)
+	expect(tracker.state.pendingSessions).toBe(1)
+	expect(tracker.state.lastSuccessfulSyncAt).toBeNull()
+	reject(new ConnectionError('Unavailable'))
+	await upload
+	expect(tracker.state.syncingOffline).toBe(false)
+	expect(tracker.state.pendingSessions).toBe(1)
+	expect(tracker.state.lastSuccessfulSyncAt).toBeNull()
+	syncOffline.mockImplementation(async () => synced)
+	await tracker.refresh()
+	expect(tracker.state.pendingSessions).toBe(0)
+	expect(tracker.state.lastSuccessfulSyncAt).toEqual(synced.timer.asOf)
+	expect(f.restore().lastSuccessfulSyncAt).toEqual(synced.timer.asOf)
 })
 
 test('storage errors never acknowledge local work or erase queued observations', () => {

@@ -9,6 +9,9 @@ export interface OfflineDesktopState extends DesktopState {
 	online: boolean
 	pending: number
 	committedUploads: number
+	pendingSessions: number
+	syncingOffline?: boolean
+	lastSuccessfulSyncAt: string | null
 	journalRunning: ReturnType<typeof OfflineSessionSchema.parse> | null
 }
 

@@ -25,6 +25,12 @@ export class OfflineTracker {
 	get pending(): boolean {
 		return this.journal.sessions.length > 0
 	}
+	get pendingSessions(): number {
+		return this.journal.sessions.length
+	}
+	get lastSuccessfulSyncAt(): Date | null {
+		return this.journal.lastSuccessfulSyncAt ?? null
+	}
 	get running(): OfflineSession | undefined {
 		return this.journal.sessions.find((session) => !session.endedAt)
 	}
@@ -54,7 +60,12 @@ export class OfflineTracker {
 		this.journal = journal
 	}
 	remember(confirmed: SessionResponse | null, timer?: TimerSnapshot): void {
-		this.commit({ ...this.journal, confirmed, timer })
+		this.commit({
+			...this.journal,
+			confirmed,
+			timer,
+			lastSuccessfulSyncAt: timer?.asOf ?? this.now(),
+		})
 	}
 	start(origin = this.confirmed, startedAt = this.now()): void {
 		if (this.running) return
@@ -88,6 +99,7 @@ export class OfflineTracker {
 	async flush(
 		api: OfflineSyncApi,
 		isStopped: () => boolean,
+		onProgress: () => void = () => {},
 	): Promise<TimerState | undefined> {
 		let result: TimerState | undefined
 		while (this.pending && !isStopped()) {
@@ -113,7 +125,9 @@ export class OfflineTracker {
 				}),
 				confirmed: result.activeSession,
 				timer: result.timer,
+				lastSuccessfulSyncAt: result.timer.asOf,
 			})
+			onProgress()
 		}
 		return result
 	}

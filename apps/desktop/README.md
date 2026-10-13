@@ -17,8 +17,8 @@ Windows, macOS, KDE, and other desktop environments can use the web tracker.
 The web Time Tracker page includes a desktop download and installation guide.
 Production web Docker builds include the GNOME ZIP. For local web development,
 run `bun run desktop:web-package` from the repository root to build and copy it
-into the web public directory. `VITE_DESKTOP_EXTENSION_DOWNLOAD_URL` can override
-the download location for non-Docker hosting.
+into the web public directory. The web app downloads the ZIP from
+`/my-time@my-time.local.shell-extension.zip` on the same host.
 
 Install the downloaded ZIP without extracting it:
 
@@ -110,6 +110,12 @@ working. Open the menu to see **Working offline** or **Waiting to sync** after s
 While offline, the panel shows the current session timer even if Daily total is
 selected, then returns to the selected mode on reconnection. Daily totals are
 unavailable offline; the API owns all accounting and day boundaries.
+
+The desktop menu shows how many sessions are waiting to sync (including ongoing
+offline work), progress while uploading, and the last successful synchronization
+time. Counts decrease only after API confirmation; failed uploads remain queued.
+The timestamp survives restarts and is scoped to the server and account. Use
+**Sync now** to retry queued work, or **Refresh now** when the queue is empty.
 
 Saved work survives extension reloads and is scoped to the server and account ID.
 It remains saved after sign-out, and resumes synchronization when that same account

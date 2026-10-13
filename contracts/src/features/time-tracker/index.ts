@@ -1,4 +1,5 @@
 export * from './desktop-presence'
+export * from './extension-download'
 export * from './offline'
 export * from './session'
 export * from './timer'
