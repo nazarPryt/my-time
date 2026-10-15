@@ -46,7 +46,7 @@ export function PermessoStatusWidget() {
 			</header>
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
-				<div className="max-w-lg mx-auto space-y-6">
+				<div className="max-w-lg mx-auto space-y-4 sm:space-y-6 max-sm:[&_[data-slot=card]]:py-5 max-sm:[&_[data-slot=card]]:gap-4 max-sm:[&_[data-slot=card-header]]:px-4 max-sm:[&_[data-slot=card-content]]:px-4">
 					{loading || !status ? (
 						<div
 							data-testid={PERMESSO_TEST_IDS.loading}

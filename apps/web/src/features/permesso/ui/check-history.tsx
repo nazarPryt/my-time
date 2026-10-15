@@ -44,7 +44,7 @@ export function CheckHistory({ history, loading }: Props) {
 						<XCircle size={15} className="text-destructive shrink-0" />
 					)}
 					<div className="flex-1 min-w-0">
-						<p className="text-sm text-foreground truncate">
+						<p className="mb-1 text-sm text-foreground whitespace-pre-wrap wrap-anywhere">
 							{entry.success ? entry.status : entry.error}
 						</p>
 						<p className="text-xs text-muted-foreground">

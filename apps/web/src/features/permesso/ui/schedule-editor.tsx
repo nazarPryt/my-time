@@ -29,7 +29,7 @@ export function ScheduleEditor({
 
 	return (
 		<div className="space-y-3">
-			<div className="grid grid-cols-8 gap-1.5">
+			<div className="grid grid-cols-4 gap-2 sm:grid-cols-8 sm:gap-1.5">
 				{HOURS.map((hour) => (
 					<HourToggle
 						key={hour}

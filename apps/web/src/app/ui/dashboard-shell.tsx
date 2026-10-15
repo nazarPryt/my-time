@@ -81,11 +81,20 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 			<header className="flex md:hidden items-center gap-2 h-14 px-3 border-b border-sidebar-border bg-sidebar shrink-0">
 				<Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
 					<SheetTrigger asChild>
-						<Button variant="ghost" size="icon" aria-label="Open menu">
-							<Menu size={20} strokeWidth={1.75} />
+						<Button
+							variant="ghost"
+							size="icon"
+							className="size-11"
+							aria-label="Open menu"
+						>
+							<Menu className="size-6" strokeWidth={1.75} />
 						</Button>
 					</SheetTrigger>
-					<SheetContent side="left" className="p-0" title="Navigation">
+					<SheetContent
+						side="left"
+						className="w-80 max-w-[85vw] p-0"
+						title="Navigation"
+					>
 						<SidebarContent onNavigate={() => setIsMobileNavOpen(false)} />
 					</SheetContent>
 				</Sheet>
@@ -119,7 +128,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 			</div>
 
 			{/* Navigation */}
-			<nav className="flex-1 p-2 pt-3 space-y-0.5 overflow-y-auto">
+			<nav className="flex-1 p-3 pt-4 space-y-1 md:p-2 md:pt-3 md:space-y-0.5 overflow-y-auto">
 				{NAV_ITEMS.map(
 					({ to, label, icon: Icon, exact, testId, indicator: Indicator }) => (
 						<Link
@@ -129,8 +138,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 							activeOptions={{ exact }}
 							onClick={onNavigate}
 							className={cn(
-								'relative flex items-center gap-2.5 px-3 py-2 rounded-md',
-								'text-sm text-sidebar-foreground/55 transition-colors duration-150',
+								'relative flex items-center gap-3 px-4 py-3 md:gap-2.5 md:px-3 md:py-2 rounded-md',
+								'text-base md:text-sm text-sidebar-foreground/55 transition-colors duration-150',
 								'hover:text-sidebar-foreground hover:bg-sidebar-accent',
 								'[&.active]:text-sidebar-foreground [&.active]:bg-sidebar-accent [&.active]:font-medium',
 							)}
@@ -145,7 +154,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 											isActive ? 'opacity-100' : 'opacity-0',
 										)}
 									/>
-									<Icon size={15} strokeWidth={1.75} className="shrink-0" />
+									<Icon
+										strokeWidth={1.75}
+										className="size-5 md:size-[15px] shrink-0"
+									/>
 									{label}
 									{Indicator && <Indicator />}
 								</>

@@ -1,3 +1,4 @@
+import { ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import {
@@ -21,25 +22,38 @@ export function DangerZone({ resetting, onReset }: Props) {
 
 	return (
 		<>
-			<Card className="border-destructive/30">
-				<CardHeader>
-					<CardTitle className="text-destructive">Danger zone</CardTitle>
-					<CardDescription>
-						Already got your permesso di soggiorno? Permanently delete your
-						practice number, automatic check schedule, Telegram connection, and
-						check history.
+			<Card className="ring-destructive/25">
+				<CardHeader className="gap-3">
+					<CardTitle className="flex items-center gap-2 text-destructive">
+						<ShieldAlert className="size-5 shrink-0" aria-hidden="true" />
+						Danger zone
+					</CardTitle>
+					<CardDescription className="leading-relaxed">
+						Finished tracking your permesso? You can remove your saved data and
+						stop automatic checks here.
 					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="space-y-4">
+					<div className="rounded-lg border border-destructive/15 bg-destructive/5 p-3 text-sm leading-relaxed">
+						<p className="font-medium text-foreground">
+							This cannot be undone.
+						</p>
+						<p className="mt-1 text-muted-foreground">
+							Deletes your practice number, schedule, and check history, and
+							disconnects Telegram.
+						</p>
+					</div>
 					<ConfirmDialog
 						trigger={
 							<Button
 								data-testid={PERMESSO_TEST_IDS.reset}
 								variant="destructive"
 								size="sm"
+								className="w-full min-h-11 whitespace-normal h-auto py-2.5 sm:w-auto sm:min-h-0"
 								disabled={resetting}
 								isLoading={resetting}
 							>
+								<Trash2 className="size-4" aria-hidden="true" />
 								Delete all permesso data
 							</Button>
 						}

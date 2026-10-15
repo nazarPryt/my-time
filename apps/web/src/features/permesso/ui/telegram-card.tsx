@@ -36,15 +36,15 @@ export function TelegramCard({
 	return (
 		<>
 			<Card>
-				<CardHeader>
+				<CardHeader className="flex flex-col gap-3 sm:grid sm:gap-1">
 					<CardTitle className="flex items-center gap-2">
-						<Send size={16} className="text-muted-foreground" />
+						<Send size={16} className="text-muted-foreground shrink-0" />
 						Telegram notifications
 					</CardTitle>
 					<CardDescription>
 						Get a message on Telegram after every check.
 					</CardDescription>
-					<CardAction>
+					<CardAction className="w-full sm:w-auto [&_button]:w-full [&_button]:min-h-10 sm:[&_button]:w-auto sm:[&_button]:min-h-0">
 						{status.telegramConnected ? (
 							<Button
 								size="sm"
