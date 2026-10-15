@@ -5,8 +5,9 @@ import {
 	UpdateCheckHoursRequestSchema,
 } from 'contracts'
 import { Elysia, sse } from 'elysia'
+import { PERMESSO_ERROR_MESSAGES, PERMESSO_FAILURE_REASONS } from './constants'
 import { permessoService } from './service'
-import { handleTelegramWebhook } from './telegram-bot'
+import { handleTelegramWebhook } from './telegram/bot'
 
 export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 	// No auth guard — Telegram calls this directly. Authenticated via the
@@ -42,7 +43,9 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 				const outcome = await permessoService.runCheck(userId)
 				if (!outcome.ok) {
 					set.status = 409
-					return { message: 'Set a practice number before checking' }
+					return {
+						message: PERMESSO_ERROR_MESSAGES.practiceNumberRequiredForCheck,
+					}
 				}
 				return outcome.result
 			})
@@ -52,12 +55,15 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 			.post(PERMESSO_ROUTES.telegramLink, async ({ userId, set }) => {
 				const outcome = await permessoService.createTelegramLink(userId)
 				if (!outcome.ok) {
-					set.status = outcome.reason === 'no_practice_number' ? 409 : 503
+					set.status =
+						outcome.reason === PERMESSO_FAILURE_REASONS.noPracticeNumber
+							? 409
+							: 503
 					return {
 						message:
-							outcome.reason === 'no_practice_number'
-								? 'Set a practice number before connecting Telegram'
-								: 'Telegram notifications are not configured on this server',
+							outcome.reason === PERMESSO_FAILURE_REASONS.noPracticeNumber
+								? PERMESSO_ERROR_MESSAGES.practiceNumberRequiredForTelegram
+								: PERMESSO_ERROR_MESSAGES.telegramNotConfigured,
 					}
 				}
 				return outcome.link

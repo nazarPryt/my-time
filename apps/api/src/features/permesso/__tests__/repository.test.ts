@@ -10,6 +10,7 @@ import {
 	registerAndGetToken,
 	VALID_USER,
 } from './fixtures'
+import { OTHER_TEST_PRACTICE_NUMBER, TEST_PRACTICE_NUMBER } from './test-data'
 
 beforeAll(async () => {
 	await runMigrations()
@@ -28,15 +29,18 @@ describe('permessoRepository', () => {
 
 			const row = await permessoRepository.upsertPracticeNumber(
 				userId,
-				'AB12345678',
+				TEST_PRACTICE_NUMBER,
 			)
-			expect(row.practiceNumber).toBe('AB12345678')
+			expect(row.practiceNumber).toBe(TEST_PRACTICE_NUMBER)
 			expect(row.lastStatus).toBeNull()
 		})
 
 		it('updates practiceNumber and resets lastStatus/lastError/lastCheckedAt on conflict', async () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
-			await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+			await permessoRepository.upsertPracticeNumber(
+				userId,
+				TEST_PRACTICE_NUMBER,
+			)
 			await permessoRepository.recordCheckResult(
 				userId,
 				{ success: false, error: 'boom' },
@@ -48,9 +52,9 @@ describe('permessoRepository', () => {
 
 			const updated = await permessoRepository.upsertPracticeNumber(
 				userId,
-				'CD98765432',
+				OTHER_TEST_PRACTICE_NUMBER,
 			)
-			expect(updated.practiceNumber).toBe('CD98765432')
+			expect(updated.practiceNumber).toBe(OTHER_TEST_PRACTICE_NUMBER)
 			expect(updated.lastStatus).toBeNull()
 			expect(updated.lastError).toBeNull()
 			expect(updated.lastCheckedAt).toBeNull()
@@ -60,7 +64,10 @@ describe('permessoRepository', () => {
 	describe('linkTelegramChat', () => {
 		it('is single-use — a second call with the same (now-cleared) token returns null', async () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
-			await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+			await permessoRepository.upsertPracticeNumber(
+				userId,
+				TEST_PRACTICE_NUMBER,
+			)
 			await permessoRepository.setTelegramLinkToken(userId, 'one-time-token')
 
 			const first = await permessoRepository.linkTelegramChat(
@@ -85,7 +92,10 @@ describe('permessoRepository', () => {
 	describe('recordCheckResult', () => {
 		it('updates the subscription row and inserts a history row from one call', async () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
-			await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+			await permessoRepository.upsertPracticeNumber(
+				userId,
+				TEST_PRACTICE_NUMBER,
+			)
 
 			await permessoRepository.recordCheckResult(
 				userId,

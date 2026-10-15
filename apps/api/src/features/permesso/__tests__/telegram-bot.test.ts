@@ -8,23 +8,27 @@ import { eq } from 'drizzle-orm'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { permessoRepository } from '../repository'
+import {
+	BLOCKED_TEST_TELEGRAM_CHAT_ID,
+	TEST_PRACTICE_NUMBER,
+} from './test-data'
 
 // ---------------------------------------------------------------------------
 // Unlike every other permesso test file, this one exercises the REAL
-// telegram-bot.ts implementation against a fake node-telegram-bot-api Bot
+// telegram/bot.ts implementation against a fake node-telegram-bot-api Bot
 // (the real SDK would otherwise make a genuine network call). It must
-// capture telegram-bot.ts's real exports *before* mocking anything and must
-// NOT import fixtures.ts — that file mocks './telegram-bot' wholesale as a
+// capture telegram/bot.ts's real exports *before* mocking anything and must
+// NOT import fixtures.ts — that file mocks './telegram/bot' wholesale as a
 // module-scope side effect, and since static imports fully evaluate before
 // the importing module's own body runs, doing so here would mock
-// telegram-bot.ts before this file's own code ever got a chance to capture
+// telegram/bot.ts before this file's own code ever got a chance to capture
 // the real implementation.
 // ---------------------------------------------------------------------------
 
 const { TelegramApiError: RealTelegramApiError } = await import(
 	'node-telegram-bot-api'
 )
-const realTelegramBot = await import('../telegram-bot')
+const realTelegramBot = await import('../telegram/bot')
 const realStartTelegramBot = realTelegramBot.startTelegramBot
 const realSendTelegramCheckResult = realTelegramBot.sendTelegramCheckResult
 
@@ -84,13 +88,13 @@ describe('telegram-bot.sendTelegramCheckResult (real implementation)', () => {
 		await realStartTelegramBot()
 
 		const { userId } = await registerAndGetToken(VALID_USER)
-		await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+		await permessoRepository.upsertPracticeNumber(userId, TEST_PRACTICE_NUMBER)
 		await db
 			.update(permessoSubscriptions)
-			.set({ telegramChatId: '424242' })
+			.set({ telegramChatId: BLOCKED_TEST_TELEGRAM_CHAT_ID })
 			.where(eq(permessoSubscriptions.userId, userId))
 
-		await realSendTelegramCheckResult(userId, '424242', {
+		await realSendTelegramCheckResult(userId, BLOCKED_TEST_TELEGRAM_CHAT_ID, {
 			success: true,
 			status: 'ready',
 		})

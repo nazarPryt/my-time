@@ -8,8 +8,9 @@ import { permessoService } from '../service'
 import {
 	notifyTelegramLinked,
 	startTelegramLinkListener,
-} from '../telegram-link-events'
+} from '../telegram/link-events'
 import { clearFixtureMocks, registerAndGetToken, VALID_USER } from './fixtures'
+import { TEST_PRACTICE_NUMBER, TEST_TELEGRAM_CHAT_ID } from './test-data'
 
 beforeAll(async () => {
 	await runMigrations()
@@ -28,10 +29,10 @@ afterEach(async () => {
 describe('permessoService.streamTelegramLinkEvents', () => {
 	it('yields only "connected" when a Telegram chat is already linked', async () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
-		await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+		await permessoRepository.upsertPracticeNumber(userId, TEST_PRACTICE_NUMBER)
 		await db
 			.update(permessoSubscriptions)
-			.set({ telegramChatId: '999999' })
+			.set({ telegramChatId: TEST_TELEGRAM_CHAT_ID })
 			.where(eq(permessoSubscriptions.userId, userId))
 
 		const events = []
@@ -44,7 +45,7 @@ describe('permessoService.streamTelegramLinkEvents', () => {
 
 	it('yields "open" then "connected" once notifyTelegramLinked fires mid-poll', async () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
-		await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+		await permessoRepository.upsertPracticeNumber(userId, TEST_PRACTICE_NUMBER)
 
 		const generator = permessoService.streamTelegramLinkEvents(userId, {
 			timeoutMs: 5_000,
@@ -70,7 +71,7 @@ describe('permessoService.streamTelegramLinkEvents', () => {
 
 	it('yields "open", then "ping" on every heartbeat, then "timeout" when nobody links', async () => {
 		const { userId } = await registerAndGetToken(VALID_USER)
-		await permessoRepository.upsertPracticeNumber(userId, 'AB12345678')
+		await permessoRepository.upsertPracticeNumber(userId, TEST_PRACTICE_NUMBER)
 
 		const events = []
 		for await (const evt of permessoService.streamTelegramLinkEvents(userId, {

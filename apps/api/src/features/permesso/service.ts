@@ -1,34 +1,25 @@
 import type {
-	CheckResultResponse,
 	PermessoCheckHistoryResponse,
 	PermessoStatusResponse,
-	TelegramLinkResponse,
 } from 'contracts'
-import { checkPermessoStatus } from './checker'
+import {
+	PERMESSO_FAILURE_REASONS,
+	TELEGRAM_LINK_HEARTBEAT_MS,
+	TELEGRAM_LINK_TIMEOUT_MS,
+} from './constants'
+import { checkPermessoStatus } from './portal/checker'
 import { permessoRepository } from './repository'
 import {
 	buildTelegramDeepLink,
 	sendTelegramCheckResult,
 	sendTelegramUnsubscribedNotice,
-} from './telegram-bot'
-import { waitForTelegramLinkOrHeartbeat } from './telegram-link-events'
-
-export type RunCheckResult =
-	| { ok: true; result: CheckResultResponse }
-	| { ok: false; reason: 'no_practice_number' }
-
-export type TelegramLinkResult =
-	| { ok: true; link: TelegramLinkResponse }
-	| { ok: false; reason: 'no_practice_number' | 'bot_not_configured' }
-
-export type TelegramLinkEvent =
-	| { event: 'connected' }
-	| { event: 'open' }
-	| { event: 'ping' }
-	| { event: 'timeout' }
-
-const TELEGRAM_LINK_TIMEOUT_MS = 60_000
-const TELEGRAM_LINK_HEARTBEAT_MS = 15_000
+} from './telegram/bot'
+import { waitForTelegramLinkOrHeartbeat } from './telegram/link-events'
+import type {
+	RunCheckResult,
+	TelegramLinkEvent,
+	TelegramLinkResult,
+} from './types'
 
 function toStatusResponse(
 	row: Awaited<ReturnType<typeof permessoRepository.getByUserId>> | null,
@@ -76,7 +67,8 @@ export const permessoService = {
 
 	runCheck: async (userId: string): Promise<RunCheckResult> => {
 		const row = await permessoRepository.getByUserId(userId)
-		if (!row) return { ok: false, reason: 'no_practice_number' }
+		if (!row)
+			return { ok: false, reason: PERMESSO_FAILURE_REASONS.noPracticeNumber }
 
 		const outcome = await checkPermessoStatus(row.practiceNumber)
 		await permessoRepository.recordCheckResult(userId, outcome, 'manual')
@@ -98,13 +90,15 @@ export const permessoService = {
 
 	createTelegramLink: async (userId: string): Promise<TelegramLinkResult> => {
 		const row = await permessoRepository.getByUserId(userId)
-		if (!row) return { ok: false, reason: 'no_practice_number' }
+		if (!row)
+			return { ok: false, reason: PERMESSO_FAILURE_REASONS.noPracticeNumber }
 
 		const linkToken = crypto.randomUUID()
 		await permessoRepository.setTelegramLinkToken(userId, linkToken)
 
 		const deepLink = buildTelegramDeepLink(linkToken)
-		if (!deepLink) return { ok: false, reason: 'bot_not_configured' }
+		if (!deepLink)
+			return { ok: false, reason: PERMESSO_FAILURE_REASONS.botNotConfigured }
 
 		return { ok: true, link: { deepLink } }
 	},
@@ -139,7 +133,7 @@ export const permessoService = {
 
 	/**
 	 * Yields 'connected' immediately if a Telegram chat is already linked;
-	 * otherwise polls (via Postgres LISTEN/NOTIFY, see telegram-link-events.ts)
+	 * otherwise polls (via Postgres LISTEN/NOTIFY, see telegram/link-events.ts)
 	 * until it links or TELEGRAM_LINK_TIMEOUT_MS elapses, yielding 'ping' on
 	 * every heartbeat in between so the route can keep the SSE connection alive.
 	 */

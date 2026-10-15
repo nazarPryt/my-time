@@ -1,23 +1,22 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { API_CONFIG } from '@shared/api-config'
+import { format } from 'date-fns'
 import puppeteer, { type Browser } from 'puppeteer'
-
-export type PermessoCheckResult =
-	| { success: true; status: string }
-	| { success: false; error: string }
+import { extractPermessoStatus } from '../lib/result-parser'
+import type { PermessoCheckResult } from '../types'
+import { PORTAL_SELECTORS, PORTAL_TIMEOUTS } from './constants'
 
 const SCREENSHOTS_DIR = path.join(process.cwd(), 'screenshots', 'permesso')
 
 function readableTimestamp(): string {
-	return new Date().toISOString().replace(/[:.]/g, '-')
+	return format(new Date(), "yyyy-MM-dd'T'HH-mm-ss-SSSxxx")
 }
 
 /**
  * Submits a practice number to the government portal and scrapes the result
- * text back out of the page. The result container is always `.m-ok`
- * (regardless of a positive or negative outcome — that distinction is only
- * encoded in an icon class inside it); the message text itself is in a `<p>`.
+ * text back out of `.m-ok`. Missing records use a paragraph, while existing
+ * records use direct text and strong elements inside the same container.
  */
 export async function checkPermessoStatus(
 	practiceNumber: string,
@@ -34,15 +33,28 @@ export async function checkPermessoStatus(
 			waitUntil: 'networkidle0',
 		})
 
-		await page.waitForSelector('#pratica', { timeout: 10_000 })
-		await page.type('#pratica', practiceNumber)
-		await page.click('#invia')
+		await page.waitForSelector(PORTAL_SELECTORS.practiceNumber, {
+			timeout: PORTAL_TIMEOUTS.formMs,
+		})
+		await page.type(PORTAL_SELECTORS.practiceNumber, practiceNumber)
+		await Promise.all([
+			page.waitForNavigation({
+				waitUntil: 'networkidle0',
+				timeout: PORTAL_TIMEOUTS.navigationMs,
+			}),
+			page.click(PORTAL_SELECTORS.submit),
+		])
 
-		await page.waitForSelector('.m-ok', { timeout: 15_000 })
+		await page.waitForSelector(PORTAL_SELECTORS.result, {
+			timeout: PORTAL_TIMEOUTS.resultMs,
+		})
 		const status = await page.$eval(
-			'.m-ok p',
-			(el) => el.textContent?.trim() ?? '',
+			PORTAL_SELECTORS.result,
+			extractPermessoStatus,
 		)
+		if (!status) {
+			throw new Error('The permit portal returned an empty status message')
+		}
 
 		await browser.close()
 		return { success: true, status }
