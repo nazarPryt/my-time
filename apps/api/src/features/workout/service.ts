@@ -1,74 +1,18 @@
 import type {
 	ExerciseType,
 	GoalResponse,
-	ProgressDay,
 	ProgressResponse,
 	SetResponse,
 	TodayResponse,
 } from 'contracts'
-import { ExerciseTypeSchema } from 'contracts'
-import {
-	endOfDay,
-	endOfMonth,
-	format,
-	getDaysInMonth,
-	startOfDay,
-	startOfMonth,
-} from 'date-fns'
+import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns'
+import { buildMonthDays, sumRepsByDay } from './lib/progress'
+import { toGoalResponse, toSetResponse } from './lib/responses'
 import { workoutGoalsRepository, workoutSetsRepository } from './repository'
-
-const DEFAULT_GOAL_REPS = 100
 
 function todayBounds() {
 	const now = new Date()
 	return { start: startOfDay(now), end: endOfDay(now) }
-}
-
-function toSetResponse(set: {
-	id: string
-	exerciseType: string
-	reps: number
-	createdAt: Date
-}): SetResponse {
-	return {
-		id: set.id,
-		exerciseType: ExerciseTypeSchema.parse(set.exerciseType),
-		reps: set.reps,
-		createdAt: set.createdAt.toISOString(),
-	}
-}
-
-function toGoalResponse(
-	goal: { exerciseType: string; targetReps: number } | null,
-	fallbackExerciseType: ExerciseType,
-): GoalResponse {
-	return {
-		exerciseType: ExerciseTypeSchema.parse(
-			goal?.exerciseType ?? fallbackExerciseType,
-		),
-		targetReps: goal?.targetReps ?? DEFAULT_GOAL_REPS,
-	}
-}
-
-function sumRepsByDay(sets: Array<{ createdAt: Date; reps: number }>) {
-	const totals = new Map<string, number>()
-	for (const s of sets) {
-		const day = format(s.createdAt, 'yyyy-MM-dd')
-		totals.set(day, (totals.get(day) ?? 0) + s.reps)
-	}
-	return totals
-}
-
-function buildMonthDays(
-	firstDay: Date,
-	year: number,
-	month: number,
-	totals: Map<string, number>,
-): ProgressDay[] {
-	return Array.from({ length: getDaysInMonth(firstDay) }, (_, i) => {
-		const date = format(new Date(year, month - 1, i + 1), 'yyyy-MM-dd')
-		return { date, total: totals.get(date) ?? 0 }
-	})
 }
 
 export const workoutService = {

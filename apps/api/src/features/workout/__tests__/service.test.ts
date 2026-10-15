@@ -1,13 +1,14 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { db } from '@db'
 import { workoutSets } from '@db/schema'
+import type { ExerciseType } from 'contracts'
 import { addMonths, subDays, subMonths, subYears } from 'date-fns'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { workoutService } from '../service'
 import { OTHER_USER, registerAndGetToken, VALID_USER } from './fixtures'
 
 // The service falls back to this when no goal row exists yet for the
-// (userId, exerciseType) pair — mirrors DEFAULT_GOAL_REPS in ../service.ts.
+// (userId, exerciseType) pair — independently verifies the default in contracts.
 const DEFAULT_GOAL_REPS = 100
 
 beforeAll(async () => {
@@ -23,7 +24,7 @@ afterEach(async () => {
 // createdAt — the service's addSet always defaults it to now().
 async function seedSet(params: {
 	userId: string
-	exerciseType?: string
+	exerciseType?: ExerciseType
 	reps?: number
 	createdAt?: Date
 }) {

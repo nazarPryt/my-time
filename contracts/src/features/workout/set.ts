@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { ExerciseTypeSchema } from './exercise-type'
+import { DEFAULT_EXERCISE_TYPE, ExerciseTypeSchema } from './exercise-type'
 
 export const CreateSetRequestSchema = z.object({
-	exerciseType: ExerciseTypeSchema.default('pushups'),
+	exerciseType: ExerciseTypeSchema.default(DEFAULT_EXERCISE_TYPE),
 	reps: z.number().int().positive(),
 })
 export type CreateSetRequest = z.infer<typeof CreateSetRequestSchema>
