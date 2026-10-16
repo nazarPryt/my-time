@@ -28,7 +28,9 @@ export function usePracticeNumberForm({ defaultValue, onSave }: Options) {
 	}, [defaultValue, reset])
 
 	function handleFormSubmit({ practiceNumber }: SetPracticeNumberRequest) {
-		if (defaultValue && practiceNumber !== defaultValue) {
+		if (practiceNumber === defaultValue) return
+
+		if (defaultValue) {
 			setPendingValue(practiceNumber)
 			return
 		}
