@@ -12,6 +12,8 @@ concurrency:
 
 env:
   BUN_VERSION: 1.4.2
+  # Required by web config validation in unit tests, Vite E2E, and build checks.
+  VITE_API_URL: http://localhost:3000
 
 jobs:
   lint:
