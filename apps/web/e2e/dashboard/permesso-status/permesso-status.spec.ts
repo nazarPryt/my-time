@@ -163,7 +163,7 @@ test.describe('Permesso status', () => {
 		await expect(permessoPage.historyRows.first()).toContainText(lastError)
 		await expect(permessoPage.historyRows.first()).toContainText('Scheduled')
 	})
-	test('enables an hour with timezone and confirms turning it off', async ({
+	test('confirms enabling an hour with timezone and turning it off', async ({
 		page,
 		permessoPage,
 	}) => {
@@ -172,8 +172,12 @@ test.describe('Permesso status', () => {
 			checkHours: [9, 12],
 		})
 		await permessoPage.goto()
+		await permessoPage.hour(12).click()
+		await permessoPage.confirmDialogCancelBtn.click()
+		await expect(permessoPage.hour(12)).toHaveAttribute('aria-pressed', 'false')
 		const enabled = page.waitForRequest(API_PERMESSO_SCHEDULE)
 		await permessoPage.hour(12).click()
+		await permessoPage.confirmDialogConfirmBtn.click()
 		const payload = (await enabled).postDataJSON()
 		expect(payload.checkHours).toEqual([9, 12])
 		expect(payload.timezone).toBe(
@@ -204,6 +208,7 @@ test.describe('Permesso status', () => {
 		)
 		await permessoPage.goto()
 		await permessoPage.hour(12).click()
+		await permessoPage.confirmDialogConfirmBtn.click()
 		await expect(permessoPage.error).toHaveText('Failed to update schedule')
 		await expect(permessoPage.hour(12)).toHaveAttribute('aria-pressed', 'false')
 		await mockPermessoResponse(page, API_PERMESSO_SCHEDULE, {
@@ -211,6 +216,7 @@ test.describe('Permesso status', () => {
 			checkHours: [9, 12],
 		})
 		await permessoPage.hour(12).click()
+		await permessoPage.confirmDialogConfirmBtn.click()
 		await expect(permessoPage.hour(12)).toHaveAttribute('aria-pressed', 'true')
 		await expect(permessoPage.error).toHaveCount(0)
 	})
