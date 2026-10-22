@@ -106,6 +106,10 @@ requests without writing real work sessions to the user's account.
 
 ## Installation and verification
 
+Keep desktop installation under the explicit `install:extension` script. Never
+name it `install`: Bun runs that lifecycle hook during dependency installation,
+including on CI runners without GNOME tools.
+
 Build artifacts live in ignored `dist/` and `build/` directories. Bake public
 server URL defaults into the generated GSettings schema using `VITE_API_URL`
 and `FRONTEND_WEB_URL` (fallback `VITE_WEB_URL`). Reuse deployment values and
