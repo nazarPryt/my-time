@@ -1,20 +1,22 @@
 import type {
 	SessionResponse,
 	SessionType,
+	TimerState,
 	TodaySummaryResponse,
 	WeeklySummaryResponse,
 } from 'contracts'
-import { endOfDay, startOfDay, subDays, subHours } from 'date-fns'
+import { SessionResponseSchema } from 'contracts'
+import { addDays, startOfDay, subDays } from 'date-fns'
 import {
 	buildDayRange,
 	computeCurrentStreak,
-	computeTodayStats,
 	groupCompletedWorkByDay,
 	toSessionResponse,
 } from './helpers'
 import { timeSessionsRepository } from './repository'
+import { buildTimerSnapshot, serverDay } from './timer-snapshot'
+import { buildTodaySummary } from './today-summary'
 
-const STALE_THRESHOLD_HOURS = 2
 const SUMMARY_DAYS = 30
 
 export const timeTrackerService = {
@@ -24,20 +26,28 @@ export const timeTrackerService = {
 	},
 
 	getToday: async (userId: string): Promise<TodaySummaryResponse> => {
-		// TODO: day boundaries use the API server's local timezone, not the
-		// user's — a session just after local midnight for a user ahead of the
-		// server's TZ can land in "yesterday" here. Needs a user-supplied
-		// timezone to fix properly; left as a follow-up.
 		const now = new Date()
+		const { start, end } = serverDay(now)
 		const sessions = await timeSessionsRepository.getTodaySessions(
 			userId,
-			startOfDay(now),
-			endOfDay(now),
+			start,
+			end,
 		)
-		const stats = computeTodayStats(sessions)
+		return buildTodaySummary(sessions.map(toSessionResponse), now)
+	},
+
+	getTimer: async (userId: string): Promise<TimerState> => {
+		const now = new Date()
+		const { start } = serverDay(now)
+		const { milliseconds, active } = await timeSessionsRepository.getTimer(
+			userId,
+			start,
+			now,
+		)
+		const activeSession = active ? SessionResponseSchema.parse(active) : null
 		return {
-			sessions: sessions.map(toSessionResponse),
-			...stats,
+			activeSession,
+			timer: buildTimerSnapshot(milliseconds, activeSession, now),
 		}
 	},
 
@@ -45,11 +55,6 @@ export const timeTrackerService = {
 		userId: string,
 		type: SessionType,
 	): Promise<SessionResponse> => {
-		await timeSessionsRepository.abandonStale(
-			userId,
-			subHours(new Date(), STALE_THRESHOLD_HOURS),
-		)
-
 		// A user can only have one open session at a time. create() is a
 		// conditional insert (DB-enforced via a partial unique index) rather
 		// than a separate check-then-insert, so concurrent/retried calls (e.g.
@@ -92,7 +97,7 @@ export const timeTrackerService = {
 	getWeeklySummary: async (userId: string): Promise<WeeklySummaryResponse> => {
 		const now = new Date()
 		const start = startOfDay(subDays(now, SUMMARY_DAYS - 1))
-		const end = endOfDay(now)
+		const end = addDays(startOfDay(now), 1)
 
 		const sessions = await timeSessionsRepository.getSessionsInRange(
 			userId,
@@ -100,7 +105,7 @@ export const timeTrackerService = {
 			end,
 		)
 
-		const byDay = groupCompletedWorkByDay(sessions)
+		const byDay = groupCompletedWorkByDay(sessions, start, end)
 		const days = buildDayRange(now, SUMMARY_DAYS, byDay)
 		const currentStreakDays = computeCurrentStreak(days)
 

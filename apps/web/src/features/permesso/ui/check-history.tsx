@@ -2,6 +2,7 @@ import type { PermessoCheckHistoryResponse } from 'contracts'
 import { format } from 'date-fns'
 import { CheckCircle2, History, XCircle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	history: PermessoCheckHistoryResponse
@@ -19,7 +20,10 @@ export function CheckHistory({ history, loading }: Props) {
 
 	if (history.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center gap-2 h-24 text-center px-6">
+			<div
+				data-testid={PERMESSO_TEST_IDS.historyEmpty}
+				className="flex flex-col items-center justify-center gap-2 h-24 text-center px-6"
+			>
 				<History size={20} className="text-muted-foreground/40" />
 				<span className="text-xs text-muted-foreground">No checks yet</span>
 			</div>
@@ -29,14 +33,18 @@ export function CheckHistory({ history, loading }: Props) {
 	return (
 		<ul className="divide-y divide-border">
 			{history.map((entry) => (
-				<li key={entry.id} className="flex items-center gap-3 px-4 py-3">
+				<li
+					data-testid={PERMESSO_TEST_IDS.historyRow}
+					key={entry.id}
+					className="flex items-center gap-3 px-4 py-3"
+				>
 					{entry.success ? (
 						<CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
 					) : (
 						<XCircle size={15} className="text-destructive shrink-0" />
 					)}
 					<div className="flex-1 min-w-0">
-						<p className="text-sm text-foreground truncate">
+						<p className="mb-1 text-sm text-foreground whitespace-pre-wrap wrap-anywhere">
 							{entry.success ? entry.status : entry.error}
 						</p>
 						<p className="text-xs text-muted-foreground">

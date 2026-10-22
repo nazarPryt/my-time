@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { SETTINGS_TEST_IDS } from '../testIds'
 
 function SettingsSection({
 	title,
@@ -10,7 +11,10 @@ function SettingsSection({
 	children: ReactNode
 }) {
 	return (
-		<section className="py-6 border-b border-border last:border-0">
+		<section
+			data-testid={SETTINGS_TEST_IDS.section}
+			className="py-6 border-b border-border last:border-0"
+		>
 			<div className="flex flex-col sm:flex-row gap-3 sm:gap-8">
 				<div className="sm:w-52 shrink-0">
 					<h2 className="text-sm font-semibold text-foreground">{title}</h2>
@@ -28,7 +32,10 @@ function SettingsSection({
 
 function Placeholder({ label }: { label: string }) {
 	return (
-		<div className="h-9 rounded-md border border-dashed border-border flex items-center px-3">
+		<div
+			data-testid={SETTINGS_TEST_IDS.placeholder}
+			className="h-9 rounded-md border border-dashed border-border flex items-center px-3"
+		>
 			<span className="text-xs text-muted-foreground/50">{label}</span>
 		</div>
 	)
@@ -36,7 +43,7 @@ function Placeholder({ label }: { label: string }) {
 
 export function SettingsPage() {
 	return (
-		<div className="h-full flex flex-col">
+		<div data-testid={SETTINGS_TEST_IDS.page} className="h-full flex flex-col">
 			{/* Page header */}
 			<header className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0">
 				<h1 className="text-sm font-semibold text-foreground tracking-tight">

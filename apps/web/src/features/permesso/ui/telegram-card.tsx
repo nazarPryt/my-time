@@ -12,6 +12,7 @@ import {
 	CardTitle,
 } from '@/shared/ui/card'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	status: PermessoStatusResponse
@@ -35,19 +36,20 @@ export function TelegramCard({
 	return (
 		<>
 			<Card>
-				<CardHeader>
+				<CardHeader className="flex flex-col gap-3 sm:grid sm:gap-1">
 					<CardTitle className="flex items-center gap-2">
-						<Send size={16} className="text-muted-foreground" />
+						<Send size={16} className="text-muted-foreground shrink-0" />
 						Telegram notifications
 					</CardTitle>
 					<CardDescription>
 						Get a message on Telegram after every check.
 					</CardDescription>
-					<CardAction>
+					<CardAction className="w-full sm:w-auto [&_button]:w-full [&_button]:min-h-10 sm:[&_button]:w-auto sm:[&_button]:min-h-0">
 						{status.telegramConnected ? (
 							<Button
 								size="sm"
 								variant="outline"
+								data-testid={PERMESSO_TEST_IDS.telegramDisconnect}
 								onClick={() => setConfirmingDisconnect(true)}
 								disabled={disconnecting}
 								isLoading={disconnecting}
@@ -57,6 +59,7 @@ export function TelegramCard({
 						) : (
 							<Button
 								size="sm"
+								data-testid={PERMESSO_TEST_IDS.telegramConnect}
 								onClick={onConnect}
 								disabled={connecting}
 								isLoading={connecting}
@@ -68,15 +71,35 @@ export function TelegramCard({
 				</CardHeader>
 				<CardContent className="space-y-2">
 					{status.telegramConnected ? (
-						<Badge variant="success">Connected</Badge>
+						<Badge
+							data-testid={PERMESSO_TEST_IDS.telegramStatus}
+							variant="success"
+						>
+							Connected
+						</Badge>
 					) : connecting ? (
-						<p className="text-sm text-muted-foreground">
+						<p
+							data-testid={PERMESSO_TEST_IDS.telegramPending}
+							className="text-sm text-muted-foreground"
+						>
 							Opened Telegram — tap "Start" in the chat to finish connecting.
 						</p>
 					) : (
-						<Badge variant="destructive">Not connected</Badge>
+						<Badge
+							data-testid={PERMESSO_TEST_IDS.telegramStatus}
+							variant="destructive"
+						>
+							Not connected
+						</Badge>
 					)}
-					{error && <p className="text-sm text-destructive">{error}</p>}
+					{error && (
+						<p
+							data-testid={PERMESSO_TEST_IDS.telegramError}
+							className="text-sm text-destructive"
+						>
+							{error}
+						</p>
+					)}
 				</CardContent>
 			</Card>
 

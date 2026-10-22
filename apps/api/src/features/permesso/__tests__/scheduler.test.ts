@@ -8,6 +8,7 @@ import {
 	clearFixtureMocks,
 	sendTelegramCheckResultMock,
 } from './fixtures'
+import { DEFAULT_MOCK_STATUS, TEST_PRACTICE_NUMBER } from './test-data'
 
 beforeAll(async () => {
 	await runMigrations()
@@ -67,7 +68,7 @@ describe('runScheduledChecks', () => {
 		const baseRow = {
 			id: 'sub-1',
 			userId: 'user-1',
-			practiceNumber: 'AB12345678',
+			practiceNumber: TEST_PRACTICE_NUMBER,
 			checkHours: [dueHourUtc],
 			timezone: 'UTC',
 			telegramChatId: '111' as string | null,
@@ -117,12 +118,12 @@ describe('runScheduledChecks', () => {
 			expect(recordCheckResultSpy).toHaveBeenCalledTimes(2)
 			expect(recordCheckResultSpy).toHaveBeenCalledWith(
 				'user-1',
-				{ success: true, status: 'default mock status' },
+				{ success: true, status: DEFAULT_MOCK_STATUS },
 				'scheduled',
 			)
 			expect(recordCheckResultSpy).toHaveBeenCalledWith(
 				'user-2',
-				{ success: true, status: 'default mock status' },
+				{ success: true, status: DEFAULT_MOCK_STATUS },
 				'scheduled',
 			)
 			expect(recordCheckResultSpy).not.toHaveBeenCalledWith(
@@ -136,7 +137,7 @@ describe('runScheduledChecks', () => {
 			expect(sendTelegramCheckResultMock).toHaveBeenCalledWith(
 				'user-1',
 				'111',
-				{ success: true, status: 'default mock status' },
+				{ success: true, status: DEFAULT_MOCK_STATUS },
 			)
 		} finally {
 			listAllSpy.mockRestore()

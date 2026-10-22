@@ -22,3 +22,49 @@ export async function mockTimeTrackerWeekly(
 		}),
 	)
 }
+
+export const MOCK_WEEKLY_WITH_SESSIONS: WeeklySummaryResponse = {
+	days: [
+		{
+			date: new Date('2026-10-12T00:00:00Z'),
+			totalWorkSeconds: 5400,
+			sessionsCompleted: 2,
+		},
+		{
+			date: new Date('2026-10-11T00:00:00Z'),
+			totalWorkSeconds: 0,
+			sessionsCompleted: 0,
+		},
+		{
+			date: new Date('2026-10-10T00:00:00Z'),
+			totalWorkSeconds: 3600,
+			sessionsCompleted: 1,
+		},
+	],
+	currentStreakDays: 1,
+}
+
+export async function mockTimeTrackerWeeklyFailure(page: Page) {
+	await page.route(API_TIME_TRACKER_WEEKLY, (route) =>
+		route.fulfill({
+			status: 503,
+			contentType: 'application/json',
+			body: JSON.stringify({ message: 'Unavailable' }),
+		}),
+	)
+}
+
+export async function holdTimeTrackerWeekly(page: Page) {
+	let release!: () => void
+	const held = new Promise<void>((resolve) => {
+		release = resolve
+	})
+	await page.route(API_TIME_TRACKER_WEEKLY, async (route) => {
+		await held
+		await route.fulfill({
+			contentType: 'application/json',
+			body: JSON.stringify(MOCK_WEEKLY_WITH_SESSIONS),
+		})
+	})
+	return { release: () => release() }
+}

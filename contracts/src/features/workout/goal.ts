@@ -1,8 +1,10 @@
 import { z } from 'zod'
-import { ExerciseTypeSchema } from './exercise-type'
+import { DEFAULT_EXERCISE_TYPE, ExerciseTypeSchema } from './exercise-type'
+
+export const DEFAULT_WORKOUT_GOAL_REPS = 100
 
 export const UpdateGoalRequestSchema = z.object({
-	exerciseType: ExerciseTypeSchema.default('pushups'),
+	exerciseType: ExerciseTypeSchema.default(DEFAULT_EXERCISE_TYPE),
 	targetReps: z.number().int().positive(),
 })
 export type UpdateGoalRequest = z.infer<typeof UpdateGoalRequestSchema>

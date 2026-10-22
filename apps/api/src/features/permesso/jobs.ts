@@ -1,10 +1,9 @@
 import { Cron } from 'croner'
 import pLimit from 'p-limit'
-import { checkPermessoStatus } from './checker'
+import { CHECK_CONCURRENCY, CHECK_CRON_SCHEDULE } from './constants'
+import { checkPermessoStatus } from './portal/checker'
 import { permessoRepository } from './repository'
-import { sendTelegramCheckResult } from './telegram-bot'
-
-const CHECK_CONCURRENCY = 2
+import { sendTelegramCheckResult } from './telegram/bot'
 
 export function getHourInTimeZone(date: Date, timeZone: string): number {
 	try {
@@ -55,5 +54,5 @@ export async function runScheduledChecks() {
 // current local hour (per-subscription timezone) is in their checkHours —
 // each user picks their own check times from the Permesso Status page.
 export function schedulePermessoJobs() {
-	new Cron('0 * * * *', runScheduledChecks)
+	new Cron(CHECK_CRON_SCHEDULE, runScheduledChecks)
 }

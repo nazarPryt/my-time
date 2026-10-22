@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { db } from '@db'
 import { workoutSets } from '@db/schema'
+import type { ExerciseType } from 'contracts'
 import {
 	addDays,
 	addMonths,
@@ -11,7 +12,7 @@ import {
 	subDays,
 	subMonths,
 } from 'date-fns'
-import { eq } from 'drizzle-orm'
+import { eq, type SQL, sql } from 'drizzle-orm'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { workoutGoalsRepository, workoutSetsRepository } from '../repository'
 import { OTHER_USER, registerAndGetToken, VALID_USER } from './fixtures'
@@ -31,7 +32,7 @@ afterEach(async () => {
 // — the column itself is plain text with no DB-level check constraint.
 async function seedSet(params: {
 	userId: string
-	exerciseType?: string
+	exerciseType?: ExerciseType | SQL
 	reps?: number
 	createdAt?: Date
 }) {
@@ -119,7 +120,7 @@ describe('workoutSetsRepository', () => {
 			const { userId } = await registerAndGetToken(VALID_USER)
 			const now = new Date()
 
-			await seedSet({ userId, exerciseType: 'situps', createdAt: now })
+			await seedSet({ userId, exerciseType: sql`'situps'`, createdAt: now })
 			const pushupSet = await seedSet({ userId, createdAt: now })
 
 			const sets = await workoutSetsRepository.getTodaySets(
@@ -200,7 +201,7 @@ describe('workoutSetsRepository', () => {
 			})
 			const todaySitups = await seedSet({
 				userId,
-				exerciseType: 'situps',
+				exerciseType: sql`'situps'`,
 				createdAt: now,
 			})
 
@@ -291,7 +292,7 @@ describe('workoutSetsRepository', () => {
 			const now = new Date()
 
 			await seedSet({ userId: otherUserId, createdAt: now })
-			await seedSet({ userId, exerciseType: 'situps', createdAt: now })
+			await seedSet({ userId, exerciseType: sql`'situps'`, createdAt: now })
 
 			const sets = await workoutSetsRepository.getMonthSets(
 				userId,

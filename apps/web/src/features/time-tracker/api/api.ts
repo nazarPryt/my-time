@@ -1,12 +1,14 @@
 import type { SessionType } from 'contracts'
 import { api } from '@/shared/lib/api'
 
-export async function fetchActiveSession() {
-	return api['time-tracker'].active.get()
-}
-
 export async function fetchTodaySummary(signal?: AbortSignal) {
 	return api['time-tracker'].today.get({ fetch: { signal } })
+}
+
+export async function fetchActiveSession() {
+	const { data, error } = await api['time-tracker'].active.get()
+	if (error) throw new Error('Unable to check the current session.')
+	return data ?? null
 }
 
 export async function startSession(type: SessionType) {

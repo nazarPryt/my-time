@@ -1,68 +1,74 @@
-import { API_PREFIX, AUTH_ROUTES, RefreshResponseSchema } from 'contracts'
+import { API_PREFIX, AUTH_ROUTES } from 'contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
+import {
+	type FetchResponse,
+	fetchJsonResponse,
+	fetchStreamResponse,
+} from './fetch-response'
+import { refreshAccessToken } from './refresh-access-token'
 import { tokenStorage } from './token-storage'
 
-const TIMEOUT_MS = 15_000
-const REFRESH_URL = `${WEB_CONFIG.API_URL}${API_PREFIX}${AUTH_ROUTES.prefix}${AUTH_ROUTES.refresh}`
+const AUTH_PREFIX = `${API_PREFIX}${AUTH_ROUTES.prefix}`
+const PUBLIC_AUTH_PATHS = new Set(
+	[AUTH_ROUTES.refresh, AUTH_ROUTES.login, AUTH_ROUTES.register].map(
+		(path) => `${AUTH_PREFIX}${path}`,
+	),
+)
 
-function timeoutSignal(existing?: AbortSignal | null): AbortSignal {
-	const timeout = AbortSignal.timeout(TIMEOUT_MS)
-	return existing ? AbortSignal.any([existing, timeout]) : timeout
+function requestHeaders(input: RequestInfo | URL, init?: RequestInit): Headers {
+	return new Headers(
+		init?.headers ?? (input instanceof Request ? input.headers : undefined),
+	)
 }
 
-// Shared promise so concurrent 401s trigger only one refresh call
-let refreshPromise: Promise<boolean> | null = null
+function requestSignal(
+	input: RequestInfo | URL,
+	init?: RequestInit,
+): AbortSignal | undefined {
+	return init?.signal ?? (input instanceof Request ? input.signal : undefined)
+}
 
-async function refreshTokens(): Promise<boolean> {
-	const response = await fetch(REFRESH_URL, {
-		method: 'POST',
-		credentials: 'include',
-		signal: AbortSignal.timeout(TIMEOUT_MS),
-	})
+async function authenticatedFetch(
+	input: RequestInfo | URL,
+	init: RequestInit | undefined,
+	send: FetchResponse,
+): Promise<Response> {
+	const response = await send(input, init)
+	if (response.status !== 401) return response
+	const url = input instanceof Request ? input.url : input.toString()
+	if (PUBLIC_AUTH_PATHS.has(new URL(url, WEB_CONFIG.API_URL).pathname))
+		return response
+	const signal = requestSignal(input, init)
+	if (signal?.aborted) return response
 
-	if (!response.ok) {
-		tokenStorage.clear()
-		return false
+	const headers = requestHeaders(input, init)
+	const token = tokenStorage.getAccessToken()
+	const alreadyRotated =
+		token && headers.get('authorization') !== `Bearer ${token}`
+	try {
+		if (!alreadyRotated && !(await refreshAccessToken())) return response
+	} catch (error) {
+		await response.body?.cancel()
+		throw error
 	}
-
-	const raw = await response.json()
-	const data = RefreshResponseSchema.parse(raw)
-	tokenStorage.setAccessToken(data.tokens.accessToken)
-	return true
+	await response.body?.cancel()
+	signal?.throwIfAborted()
+	const refreshedToken = tokenStorage.getAccessToken()
+	if (!refreshedToken) return response
+	headers.set('authorization', `Bearer ${refreshedToken}`)
+	return send(input, { ...init, headers })
 }
 
-export async function fetchWithRefresh(
+export function fetchWithRefresh(
 	input: RequestInfo | URL,
 	init?: RequestInit,
 ): Promise<Response> {
-	const response = await fetch(input, {
-		...init,
-		credentials: 'include',
-		signal: timeoutSignal(init?.signal),
-	})
+	return authenticatedFetch(input, init, fetchJsonResponse)
+}
 
-	if (response.status !== 401) return response
-
-	// Don't intercept the refresh endpoint itself — would cause infinite loop
-	const url = input instanceof Request ? input.url : input.toString()
-	if (url.includes(REFRESH_URL)) return response
-
-	// Deduplicate: reuse in-flight refresh if one is already running
-	refreshPromise ??= refreshTokens()
-		.catch(() => false)
-		.finally(() => {
-			refreshPromise = null
-		})
-	const refreshed = await refreshPromise
-
-	if (!refreshed) return response
-
-	// Retry original request with the new access token
-	const newToken = tokenStorage.getAccessToken()
-	return fetch(input, {
-		...init,
-		credentials: 'include',
-		headers: { ...init?.headers, authorization: `Bearer ${newToken}` },
-		signal: timeoutSignal(init?.signal),
-	})
+export function fetchStreamWithRefresh(
+	input: RequestInfo | URL,
+	init?: RequestInit,
+): Promise<Response> {
+	return authenticatedFetch(input, init, fetchStreamResponse)
 }

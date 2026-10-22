@@ -1,0 +1,8 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"types": ["bun-types"],
+		"lib": ["ES2022", "DOM"]
+	},
+	"include": ["integration", "src/ambient.d.ts"]
+}

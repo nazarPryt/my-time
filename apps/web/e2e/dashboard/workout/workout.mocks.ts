@@ -72,3 +72,44 @@ export async function mockWorkoutProgress(
 		}),
 	)
 }
+
+export const API_WORKOUT_CLEAR_SETS = `${base}${WORKOUT_ROUTES.sets}*`
+
+export async function mockWorkoutMutation(
+	page: Page,
+	path: string,
+	method: string,
+	body: unknown = {},
+	status = 200,
+) {
+	await page.route(path, (route) => {
+		if (route.request().method() !== method) return route.fallback()
+		return route.fulfill({
+			status,
+			contentType: 'application/json',
+			body: JSON.stringify(body),
+		})
+	})
+}
+
+/** Expose optimistic state before releasing a failed mutation response. */
+export async function holdFailedWorkoutMutation(
+	page: Page,
+	path: string,
+	method: string,
+) {
+	let release!: () => void
+	const held = new Promise<void>((resolve) => {
+		release = resolve
+	})
+	await page.route(path, async (route) => {
+		if (route.request().method() !== method) return route.fallback()
+		await held
+		await route.fulfill({
+			status: 503,
+			contentType: 'application/json',
+			body: JSON.stringify({ message: 'Unavailable' }),
+		})
+	})
+	return () => release()
+}

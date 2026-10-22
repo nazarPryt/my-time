@@ -1,3 +1,4 @@
+import { DEFAULT_EXERCISE_TYPE, type ExerciseType } from 'contracts'
 import {
 	index,
 	integer,
@@ -15,7 +16,10 @@ export const workoutSets = pgTable(
 		userId: uuid('user_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
-		exerciseType: text('exercise_type').notNull().default('pushups'),
+		exerciseType: text('exercise_type')
+			.$type<ExerciseType>()
+			.notNull()
+			.default(DEFAULT_EXERCISE_TYPE),
 		reps: integer('reps').notNull(),
 		createdAt: timestamp('created_at').notNull().defaultNow(),
 	},

@@ -366,35 +366,33 @@ describe('POST /time-tracker/start', () => {
 		expect(today.sessions).toHaveLength(1)
 	})
 
-	it('abandons a stale session (>2 h old) when starting a new one', async () => {
+	it('preserves a long-running session when Start is retried', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
-		// Seed an old open session (3 hours ago — past the 2-hour threshold)
+		// Age alone must not discard recorded work.
 		const staleStart = subHours(new Date(), 3)
 		const staleSession = await seedActiveSession(userId, staleStart)
 
-		// Start a new session — should abandon the stale one
+		// Start is idempotent even after hours of work.
 		const { status } = await api['time-tracker'].start.post(
 			{ type: 'work' },
 			{ headers: authHeaders(token) },
 		)
 		expect(status).toBe(200)
 
-		// The new session is active; the stale one is no longer active
+		// The original session remains active.
 		const { data: activeData } = await api['time-tracker'].active.get({
 			headers: authHeaders(token),
 		})
 		const activeSession = SessionResponseSchema.parse(activeData)
-		expect(activeSession.id).not.toBe(staleSession.id)
+		expect(activeSession.id).toBe(staleSession.id)
 
-		// If the stale session is in today's list it should be abandoned
+		// Today's list retains the original work.
 		const { data: todayData } = await api['time-tracker'].today.get({
 			headers: authHeaders(token),
 		})
 		const summary = TodaySummaryResponseSchema.parse(todayData)
 		const stale = summary.sessions.find((s) => s.id === staleSession.id)
-		if (stale) {
-			expect(stale.abandonedAt).not.toBeNull()
-		}
+		expect(stale?.abandonedAt).toBeNull()
 	})
 
 	it('does NOT abandon a fresh session (<2 h old) when starting another', async () => {

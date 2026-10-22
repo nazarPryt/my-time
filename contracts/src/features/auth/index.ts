@@ -1,3 +1,4 @@
+export * from './desktop-pairing'
 export * from './errors'
 export * from './extension-token'
 export * from './login'

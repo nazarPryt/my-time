@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import type { TimeChartEntry } from '../model/store'
 import { useTimeTrackerStore } from '../model/store'
+import { TIME_TRACKER_TEST_IDS as TT } from '../testIds'
 
 function formatDuration(seconds: number): string {
 	const h = Math.floor(seconds / 3600)
@@ -41,7 +42,10 @@ export function TimeProgressChart() {
 	const yTicks = Array.from({ length: topTick + 1 }, (_, i) => i)
 
 	return (
-		<div className="rounded-xl border border-border bg-card p-5">
+		<div
+			data-testid={TT.progressChart}
+			className="rounded-xl border border-border bg-card p-5"
+		>
 			<div className="mb-4">
 				<p className="text-xs font-medium tracking-wide uppercase text-muted-foreground/70">
 					Work time
@@ -50,7 +54,10 @@ export function TimeProgressChart() {
 					Last 30 days
 				</p>
 				{!loading && totalSeconds > 0 && (
-					<p className="text-xs text-muted-foreground mt-1">
+					<p
+						data-testid={TT.chartSummary}
+						className="text-xs text-muted-foreground mt-1"
+					>
 						{formatDuration(totalSeconds)} total · {activeDays} active{' '}
 						{activeDays === 1 ? 'day' : 'days'}
 					</p>
@@ -60,11 +67,19 @@ export function TimeProgressChart() {
 			<div className="h-40">
 				{loading ? (
 					<div className="h-full flex items-center justify-center">
-						<span className="text-xs text-muted-foreground">Loading…</span>
+						<span
+							data-testid={TT.chartLoading}
+							className="text-xs text-muted-foreground"
+						>
+							Loading…
+						</span>
 					</div>
 				) : totalSeconds === 0 ? (
 					<div className="h-full flex items-center justify-center">
-						<span className="text-xs text-muted-foreground">
+						<span
+							data-testid={TT.chartEmpty}
+							className="text-xs text-muted-foreground"
+						>
 							No sessions in the last 30 days
 						</span>
 					</div>
@@ -100,7 +115,10 @@ export function TimeProgressChart() {
 									if (!active || !payload?.length) return null
 									const entry = payload[0].payload as TimeChartEntry
 									return (
-										<div className="rounded-lg border border-border bg-card px-3 py-2 shadow-md text-xs">
+										<div
+											data-testid={TT.chartTooltip}
+											className="rounded-lg border border-border bg-card px-3 py-2 shadow-md text-xs"
+										>
 											<p className="font-semibold text-foreground">
 												{entry.label}
 											</p>
@@ -127,6 +145,7 @@ export function TimeProgressChart() {
 									const opacity = isToday ? 1 : hours > 0 ? 0.75 : 0.2
 									return (
 										<Rectangle
+											data-testid={TT.chartBar}
 											{...props}
 											fill={fill}
 											opacity={opacity}

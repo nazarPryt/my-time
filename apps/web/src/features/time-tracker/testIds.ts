@@ -1,7 +1,15 @@
 export const TIME_TRACKER_TEST_IDS = {
+	progressChart: 'tt-progress-chart',
+	chartLoading: 'tt-chart-loading',
+	chartEmpty: 'tt-chart-empty',
+	chartSummary: 'tt-chart-summary',
+	chartBar: 'tt-chart-bar',
+	chartTooltip: 'tt-chart-tooltip',
 	// Page shell
 	page: 'time-tracker-page',
+	desktopStatusBadge: 'tt-desktop-status-badge',
 	loading: 'time-tracker-loading',
+	error: 'time-tracker-error',
 
 	// Timer card
 	statusBadge: 'tt-status-badge',

@@ -6,7 +6,8 @@ import type { RegisterRequest } from 'contracts'
 import { AuthResponseSchema } from 'contracts'
 import { eq } from 'drizzle-orm'
 import { app } from '@/app'
-import type { PermessoCheckResult } from '../checker'
+import type { PermessoCheckResult } from '../types'
+import { DEFAULT_MOCK_STATUS } from './test-data'
 
 // ---------------------------------------------------------------------------
 // Eden Treaty client
@@ -29,13 +30,13 @@ const api = treaty(app, { parseDate: false }).api.v1
 // ---------------------------------------------------------------------------
 // Module mocks
 //
-// checker.ts drives a real headless browser against the government portal
-// and telegram-bot.ts talks to the real Telegram Bot API — neither should be
+// portal/checker.ts drives a real headless browser against the government portal
+// and telegram/bot.ts talks to the real Telegram Bot API — neither should be
 // hit by these tests. Both are mocked once at module scope; individual tests
 // override behaviour with mockImplementationOnce/mockReturnValueOnce. Every
 // test file that imports this module for its side effects gets the same
 // mocks — bun:test's module registry is process-wide, so each file that
-// touches `./checker` or `./telegram-bot` needs these in place before it
+// touches `../portal/checker` or `../telegram/bot` needs these in place before it
 // imports anything that transitively imports them (routes.ts, service.ts,
 // jobs.ts).
 // ---------------------------------------------------------------------------
@@ -43,10 +44,10 @@ const api = treaty(app, { parseDate: false }).api.v1
 export const checkPermessoStatusMock = mock(
 	async (_practiceNumber: string): Promise<PermessoCheckResult> => ({
 		success: true,
-		status: 'default mock status',
+		status: DEFAULT_MOCK_STATUS,
 	}),
 )
-mock.module('../checker', () => ({
+mock.module('../portal/checker', () => ({
 	checkPermessoStatus: checkPermessoStatusMock,
 }))
 
@@ -58,7 +59,7 @@ export const sendTelegramUnsubscribedNoticeMock = mock(async () => {})
 export const buildTelegramDeepLinkMock = mock(
 	(_linkToken: string): string | null => null,
 )
-mock.module('../telegram-bot', () => ({
+mock.module('../telegram/bot', () => ({
 	sendTelegramCheckResult: sendTelegramCheckResultMock,
 	sendTelegramUnsubscribedNotice: sendTelegramUnsubscribedNoticeMock,
 	buildTelegramDeepLink: buildTelegramDeepLinkMock,

@@ -5,6 +5,7 @@ import type {
 	WeeklySummaryResponse,
 } from 'contracts'
 import { API_PREFIX, TIME_TRACKER_ROUTES } from 'contracts'
+import { mockTimeEvents, pushTimeSession } from './session-stream.mocks'
 
 /** Convert Elysia route params (`:id`) to Playwright glob wildcards (`*`). */
 const glob = (route: string) => route.replace(/:[^/]+/g, '*')
@@ -104,11 +105,20 @@ const json = (body: unknown, status = 200) => ({
 	body: JSON.stringify(body),
 })
 
+export async function mockTimeFailure(page: Page, path: string) {
+	await page.route(path, (route) => {
+		if (path === API_TIME_DELETE && route.request().method() !== 'DELETE')
+			return route.fallback()
+		return route.fulfill(json({ message: 'Unavailable' }, 503))
+	})
+}
+
 /** GET /active — pass `null` for the idle (no running session) case. */
 export async function mockTimeActive(
 	page: Page,
 	data: SessionResponse | null = null,
 ) {
+	await mockTimeEvents(page, data)
 	await page.route(API_TIME_ACTIVE, (route) => route.fulfill(json(data)))
 }
 
@@ -135,6 +145,7 @@ export async function mockTimeStart(
 ) {
 	await page.route(API_TIME_START, (route) => {
 		if (route.request().method() !== 'POST') return route.fallback()
+		pushTimeSession(page, data)
 		return route.fulfill(json(data))
 	})
 }
@@ -149,6 +160,7 @@ export async function mockTimeEnd(
 ) {
 	await page.route(API_TIME_END, (route) => {
 		if (route.request().method() !== 'PATCH') return route.fallback()
+		pushTimeSession(page, null)
 		return route.fulfill(json(data))
 	})
 }
@@ -167,6 +179,7 @@ export async function mockTimeDelete(
 ) {
 	await page.route(API_TIME_DELETE, (route) => {
 		if (route.request().method() !== 'DELETE') return route.fallback()
+		pushTimeSession(page, null)
 		return route.fulfill(json(data))
 	})
 }

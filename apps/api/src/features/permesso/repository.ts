@@ -1,7 +1,8 @@
 import { db } from '@db'
 import { permessoChecks, permessoSubscriptions } from '@db/schema'
 import { desc, eq } from 'drizzle-orm'
-import type { PermessoCheckResult } from './checker'
+import { DEFAULT_HISTORY_LIMIT } from './constants'
+import type { PermessoCheckResult } from './types'
 
 export const permessoRepository = {
 	getByUserId: async (userId: string) => {
@@ -70,7 +71,7 @@ export const permessoRepository = {
 		return row ?? null
 	},
 
-	listHistory: async (userId: string, limit = 20) => {
+	listHistory: async (userId: string, limit = DEFAULT_HISTORY_LIMIT) => {
 		return db
 			.select()
 			.from(permessoChecks)

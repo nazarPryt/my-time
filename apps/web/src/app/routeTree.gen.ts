@@ -21,6 +21,7 @@ import { Route as DashboardSiteBlockingRouteImport } from './routes/dashboard/si
 import { Route as DashboardTimeTrackerRouteImport } from './routes/dashboard/time-tracker'
 import { Route as DashboardWorkoutRouteImport } from './routes/dashboard/workout'
 import { Route as TestErrorRouteImport } from './routes/test/error'
+import { Route as DashboardTimeTrackerDesktopRouteImport } from './routes/dashboard/time-tracker_.desktop'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,12 @@ const TestErrorRoute = TestErrorRouteImport.update({
   path: '/test/error',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardTimeTrackerDesktopRoute =
+  DashboardTimeTrackerDesktopRouteImport.update({
+    id: '/time-tracker_/desktop',
+    path: '/time-tracker/desktop',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/time-tracker/desktop': typeof DashboardTimeTrackerDesktopRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/time-tracker/desktop': typeof DashboardTimeTrackerDesktopRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/dashboard/workout': typeof DashboardWorkoutRoute
   '/test/error': typeof TestErrorRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/time-tracker_/desktop': typeof DashboardTimeTrackerDesktopRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/dashboard/workout'
     | '/test/error'
     | '/dashboard/'
+    | '/dashboard/time-tracker/desktop'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/dashboard/workout'
     | '/test/error'
     | '/dashboard'
+    | '/dashboard/time-tracker/desktop'
   id:
     | '__root__'
     | '/'
@@ -167,6 +179,7 @@ export interface FileRouteTypes {
     | '/dashboard/workout'
     | '/test/error'
     | '/dashboard/'
+    | '/dashboard/time-tracker_/desktop'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestErrorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/time-tracker_/desktop': {
+      id: '/dashboard/time-tracker_/desktop'
+      path: '/time-tracker/desktop'
+      fullPath: '/dashboard/time-tracker/desktop'
+      preLoaderRoute: typeof DashboardTimeTrackerDesktopRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
@@ -284,6 +304,7 @@ interface DashboardRouteChildren {
   DashboardTimeTrackerRoute: typeof DashboardTimeTrackerRoute
   DashboardWorkoutRoute: typeof DashboardWorkoutRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardTimeTrackerDesktopRoute: typeof DashboardTimeTrackerDesktopRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -293,6 +314,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTimeTrackerRoute: DashboardTimeTrackerRoute,
   DashboardWorkoutRoute: DashboardWorkoutRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardTimeTrackerDesktopRoute: DashboardTimeTrackerDesktopRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

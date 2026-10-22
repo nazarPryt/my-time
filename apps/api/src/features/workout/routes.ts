@@ -1,18 +1,17 @@
 import { authMacro } from '@shared/auth-macro'
 import {
 	CreateSetRequestSchema,
-	ExerciseTypeSchema,
+	ExerciseTypeQuerySchema,
+	GoalResponseSchema,
 	ProgressQuerySchema,
+	ProgressResponseSchema,
+	SetResponseSchema,
+	TodayResponseSchema,
 	UpdateGoalRequestSchema,
 	WORKOUT_ROUTES,
 } from 'contracts'
 import { Elysia } from 'elysia'
-import { z } from 'zod'
 import { workoutService } from './service'
-
-const exerciseTypeQuery = z.object({
-	exerciseType: ExerciseTypeSchema.default('pushups'),
-})
 
 export const workoutPlugin = new Elysia({ prefix: WORKOUT_ROUTES.prefix })
 	.use(authMacro)
@@ -23,14 +22,17 @@ export const workoutPlugin = new Elysia({ prefix: WORKOUT_ROUTES.prefix })
 				async ({ userId, query }) => {
 					return workoutService.getToday(userId, query.exerciseType)
 				},
-				{ query: exerciseTypeQuery },
+				{
+					query: ExerciseTypeQuerySchema,
+					response: { 200: TodayResponseSchema },
+				},
 			)
 			.post(
 				WORKOUT_ROUTES.sets,
 				async ({ userId, body }) => {
 					return workoutService.addSet(userId, body.exerciseType, body.reps)
 				},
-				{ body: CreateSetRequestSchema },
+				{ body: CreateSetRequestSchema, response: { 200: SetResponseSchema } },
 			)
 			.delete(WORKOUT_ROUTES.setById, async ({ userId, params }) => {
 				await workoutService.deleteSet(userId, params.id)
@@ -40,7 +42,7 @@ export const workoutPlugin = new Elysia({ prefix: WORKOUT_ROUTES.prefix })
 				async ({ userId, query }) => {
 					await workoutService.resetToday(userId, query.exerciseType)
 				},
-				{ query: exerciseTypeQuery },
+				{ query: ExerciseTypeQuerySchema },
 			)
 			.put(
 				WORKOUT_ROUTES.goal,
@@ -51,7 +53,10 @@ export const workoutPlugin = new Elysia({ prefix: WORKOUT_ROUTES.prefix })
 						body.targetReps,
 					)
 				},
-				{ body: UpdateGoalRequestSchema },
+				{
+					body: UpdateGoalRequestSchema,
+					response: { 200: GoalResponseSchema },
+				},
 			)
 			.get(
 				WORKOUT_ROUTES.progress,
@@ -63,6 +68,9 @@ export const workoutPlugin = new Elysia({ prefix: WORKOUT_ROUTES.prefix })
 						query.month,
 					)
 				},
-				{ query: ProgressQuerySchema },
+				{
+					query: ProgressQuerySchema,
+					response: { 200: ProgressResponseSchema },
+				},
 			),
 	)

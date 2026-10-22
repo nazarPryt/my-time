@@ -1,11 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import {
-	PRACTICE_NUMBER_HINT,
-	type SetPracticeNumberRequest,
-	SetPracticeNumberRequestSchema,
-} from 'contracts'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { PRACTICE_NUMBER_HINT } from 'contracts'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
 import {
@@ -15,6 +8,8 @@ import {
 	FieldLabel,
 } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
+import { usePracticeNumberForm } from '../model/use-practice-number-form'
+import { PERMESSO_TEST_IDS } from '../testIds'
 
 type Props = {
 	defaultValue: string
@@ -29,36 +24,16 @@ export function PracticeNumberForm({
 }: Props) {
 	const {
 		register,
-		handleSubmit,
-		reset,
-		formState: { errors },
-	} = useForm<SetPracticeNumberRequest>({
-		resolver: zodResolver(SetPracticeNumberRequestSchema),
-		defaultValues: { practiceNumber: defaultValue },
-	})
-	const [pendingValue, setPendingValue] = useState<string | null>(null)
-
-	useEffect(() => {
-		reset({ practiceNumber: defaultValue })
-	}, [defaultValue, reset])
-
-	function handleFormSubmit({ practiceNumber }: SetPracticeNumberRequest) {
-		if (defaultValue && practiceNumber !== defaultValue) {
-			setPendingValue(practiceNumber)
-			return
-		}
-		onSave(practiceNumber)
-	}
-
-	function confirmOverride() {
-		if (pendingValue === null) return
-		onSave(pendingValue)
-		setPendingValue(null)
-	}
+		errors,
+		onSubmit,
+		pendingValue,
+		confirmOverride,
+		handleConfirmationOpenChange,
+	} = usePracticeNumberForm({ defaultValue, onSave })
 
 	return (
 		<>
-			<form onSubmit={handleSubmit(handleFormSubmit)}>
+			<form onSubmit={onSubmit}>
 				<Field>
 					<FieldLabel htmlFor="practiceNumber" className="sr-only">
 						Practice number
@@ -66,25 +41,35 @@ export function PracticeNumberForm({
 					{!defaultValue && (
 						<FieldDescription>{PRACTICE_NUMBER_HINT}</FieldDescription>
 					)}
-					<div className="flex gap-2">
+					<div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
 						<Input
+							data-testid={PERMESSO_TEST_IDS.practiceInput}
 							id="practiceNumber"
 							placeholder="e.g. ABC1234567"
 							disabled={submitting}
-							className="flex-1"
+							className="min-w-0 flex-1 min-h-10 sm:min-h-0"
 							{...register('practiceNumber')}
 						/>
-						<Button type="submit" disabled={submitting} isLoading={submitting}>
+						<Button
+							className="min-h-10 sm:min-h-0"
+							data-testid={PERMESSO_TEST_IDS.practiceSave}
+							type="submit"
+							disabled={submitting}
+							isLoading={submitting}
+						>
 							Save
 						</Button>
 					</div>
-					<FieldError errors={[errors.practiceNumber]} />
+					<FieldError
+						data-testid={PERMESSO_TEST_IDS.practiceError}
+						errors={[errors.practiceNumber]}
+					/>
 				</Field>
 			</form>
 
 			<ConfirmDialog
 				open={pendingValue !== null}
-				onOpenChange={(open) => !open && setPendingValue(null)}
+				onOpenChange={handleConfirmationOpenChange}
 				title="Replace practice number?"
 				description={`This will replace your current practice number "${defaultValue}" with "${pendingValue}". Past check history stays, but automatic checks will use the new number.`}
 				confirmLabel="Replace"

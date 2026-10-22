@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ExerciseTypeSchema } from './exercise-type'
+import { DEFAULT_EXERCISE_TYPE, ExerciseTypeSchema } from './exercise-type'
 import { GoalResponseSchema } from './goal'
 
 export const ProgressDaySchema = z.object({
@@ -9,7 +9,7 @@ export const ProgressDaySchema = z.object({
 export type ProgressDay = z.infer<typeof ProgressDaySchema>
 
 export const ProgressQuerySchema = z.object({
-	exerciseType: ExerciseTypeSchema.default('pushups'),
+	exerciseType: ExerciseTypeSchema.default(DEFAULT_EXERCISE_TYPE),
 	year: z.coerce.number().int().min(2020).max(2100),
 	month: z.coerce.number().int().min(1).max(12),
 })

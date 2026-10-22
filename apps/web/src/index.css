@@ -6,6 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+	--mobile-ui-font-size: 112.5%;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.13 0.028 261.692);
 	--card: oklch(1 0 0);
@@ -190,6 +191,12 @@
 	}
 	html {
 		@apply font-sans;
+	}
+	/* Scale rem-based text, spacing, and controls together below the md breakpoint. */
+	@media (width < 48rem) {
+		html {
+			font-size: var(--mobile-ui-font-size);
+		}
 	}
 	button {
 		cursor: pointer;

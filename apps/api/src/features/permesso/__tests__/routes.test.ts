@@ -23,6 +23,11 @@ import {
 	sendTelegramCheckResultMock,
 	VALID_USER,
 } from './fixtures'
+import {
+	OTHER_TEST_PRACTICE_NUMBER,
+	TEST_PRACTICE_NUMBER,
+	TEST_TELEGRAM_CHAT_ID,
+} from './test-data'
 
 // See fixtures.ts for why this isn't shared from there — Eden's inferred
 // client type isn't nameable across files in this composite project (TS2883).
@@ -40,7 +45,9 @@ afterEach(async () => {
 
 describe('PUT /permesso', () => {
 	it('returns 401 when unauthenticated', async () => {
-		const { status } = await api.permesso.put({ practiceNumber: 'AB12345678' })
+		const { status } = await api.permesso.put({
+			practiceNumber: TEST_PRACTICE_NUMBER,
+		})
 		expect(status).toBe(401)
 	})
 
@@ -48,26 +55,26 @@ describe('PUT /permesso', () => {
 		const { token } = await registerAndGetToken(VALID_USER)
 
 		const { data, status } = await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 		expect(status).toBe(200)
 		expect(PermessoStatusResponseSchema.parse(data).practiceNumber).toBe(
-			'AB12345678',
+			TEST_PRACTICE_NUMBER,
 		)
 
 		const { data: getData } = await api.permesso.get({
 			headers: authHeaders(token),
 		})
 		expect(PermessoStatusResponseSchema.parse(getData).practiceNumber).toBe(
-			'AB12345678',
+			TEST_PRACTICE_NUMBER,
 		)
 	})
 
 	it('resets lastStatus/lastError/lastCheckedAt to null when called again on an existing row', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -84,18 +91,18 @@ describe('PUT /permesso', () => {
 		expect(seeded?.lastCheckedAt).not.toBeNull()
 
 		const { data, status } = await api.permesso.put(
-			{ practiceNumber: 'CD98765432' },
+			{ practiceNumber: OTHER_TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 		expect(status).toBe(200)
 		const parsed = PermessoStatusResponseSchema.parse(data)
-		expect(parsed.practiceNumber).toBe('CD98765432')
+		expect(parsed.practiceNumber).toBe(OTHER_TEST_PRACTICE_NUMBER)
 		expect(parsed.lastStatus).toBeNull()
 		expect(parsed.lastError).toBeNull()
 		expect(parsed.lastCheckedAt).toBeNull()
 
 		const row = await getSubscriptionRow(userId)
-		expect(row?.practiceNumber).toBe('CD98765432')
+		expect(row?.practiceNumber).toBe(OTHER_TEST_PRACTICE_NUMBER)
 		expect(row?.lastStatus).toBeNull()
 		expect(row?.lastError).toBeNull()
 		expect(row?.lastCheckedAt).toBeNull()
@@ -127,13 +134,13 @@ describe('GET /permesso', () => {
 	it('reports telegramConnected: true once a chat is linked', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
 		await db
 			.update(permessoSubscriptions)
-			.set({ telegramChatId: '999999' })
+			.set({ telegramChatId: TEST_TELEGRAM_CHAT_ID })
 			.where(eq(permessoSubscriptions.userId, userId))
 
 		const { data, status } = await api.permesso.get({
@@ -163,7 +170,7 @@ describe('POST /permesso/check', () => {
 	it('runs the check and records success — response shape, row update, history row', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -202,7 +209,7 @@ describe('POST /permesso/check', () => {
 	it('runs the check and records failure — lastError set, success: false', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -228,12 +235,12 @@ describe('POST /permesso/check', () => {
 	it('sends a Telegram notification when a chat is linked', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 		await db
 			.update(permessoSubscriptions)
-			.set({ telegramChatId: '999999' })
+			.set({ telegramChatId: TEST_TELEGRAM_CHAT_ID })
 			.where(eq(permessoSubscriptions.userId, userId))
 
 		checkPermessoStatusMock.mockImplementationOnce(async () => ({
@@ -244,16 +251,20 @@ describe('POST /permesso/check', () => {
 		await api.permesso.check.post(undefined, { headers: authHeaders(token) })
 
 		expect(sendTelegramCheckResultMock).toHaveBeenCalledTimes(1)
-		expect(sendTelegramCheckResultMock).toHaveBeenCalledWith(userId, '999999', {
-			success: true,
-			status: 'ready',
-		})
+		expect(sendTelegramCheckResultMock).toHaveBeenCalledWith(
+			userId,
+			TEST_TELEGRAM_CHAT_ID,
+			{
+				success: true,
+				status: 'ready',
+			},
+		)
 	})
 
 	it('does not send a Telegram notification when no chat is linked', async () => {
 		const { token } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -281,7 +292,7 @@ describe('GET /permesso/history', () => {
 	it('returns at most 20 rows, newest first', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -330,7 +341,7 @@ describe('POST /permesso/telegram/link', () => {
 	it('returns 503 when the Telegram bot is not configured', async () => {
 		const { token } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -347,7 +358,7 @@ describe('POST /permesso/telegram/link', () => {
 	it('persists the link token and returns the deep link on success', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -377,12 +388,15 @@ describe('POST /permesso/telegram/disconnect', () => {
 	it('clears telegramChatId and telegramLinkToken on an existing row', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 		await db
 			.update(permessoSubscriptions)
-			.set({ telegramChatId: '999999', telegramLinkToken: 'pending-token' })
+			.set({
+				telegramChatId: TEST_TELEGRAM_CHAT_ID,
+				telegramLinkToken: 'pending-token',
+			})
 			.where(eq(permessoSubscriptions.userId, userId))
 
 		const { data, status } = await api.permesso.telegram.disconnect.post(
@@ -476,7 +490,7 @@ describe('PUT /permesso/schedule', () => {
 	it('persists checkHours and timezone once a practice number exists', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -499,7 +513,7 @@ describe('PUT /permesso/schedule', () => {
 	it('dedupes duplicate checkHours entries', async () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 
@@ -526,7 +540,7 @@ describe('POST /permesso/reset', () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 		await api.permesso.schedule.put(
@@ -561,7 +575,7 @@ describe('POST /permesso/reset', () => {
 		const { token, userId } = await registerAndGetToken(VALID_USER)
 
 		await api.permesso.put(
-			{ practiceNumber: 'AB12345678' },
+			{ practiceNumber: TEST_PRACTICE_NUMBER },
 			{ headers: authHeaders(token) },
 		)
 		await db.insert(permessoChecks).values({

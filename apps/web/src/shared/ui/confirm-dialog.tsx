@@ -13,6 +13,8 @@ import {
 import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
 
 interface ConfirmDialogProps {
+	/** Distinguishes dialogs when multiple confirmations overlap during transitions. */
+	testId?: string
 	/** Omit when the dialog is opened programmatically via `open`/`onOpenChange` instead of a click. */
 	trigger?: React.ReactNode
 	/** Controls the dialog externally — for chaining multiple confirmations. Uncontrolled (trigger-only) when omitted. */
@@ -27,6 +29,7 @@ interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({
+	testId = SHARED_TEST_IDS.confirmDialog.root,
 	trigger,
 	open,
 	onOpenChange,
@@ -40,10 +43,7 @@ export function ConfirmDialog({
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			{trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
-			<AlertDialogContent
-				size="sm"
-				data-testid={SHARED_TEST_IDS.confirmDialog.root}
-			>
+			<AlertDialogContent size="sm" data-testid={testId}>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{title}</AlertDialogTitle>
 					<AlertDialogDescription
