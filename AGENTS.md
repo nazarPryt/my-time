@@ -59,6 +59,28 @@ needed if you don't have SOPS/age set up yet:
 - `DATABASE_URL`, `JWT_SECRET`, `API_URL`, `FRONTEND_WEB_URL`, `DB_DATA_PATH`
 - `LOG_LEVEL` (optional, defaults to `info`)
 
+## Before opening or updating a PR
+
+Run `bun run ci:local` against the final changes before opening a PR or pushing
+updates to it. This runs the checks in `.github/workflows/ci.yml`: frozen dependency
+installation, repository lint, all CI typechecks, extension compilation/build,
+API/web/shared/desktop tests, browser E2E, packaged extension E2E, real cross-client
+integration, and the web build. Keep the runner aligned when CI changes.
+
+Prerequisites: the CI Bun version, running Docker, Chromium installed for both
+Playwright and Puppeteer, and `glib-compile-schemas`/`gsettings`. Use
+`bun apps/web/node_modules/@playwright/test/cli.js install --with-deps chromium` to prepare
+Playwright. The runner supplies the required test API URL and uses a disposable
+API-test database on port 5435; cross-client integration uses its own port 5434.
+It stops on failure and cleans up its API-test database on normal exit.
+
+Fix failures and rerun before creating or updating the PR. Do not substitute
+partial checks or remote CI for this local gate. If a prerequisite prevents the
+full run, report the exact blocker and leave PR creation/push pending until it
+is resolved or the user explicitly authorizes an exception. Never claim unrun
+checks passed. Re-run after code changes; documentation-only changes may reuse
+results when they do not affect executable checks.
+
 ## Architecture
 
 ### Monorepo layout

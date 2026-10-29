@@ -15,6 +15,12 @@
 			"source": "EpicenterHQ/epicenter",
 			"sourceType": "github",
 			"computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+		},
+		"open-pr": {
+			"source": "Significant-Gravitas/AutoGPT",
+			"sourceType": "github",
+			"skillPath": ".agents/skills/open-pr/SKILL.md",
+			"computedHash": "c2a8202f56c70d193cfcba0352d9f93b0e9af14e1777b67ae482bda65e328d8b"
 		}
 	}
 }

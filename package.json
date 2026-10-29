@@ -21,6 +21,7 @@
 		"desktop:install": "bun --filter desktop install:extension",
 		"desktop:update": "bun apps/desktop/scripts/update.ts",
 		"graph": "bun scripts/graph/index.ts",
+		"ci:local": "bun scripts/ci-local.ts",
 		"lint:check": "biome check .",
 		"lint:fix": "biome check --write --unsafe . && biome format --write .",
 		"docker:build": "docker compose --env-file ./apps/api/.env build",
