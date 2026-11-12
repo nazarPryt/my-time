@@ -39,6 +39,8 @@
 	--sidebar-accent-foreground: oklch(0.21 0.034 264.665);
 	--sidebar-border: oklch(0.928 0.006 264.531);
 	--sidebar-ring: oklch(0.707 0.022 261.325);
+	--skeleton: oklch(0.94 0.006 264.531);
+	--skeleton-highlight: oklch(1 0 0 / 0.85);
 }
 
 .dark {
@@ -73,6 +75,8 @@
 	--sidebar-accent-foreground: oklch(0.985 0.002 247.839);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.551 0.027 264.364);
+	--skeleton: oklch(1 0 0 / 0.07);
+	--skeleton-highlight: oklch(1 0 0 / 0.07);
 }
 
 @theme inline {
@@ -175,6 +179,55 @@
 			transform: scale(1.06);
 		}
 	}
+	/*
+	 * Skeleton shimmer. The highlight gradient is anchored to the viewport
+	 * (background-attachment: fixed), so every block on screen catches the
+	 * same sweeping light at the same moment instead of shimmering on its own.
+	 */
+	@keyframes skeleton-sweep {
+		from {
+			background-position: -120vw 0;
+		}
+		to {
+			background-position: 20vw 0;
+		}
+	}
+	.skeleton {
+		background-color: var(--skeleton);
+		background-image: linear-gradient(
+			100deg,
+			transparent 42%,
+			var(--skeleton-highlight) 50%,
+			transparent 58%
+		);
+		background-size: 200vw 100%;
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+		animation: skeleton-sweep 1.8s ease-in-out infinite;
+	}
+
+	@keyframes skeleton-fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	.skeleton-fade-in {
+		animation: skeleton-fade-in 0.3s ease-out 0.1s both;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.skeleton {
+			animation: none;
+			background-image: none;
+		}
+		.skeleton-fade-in {
+			animation: none;
+		}
+	}
+
 	.go-flash {
 		animation:
 			go-enter 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both,

@@ -2,6 +2,7 @@ import type { BlockedSiteResponse } from 'contracts'
 import { ShieldOff } from 'lucide-react'
 import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
 import { BlockedSiteItem } from './blocked-site-item'
+import { SiteListSkeleton } from './site-list-skeleton'
 
 type Props = {
 	sites: BlockedSiteResponse[]
@@ -11,14 +12,7 @@ type Props = {
 
 export function SiteList({ sites, loading, onRemove }: Props) {
 	if (loading) {
-		return (
-			<div
-				className="flex items-center justify-center h-32"
-				data-testid={SB.listLoading}
-			>
-				<span className="text-xs text-muted-foreground">Loading…</span>
-			</div>
-		)
+		return <SiteListSkeleton />
 	}
 
 	if (sites.length === 0) {

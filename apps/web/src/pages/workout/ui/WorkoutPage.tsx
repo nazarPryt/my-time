@@ -8,6 +8,7 @@ import {
 	useWorkoutStore,
 	WORKOUT_TEST_IDS,
 	WorkoutHeader,
+	WorkoutSkeleton,
 } from '@/features/workout'
 
 export function WorkoutPage() {
@@ -42,12 +43,7 @@ export function WorkoutPage() {
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-sm mx-auto space-y-4">
 					{loading || !data ? (
-						<div
-							data-testid={WORKOUT_TEST_IDS.loading}
-							className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-48"
-						>
-							<span className="text-xs text-muted-foreground">Loading…</span>
-						</div>
+						<WorkoutSkeleton />
 					) : (
 						<>
 							<HeroCounter

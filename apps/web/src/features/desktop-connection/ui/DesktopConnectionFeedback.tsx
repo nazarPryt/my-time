@@ -1,4 +1,4 @@
-import { Button } from '@/shared/ui'
+import { Button, Skeleton, SkeletonStatus } from '@/shared/ui'
 import { DESKTOP_CONNECTION_TEST_IDS as DC } from '../testIds'
 
 export function DesktopConnectionFeedback({
@@ -15,9 +15,18 @@ export function DesktopConnectionFeedback({
 	return (
 		<>
 			{loading && (
-				<output className="block text-sm text-muted-foreground">
-					Loading connection request…
-				</output>
+				<SkeletonStatus
+					label="Loading connection request…"
+					className="space-y-4"
+				>
+					<div className="space-y-2">
+						<Skeleton className="h-3.5 w-full" />
+						<Skeleton className="h-3.5 w-3/5" />
+					</div>
+					<Skeleton className="h-8 w-40" />
+					<Skeleton className="h-3.5 w-52" />
+					<Skeleton className="h-9 w-36" />
+				</SkeletonStatus>
 			)}
 			{approved && (
 				<output className="block text-sm" data-testid={DC.approved}>

@@ -108,7 +108,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	)
 }
 
-function Wordmark() {
+export function Wordmark() {
 	return (
 		<span
 			className="text-[17px] font-bold text-sidebar-foreground"

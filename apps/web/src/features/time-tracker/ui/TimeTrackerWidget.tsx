@@ -9,6 +9,7 @@ import { useTimeTrackerSync } from '../model/use-time-tracker-sync'
 import { TIME_TRACKER_TEST_IDS } from '../testIds'
 import { DesktopStatusBadge } from './DesktopStatusBadge'
 import { SessionList } from './SessionList'
+import { TimeTrackerSkeleton } from './TimeTrackerSkeleton'
 import { TodayStats } from './TodayStats'
 
 const RADIUS = 80
@@ -52,12 +53,7 @@ export function TimeTrackerWidget() {
 						</p>
 					)}
 					{loading ? (
-						<div
-							className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-64"
-							data-testid={TIME_TRACKER_TEST_IDS.loading}
-						>
-							<span className="text-xs text-muted-foreground">Loading…</span>
-						</div>
+						<TimeTrackerSkeleton />
 					) : (
 						<>
 							<div className="rounded-xl border border-border bg-card p-4 sm:p-8 flex flex-col items-center gap-6">

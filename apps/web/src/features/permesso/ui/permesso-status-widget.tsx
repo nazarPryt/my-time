@@ -3,6 +3,7 @@ import { usePermessoActions, usePermessoState } from '../model/store'
 import { PERMESSO_TEST_IDS } from '../testIds'
 import { DangerZone } from './danger-zone'
 import { HistorySection } from './history-section'
+import { PermessoSkeleton } from './permesso-skeleton'
 import { PracticeNumberSection } from './practice-number-section'
 import { ScheduleSection } from './schedule-section'
 import { StatusCard } from './status-card'
@@ -48,12 +49,7 @@ export function PermessoStatusWidget() {
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="max-w-lg mx-auto space-y-4 sm:space-y-6 max-sm:[&_[data-slot=card]]:py-5 max-sm:[&_[data-slot=card]]:gap-4 max-sm:[&_[data-slot=card-header]]:px-4 max-sm:[&_[data-slot=card-content]]:px-4">
 					{loading || !status ? (
-						<div
-							data-testid={PERMESSO_TEST_IDS.loading}
-							className="rounded-xl border border-border bg-card p-7 flex items-center justify-center h-32"
-						>
-							<span className="text-xs text-muted-foreground">Loading…</span>
-						</div>
+						<PermessoSkeleton />
 					) : (
 						<>
 							{status.practiceNumber && (

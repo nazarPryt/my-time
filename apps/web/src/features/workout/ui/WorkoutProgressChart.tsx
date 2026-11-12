@@ -12,6 +12,8 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
+import { ChartSkeleton } from '@/shared/ui/chart-skeleton'
+import { Skeleton } from '@/shared/ui/skeleton'
 import type { ChartEntry } from '../model/store'
 import { useWorkoutStore } from '../model/store'
 import { WORKOUT_TEST_IDS } from '../testIds'
@@ -61,6 +63,7 @@ export function WorkoutProgressChart() {
 					>
 						{monthLabel}
 					</p>
+					{loading && <Skeleton className="h-3 w-40 mt-2" />}
 					{!loading && totalReps > 0 && (
 						<p className="text-xs text-muted-foreground mt-1">
 							{totalReps} reps · goal hit {goalDays} of {data.length} days
@@ -91,12 +94,10 @@ export function WorkoutProgressChart() {
 			{/* Chart */}
 			<div className="h-40">
 				{loading ? (
-					<div
+					<ChartSkeleton
+						label="Loading push-ups…"
 						data-testid={WORKOUT_TEST_IDS.chartLoading}
-						className="h-full flex items-center justify-center"
-					>
-						<span className="text-xs text-muted-foreground">Loading…</span>
-					</div>
+					/>
 				) : totalReps === 0 ? (
 					<div className="h-full flex items-center justify-center">
 						<span className="text-xs text-muted-foreground">

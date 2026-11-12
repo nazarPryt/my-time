@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { CheckCircle2, History, XCircle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import { PERMESSO_TEST_IDS } from '../testIds'
+import { CheckHistorySkeleton } from './permesso-skeleton'
 
 type Props = {
 	history: PermessoCheckHistoryResponse
@@ -11,11 +12,7 @@ type Props = {
 
 export function CheckHistory({ history, loading }: Props) {
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center h-24">
-				<span className="text-xs text-muted-foreground">Loading…</span>
-			</div>
-		)
+		return <CheckHistorySkeleton />
 	}
 
 	if (history.length === 0) {

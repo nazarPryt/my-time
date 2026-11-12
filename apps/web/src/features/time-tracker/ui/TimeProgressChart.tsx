@@ -10,6 +10,8 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
+import { ChartSkeleton } from '@/shared/ui/chart-skeleton'
+import { Skeleton } from '@/shared/ui/skeleton'
 import type { TimeChartEntry } from '../model/store'
 import { useTimeTrackerStore } from '../model/store'
 import { TIME_TRACKER_TEST_IDS as TT } from '../testIds'
@@ -53,6 +55,7 @@ export function TimeProgressChart() {
 				<p className="text-sm font-semibold text-foreground mt-0.5">
 					Last 30 days
 				</p>
+				{loading && <Skeleton className="h-3 w-36 mt-2" />}
 				{!loading && totalSeconds > 0 && (
 					<p
 						data-testid={TT.chartSummary}
@@ -66,14 +69,10 @@ export function TimeProgressChart() {
 
 			<div className="h-40">
 				{loading ? (
-					<div className="h-full flex items-center justify-center">
-						<span
-							data-testid={TT.chartLoading}
-							className="text-xs text-muted-foreground"
-						>
-							Loading…
-						</span>
-					</div>
+					<ChartSkeleton
+						label="Loading work time…"
+						data-testid={TT.chartLoading}
+					/>
 				) : totalSeconds === 0 ? (
 					<div className="h-full flex items-center justify-center">
 						<span
