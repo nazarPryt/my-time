@@ -1,9 +1,8 @@
 import { AUTH_ERRORS } from 'contracts'
 import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
-import { DASHBOARD_PATH } from '../../dashboard/home/HomePage'
+import { DASHBOARD_PATH } from '../../dashboard/home/home-page'
 import { MOCK_USER } from '../../support/auth.mocks'
-import { REGISTER_PATH } from '../register/RegisterPage'
-import { LOGIN_PATH } from './LoginPage'
+import { REGISTER_PATH } from '../register/register-page'
 import { expect, test } from './login.fixtures'
 import {
 	API_LOGIN,
@@ -19,6 +18,7 @@ import {
 	mockRefreshResponse,
 	REFRESH_API_PATH,
 } from './login.mocks'
+import { LOGIN_PATH } from './login-page'
 
 const DASHBOARD_URL = new RegExp(`${DASHBOARD_PATH}?$`)
 

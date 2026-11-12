@@ -1,7 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { SITE_BLOCKING_ERRORS } from 'contracts'
 import { readFakeExtensionLog } from './fake-extension'
-import { SITE_BLOCKING_PATH } from './SiteBlockingPage'
 import { expect, linkedTest as test } from './site-blocking.fixtures'
 import {
 	MOCK_SITE_NEW,
@@ -12,6 +11,7 @@ import {
 	mockSiteDelete,
 	mockSitesList,
 } from './site-blocking.mocks'
+import { SITE_BLOCKING_PATH } from './site-blocking-page'
 
 // Every test here runs with a linked, up-to-date fake extension so the setup
 // and update cards stay out of the way — those live in extension.spec.ts.

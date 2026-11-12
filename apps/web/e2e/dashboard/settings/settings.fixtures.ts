@@ -1,6 +1,6 @@
 import { test as base } from '../../support/dashboard.fixtures'
-import { SettingsPage } from './SettingsPage'
 import { mockSettingsNavigation } from './settings.mocks'
+import { SettingsPage } from './settings-page'
 
 export const test = base.extend<{ settingsPage: SettingsPage }>({
 	settingsPage: async ({ page }, use) => {

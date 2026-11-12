@@ -1,4 +1,4 @@
-import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
+import { SHARED_TEST_IDS } from '@/shared/ui/test-ids'
 import {
 	delayTimeEvents,
 	failTimeEvents,
@@ -6,8 +6,6 @@ import {
 	recoverTimeEvents,
 	timeStreamStats,
 } from './session-stream.mocks'
-import type { TimeTrackerPage } from './TimeTrackerPage'
-import { TIME_TRACKER_PATH } from './TimeTrackerPage'
 import { expect, test } from './time-tracker.fixtures'
 import {
 	API_TIME_END,
@@ -20,6 +18,8 @@ import {
 	mockTimeFailure,
 	mockTimeToday,
 } from './time-tracker.mocks'
+import type { TimeTrackerPage } from './time-tracker-page'
+import { TIME_TRACKER_PATH } from './time-tracker-page'
 
 /** Parse the timer's `mm:ss` / `hh:mm:ss` text into total seconds. */
 async function readTimerSeconds(timeTrackerPage: TimeTrackerPage) {

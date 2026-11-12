@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
-import { WORKOUT_TEST_IDS } from '@/features/workout/testIds'
-import { BaseLocators } from '../BaseLocators'
+import { WORKOUT_TEST_IDS } from '@/features/workout/test-ids'
+import { BaseLocators } from '../base-locators'
 
 export class WorkoutLocators extends BaseLocators {
 	// Page container

@@ -1,6 +1,5 @@
 import { test as base } from '../../support/dashboard.fixtures'
 import { installFakeExtension } from './fake-extension'
-import { SiteBlockingPage } from './SiteBlockingPage'
 import {
 	mockExtensionToken,
 	mockFavicons,
@@ -8,6 +7,7 @@ import {
 	mockSiteDelete,
 	mockSitesList,
 } from './site-blocking.mocks'
+import { SiteBlockingPage } from './site-blocking-page'
 
 export const test = base.extend<{ siteBlockingPage: SiteBlockingPage }>({
 	siteBlockingPage: async ({ page }, use) => {

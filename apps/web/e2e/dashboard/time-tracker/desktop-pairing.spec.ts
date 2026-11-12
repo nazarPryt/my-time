@@ -1,5 +1,5 @@
-import { LoginPage } from '../../auth/login/LoginPage'
 import { mockLoginResponse } from '../../auth/login/login.mocks'
+import { LoginPage } from '../../auth/login/login-page'
 import { API_ME, MOCK_USER } from '../../support/auth.mocks'
 import {
 	API_DESKTOP_APPROVE,

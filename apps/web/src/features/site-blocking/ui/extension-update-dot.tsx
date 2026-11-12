@@ -1,5 +1,5 @@
 import { useExtensionUpdateAvailable } from '../model/use-extension-connection'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../test-ids'
 
 // Small amber dot for the sidebar nav item, so an outdated extension is
 // noticed from any page — not only when the user opens Site Blocking.

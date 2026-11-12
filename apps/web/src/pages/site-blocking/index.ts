@@ -1,1 +1,1 @@
-export * from './ui/SiteBlockingPage'
+export * from './ui/site-blocking-page'

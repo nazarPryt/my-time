@@ -10,7 +10,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
-import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
+import { SHARED_TEST_IDS } from '@/shared/ui/test-ids'
 
 interface ConfirmDialogProps {
 	/** Distinguishes dialogs when multiple confirmations overlap during transitions. */

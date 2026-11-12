@@ -1,6 +1,6 @@
 import { RotateCwIcon } from 'lucide-react'
 import { Button } from '@/shared/ui'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 
 // Chrome doesn't inject content scripts into tabs that were open before the
 // install, so this tab can't detect the extension until it's reloaded.

@@ -1,8 +1,8 @@
 // Background — typed message handlers.
 // Calls BLL services only; never touches DAL or chrome APIs directly.
 
-import { exchangeToken, isAuthenticated } from '@/bll/auth/authService'
-import { syncBlockedSites } from '@/bll/siteBlocking/siteBlockingService'
+import { exchangeToken, isAuthenticated } from '@/bll/auth/auth-service'
+import { syncBlockedSites } from '@/bll/site-blocking/site-blocking-service'
 import type { ExtensionMessage, ExtensionResponse } from '@/shared/messages'
 
 type SendResponse = (response: ExtensionResponse) => void

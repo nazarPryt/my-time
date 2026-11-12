@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test'
-import { SETTINGS_TEST_IDS } from '@/pages/settings/testIds'
-import { DASHBOARD_TEST_IDS } from '@/shared/ui/testIds'
-import { BaseLocators } from '../BaseLocators'
+import { SETTINGS_TEST_IDS } from '@/pages/settings/test-ids'
+import { DASHBOARD_TEST_IDS } from '@/shared/ui/test-ids'
+import { BaseLocators } from '../base-locators'
 
 export class SettingsLocators extends BaseLocators {
 	readonly settings: Locator

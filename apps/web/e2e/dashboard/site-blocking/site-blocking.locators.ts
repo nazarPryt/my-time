@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
-import { SITE_BLOCKING_TEST_IDS as SB } from '@/features/site-blocking/testIds'
-import { BaseLocators } from '../BaseLocators'
+import { SITE_BLOCKING_TEST_IDS as SB } from '@/features/site-blocking/test-ids'
+import { BaseLocators } from '../base-locators'
 
 export class SiteBlockingLocators extends BaseLocators {
 	// Page shell

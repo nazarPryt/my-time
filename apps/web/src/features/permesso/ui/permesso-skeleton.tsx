@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { Skeleton, SkeletonStatus } from '@/shared/ui/skeleton'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 
 const HISTORY_ROWS = ['w-4/5', 'w-3/5', 'w-2/3'] as const
 

@@ -4,7 +4,7 @@ import {
 	INTEGRATION_API_URL as API_URL,
 	INTEGRATION_DESKTOP_URL as DESKTOP_URL,
 } from '../../../scripts/e2e-integration-config'
-import { TimeTrackerPage } from '../e2e/dashboard/time-tracker/TimeTrackerPage'
+import { TimeTrackerPage } from '../e2e/dashboard/time-tracker/time-tracker-page'
 import { ACCESS_TOKEN_KEY } from '../src/shared/lib/token-storage'
 export { API_URL }
 export interface DesktopState {

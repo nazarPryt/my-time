@@ -81,6 +81,30 @@ is resolved or the user explicitly authorizes an exception. Never claim unrun
 checks passed. Re-run after code changes; documentation-only changes may reuse
 results when they do not affect executable checks.
 
+## Code style
+
+One style guide for the whole monorepo (api, web, extension, mobile, desktop,
+packages, contracts, scripts). App-level `AGENTS.md` files may add rules but
+must not contradict these.
+
+### File and folder naming — kebab-case
+
+- Every source file (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`) and every
+  folder is **kebab-case**, whatever it exports. Identifiers inside keep normal
+  TypeScript casing:
+  - `dashboard-pending.tsx` → `export function DashboardPending`
+  - `use-rest-timer.ts` → `export function useRestTimer`
+  - `test-ids.ts` → `export const WORKOUT_TEST_IDS`
+  - `helpers/build-day-range/build-day-range.ts` → `export function buildDayRange`
+- Extra dot segments describe the file's role and are fine:
+  `workout.locators.ts`, `build-day-range.test.ts`, `vite.config.ts`.
+- Framework-mandated names are exempt: TanStack Router (`__root.tsx`,
+  `time-tracker_.desktop.tsx`, generated `routeTree.gen.ts`), Expo Router
+  (`_layout.tsx`, `(auth)/` groups), and `__tests__/` folders.
+- Biome's `useFilenamingConvention` (root `biome.jsonc`) enforces file names, so a
+  PascalCase or camelCase file fails `lint:check`/CI. Biome does not check folder
+  names; keep them kebab-case by hand and in review.
+
 ## Architecture
 
 ### Monorepo layout

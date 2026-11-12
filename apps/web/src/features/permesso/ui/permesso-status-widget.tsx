@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { usePermessoActions, usePermessoState } from '../model/store'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 import { DangerZone } from './danger-zone'
 import { HistorySection } from './history-section'
 import { PermessoSkeleton } from './permesso-skeleton'

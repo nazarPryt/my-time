@@ -1,6 +1,6 @@
-import { DASHBOARD_PATH } from '../home/HomePage'
-import { SETTINGS_PATH } from './SettingsPage'
+import { DASHBOARD_PATH } from '../home/home-page'
 import { expect, test } from './settings.fixtures'
+import { SETTINGS_PATH } from './settings-page'
 
 test.describe('Settings placeholder', () => {
 	test('renders all planned sections through direct navigation and reload', async ({

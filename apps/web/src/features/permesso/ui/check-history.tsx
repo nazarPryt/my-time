@@ -2,7 +2,7 @@ import type { PermessoCheckHistoryResponse } from 'contracts'
 import { format } from 'date-fns'
 import { CheckCircle2, History, XCircle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 import { CheckHistorySkeleton } from './permesso-skeleton'
 
 type Props = {

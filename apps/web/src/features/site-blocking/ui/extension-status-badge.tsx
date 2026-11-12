@@ -2,7 +2,7 @@ import { PuzzleIcon } from 'lucide-react'
 import { Badge } from '@/shared/ui'
 import { statusBadgeFor } from '../lib/extension-status'
 import { useExtensionConnection } from '../model/use-extension-connection'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../test-ids'
 
 /** Header badge summarising the extension: checking / missing / unlinked / active / outdated. */
 export function ExtensionStatusBadge() {

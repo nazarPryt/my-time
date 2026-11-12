@@ -1,5 +1,5 @@
 import { Skeleton, SkeletonStatus } from '@/shared/ui/skeleton'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 
 const ROWS = ['w-32', 'w-24', 'w-40'] as const
 

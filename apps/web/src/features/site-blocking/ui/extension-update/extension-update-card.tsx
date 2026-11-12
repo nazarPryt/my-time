@@ -7,7 +7,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shared/ui'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 import { StoreUpdateSteps } from './store-update-steps'
 import { ZipUpdateSteps } from './zip-update-steps'
 

@@ -19,11 +19,11 @@ apps/web/e2e/
 │   ├── auth.mocks.ts                # API_ME, MOCK_USER, mockAuth()
 │   └── dashboard.fixtures.ts        # base fixture: overrides `page` to auto-mock auth
 ├── dashboard/
-│   ├── BaseLocators.ts              # shell locators (sidebar nav, sign-out) shared by every tab
+│   ├── base-locators.ts             # shell locators (sidebar nav, sign-out) shared by every tab
 │   ├── workout/                     # one folder per dashboard tab
 │   │   ├── workout.locators.ts      # element lookups only — extends BaseLocators
 │   │   ├── workout.mocks.ts         # API path constants + fixture data + page.route() stubs
-│   │   ├── WorkoutPage.ts           # extends WorkoutLocators — navigation/interaction only
+│   │   ├── workout-page.ts          # extends WorkoutLocators — navigation/interaction only
 │   │   ├── workout.fixtures.ts      # test.extend: wires WorkoutPage + its default mocks
 │   │   └── workout.spec.ts
 │   └── home/                        # same split, plus a describe block per widget
@@ -32,7 +32,7 @@ apps/web/e2e/
 │   ├── login/                       # same 4-file split, but no BaseLocators (pre-auth page)
 │   │   ├── login.locators.ts
 │   │   ├── login.mocks.ts
-│   │   ├── LoginPage.ts
+│   │   ├── login-page.ts
 │   │   ├── login.fixtures.ts
 │   │   └── login.spec.ts
 │   └── register/                    # separate trio from login — different form, own file set
@@ -44,7 +44,7 @@ apps/web/e2e/
 ```
 
 Rules for adding a new page/tab:
-- New dashboard tab → new folder under `dashboard/`, same 5-file set (`*.locators.ts`, `*.mocks.ts`, `*Page.ts`, `*.fixtures.ts`, `*.spec.ts`).
+- New dashboard tab → new folder under `dashboard/`, same 5-file set (`*.locators.ts`, `*.mocks.ts`, `*-page.ts`, `*.fixtures.ts`, `*.spec.ts`).
 - New auth-adjacent flow (not behind the dashboard shell) → new folder under `auth/`, same split minus `BaseLocators`.
 - A test that isn't about one page's content (routing guards, global error boundary, 404) → `shared/`, plain `@playwright/test` imports, no page object.
 - Something more than one feature's spec needs (e.g. a second widget embedded in another tab's page, like the workout chart on dashboard home) → import the *other* feature's `mocks.ts` rather than duplicating its fixture data. The consuming spec still lives under the page it actually renders on.
@@ -127,7 +127,7 @@ data — no `page.unroute()` needed. Playwright resolves overlapping
 registered wins as long as it calls `route.fulfill()`/`route.continue()`
 (not `route.fallback()`).
 
-**`WorkoutPage.ts`** — extends the locators class, adds only navigation and
+**`workout-page.ts`** — extends the locators class, adds only navigation and
 interaction helpers. No mock data, no `page.route` calls. The route path
 lives here too, typed as `LinkProps['to']` (TanStack's generated route
 union) rather than a bare string, so a typo'd or renamed path fails `tsc`
@@ -163,7 +163,7 @@ One exception: an index route's actual rendered URL (e.g. `/dashboard/`,
 with trailing slash) isn't a valid `LinkProps['to']` — TanStack normalizes
 navigating an index route to the parent path (`/dashboard`, no slash), so a
 path used only for `page.goto()`/URL assertions on an index route stays a
-plain `string` with a comment explaining why (see `HomePage.ts`'s
+plain `string` with a comment explaining why (see `home-page.ts`'s
 `DASHBOARD_PATH`).
 
 **Never import between files in `src/routes/`.** TanStack Router's Vite

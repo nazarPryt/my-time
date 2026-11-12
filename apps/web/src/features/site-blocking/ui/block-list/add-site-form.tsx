@@ -5,7 +5,7 @@ import {
 } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { Button, Input } from '@/shared/ui'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 
 interface AddSiteFormProps {
 	submitting: boolean

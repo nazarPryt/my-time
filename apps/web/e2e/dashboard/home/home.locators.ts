@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test'
-import { TIME_TRACKER_TEST_IDS as TT } from '@/features/time-tracker/testIds'
-import { WORKOUT_TEST_IDS } from '@/features/workout/testIds'
-import { DASHBOARD_TEST_IDS } from '@/shared/ui/testIds'
-import { BaseLocators } from '../BaseLocators'
+import { TIME_TRACKER_TEST_IDS as TT } from '@/features/time-tracker/test-ids'
+import { WORKOUT_TEST_IDS } from '@/features/workout/test-ids'
+import { DASHBOARD_TEST_IDS } from '@/shared/ui/test-ids'
+import { BaseLocators } from '../base-locators'
 
 export class HomeLocators extends BaseLocators {
 	readonly timeChart: Locator

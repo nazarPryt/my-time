@@ -1,7 +1,7 @@
 import { test as base } from '../../support/dashboard.fixtures'
 import { mockWorkoutProgress } from '../workout/workout.mocks'
-import { HomePage } from './HomePage'
 import { mockTimeTrackerWeekly } from './home.mocks'
+import { HomePage } from './home-page'
 
 export const test = base.extend<{ homePage: HomePage }>({
 	homePage: async ({ page }, use) => {

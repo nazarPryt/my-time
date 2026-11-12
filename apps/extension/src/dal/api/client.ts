@@ -1,7 +1,7 @@
 // DAL — generic authenticated fetch with automatic 401/refresh retry.
 // Only this file is allowed to call fetch() directly.
 
-import { getTokens, setTokens } from '@/dal/storage/tokenRepository'
+import { getTokens, setTokens } from '@/dal/storage/token-repository'
 import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 
 const API_BASE = EXTENSION_CONFIG.API_URL

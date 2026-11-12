@@ -1,9 +1,9 @@
 import { test as base } from '../../support/dashboard.fixtures'
-import { PermessoStatusPage } from './PermessoStatusPage'
 import {
 	mockPermessoHistory,
 	mockPermessoStatus,
 } from './permesso-status.mocks'
+import { PermessoStatusPage } from './permesso-status-page'
 export const test = base.extend<{ permessoPage: PermessoStatusPage }>({
 	permessoPage: async ({ page }, use) => {
 		await mockPermessoStatus(page)

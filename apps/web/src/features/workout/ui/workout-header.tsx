@@ -1,0 +1,27 @@
+import { format } from 'date-fns'
+import { Dumbbell } from 'lucide-react'
+import { WORKOUT_TEST_IDS } from '../test-ids'
+
+export function WorkoutHeader() {
+	return (
+		<header
+			data-testid={WORKOUT_TEST_IDS.header}
+			className="h-14 flex items-center px-4 sm:px-8 border-b border-border shrink-0 gap-2.5"
+		>
+			<Dumbbell
+				size={15}
+				strokeWidth={1.75}
+				className="text-muted-foreground"
+			/>
+			<h1 className="text-sm font-semibold text-foreground tracking-tight">
+				Workout
+			</h1>
+			<span
+				data-testid={WORKOUT_TEST_IDS.date}
+				className="ml-auto text-xs text-muted-foreground"
+			>
+				{format(new Date(), 'EEEE, MMMM d')}
+			</span>
+		</header>
+	)
+}

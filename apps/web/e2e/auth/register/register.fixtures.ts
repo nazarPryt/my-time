@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test'
-import { HomePage } from '../../dashboard/home/HomePage'
 import { mockTimeTrackerWeekly } from '../../dashboard/home/home.mocks'
+import { HomePage } from '../../dashboard/home/home-page'
 import { mockWorkoutProgress } from '../../dashboard/workout/workout.mocks'
 import {
 	MOCK_ACCESS_TOKEN,
@@ -8,8 +8,8 @@ import {
 	mockAuthenticatedAccount,
 	mockRefreshResponse,
 } from '../login/login.mocks'
-import { RegisterPage } from './RegisterPage'
 import { mockRegisterResponse } from './register.mocks'
+import { RegisterPage } from './register-page'
 
 export const test = base.extend<{
 	registerPage: RegisterPage

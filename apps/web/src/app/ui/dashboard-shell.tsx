@@ -15,7 +15,7 @@ import { ExtensionUpdateDot } from '@/features/site-blocking'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/shared/ui/sheet'
-import { DASHBOARD_TEST_IDS } from '@/shared/ui/testIds'
+import { DASHBOARD_TEST_IDS } from '@/shared/ui/test-ids'
 
 type NavItemType = {
 	to: LinkProps['to']

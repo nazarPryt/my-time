@@ -1,5 +1,5 @@
 import type { PermessoCheckHistoryResponse } from 'contracts'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 import { CheckHistory } from './check-history'
 
 type Props = {

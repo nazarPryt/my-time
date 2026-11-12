@@ -1,4 +1,4 @@
-import { syncBlockedSites } from '@/bll/siteBlocking/siteBlockingService'
+import { syncBlockedSites } from '@/bll/site-blocking/site-blocking-service'
 import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 import { handleMessage } from './messaging'
 
