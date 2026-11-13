@@ -51,3 +51,11 @@ services:
       - "8080:80"
     depends_on:
       - api
+
+  # Micro frontend, reached through web's nginx at /remotes/english-quiz/.
+  english-quiz:
+    build:
+      context: .
+      dockerfile: apps/english-quiz/Dockerfile
+    container_name: ENGLISH_QUIZ
+    restart: unless-stopped
