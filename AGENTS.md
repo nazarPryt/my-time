@@ -48,11 +48,13 @@ bun run docker:up        # Start full stack (api + db)
 bun run docker:down      # Stop full stack
 ```
 
-API environment variables — get a working local `.env` in one step (see
-`docs/secrets-sops-age-setup.md`; requires your age key to be a recipient
-in `.sops.yaml`):
+Environment variables — `bun run dev` runs `scripts/ensure-env.sh`, which
+decrypts any missing `apps/api/.env` and `apps/web/.env` from their
+`.env.development.enc` (see `docs/secrets-sops-age-setup.md`; requires your
+age key to be a recipient in `.sops.yaml`). To do it by hand:
 ```bash
 bun --filter api secrets:decrypt:dev > apps/api/.env
+bun --filter web secrets:decrypt:dev > apps/web/.env
 ```
 Falling back to `apps/api/.env.example` and filling values by hand is only
 needed if you don't have SOPS/age set up yet:

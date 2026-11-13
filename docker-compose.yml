@@ -1,3 +1,9 @@
+# Fixed project name: Compose otherwise derives it from the folder name, so a
+# git worktree would become a different project and collide with the main
+# checkout's fixed container names (DB, API, WEB). With this, every checkout
+# shares the same containers and the same DB_DATA_PATH data.
+name: my-time
+
 services:
   db:
     image: postgres:17-alpine
