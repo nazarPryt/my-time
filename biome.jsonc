@@ -36,6 +36,20 @@
 	},
 	"overrides": [
 		{
+			// Biome only analyses the <script> block of Vue SFCs, so bindings used
+			// only in <template> look unused. vue-tsc (noUnusedLocals) still
+			// catches genuinely unused code. See apps/english-quiz.
+			"includes": ["**/*.vue"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off",
+						"noUnusedImports": "off"
+					}
+				}
+			}
+		},
+		{
 			// Every source file in the monorepo is kebab-case (`dashboard-pending.tsx`,
 			// `use-rest-timer.ts`, `test-ids.ts`) regardless of what it exports.
 			// See "File naming" in the root AGENTS.md.

@@ -1,0 +1,163 @@
+/* Injected into the remote's shadow root by mount.ts. Colors come from the
+   host's design tokens (they inherit through the shadow boundary); the
+   fallbacks only apply when the remote runs standalone. */
+:host {
+	display: block;
+	color: var(--foreground, #111827);
+	font-family: inherit;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+.quiz {
+	max-width: 36rem;
+	margin: 0 auto;
+}
+
+.card {
+	background: var(--card, #fff);
+	border: 1px solid var(--border, #e5e7eb);
+	border-radius: var(--radius, 0.625rem);
+	padding: 1.5rem;
+}
+
+.stack {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.stack-sm {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.row {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+}
+
+.title,
+.prompt {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+.muted,
+.meta {
+	margin: 0;
+	color: var(--muted-foreground, #6b7280);
+	font-size: 0.85rem;
+}
+
+.meta {
+	display: flex;
+	justify-content: space-between;
+}
+
+.chip {
+	text-transform: capitalize;
+}
+
+.levels,
+.options {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.levels {
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.btn,
+.level,
+.option {
+	font: inherit;
+	color: inherit;
+	cursor: pointer;
+	background: transparent;
+	border: 1px solid var(--border, #e5e7eb);
+	border-radius: calc(var(--radius, 0.625rem) - 2px);
+	padding: 0.625rem 0.875rem;
+}
+
+.btn-primary {
+	background: var(--primary, #4f46e5);
+	color: var(--primary-foreground, #fff);
+	border-color: transparent;
+}
+
+.level {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.level[aria-checked="true"] {
+	border-color: var(--primary, #4f46e5);
+	background: var(--accent, #f3f4f6);
+}
+
+.level-code {
+	font-weight: 600;
+}
+
+.level-name {
+	font-size: 0.75rem;
+	color: var(--muted-foreground, #6b7280);
+}
+
+.option {
+	text-align: left;
+}
+
+.option:disabled {
+	cursor: default;
+}
+
+.option[data-state="correct"],
+.feedback[data-state="correct"] {
+	border-color: #16a34a;
+	background: color-mix(in oklch, #16a34a 12%, transparent);
+}
+
+.option[data-state="wrong"],
+.feedback[data-state="wrong"] {
+	border-color: var(--destructive, #dc2626);
+	background: color-mix(in oklch, var(--destructive, #dc2626) 12%, transparent);
+}
+
+.feedback {
+	border: 1px solid;
+	border-radius: calc(var(--radius, 0.625rem) - 2px);
+	padding: 0.75rem;
+	font-size: 0.9rem;
+}
+
+.progress {
+	height: 0.375rem;
+	border-radius: 999px;
+	background: var(--muted, #f3f4f6);
+	overflow: hidden;
+}
+
+.progress-fill {
+	height: 100%;
+	background: var(--primary, #4f46e5);
+	transition: width 0.2s ease;
+}
+
+.summary {
+	text-align: center;
+}
+
+.score {
+	margin: 0;
+	font-size: 2.5rem;
+	font-weight: 700;
+}

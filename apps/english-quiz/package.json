@@ -1,0 +1,27 @@
+{
+	"name": "english-quiz",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"typecheck": "vue-tsc -b",
+		"test": "bun test src"
+	},
+	"dependencies": {
+		"@my-time/mfe-contracts": "workspace:*",
+		"date-fns": "4.4.0",
+		"vue": "3.5.45"
+	},
+	"devDependencies": {
+		"@module-federation/vite": "1.23.11",
+		"@types/node": "26.5.1",
+		"@vitejs/plugin-vue": "6.0.11",
+		"bun-types": "1.4.2",
+		"typescript": "5.9.3",
+		"vite": "8.3.0",
+		"vue-tsc": "3.3.14"
+	}
+}
