@@ -4,6 +4,7 @@ import {
 	Dumbbell,
 	FileCheck2,
 	Home,
+	Languages,
 	Menu,
 	Settings,
 	ShieldOff,
@@ -63,6 +64,13 @@ const NAV_ITEMS: NavItemType[] = [
 		icon: FileCheck2,
 		exact: false,
 		testId: DASHBOARD_TEST_IDS.navLink('permesso-status'),
+	},
+	{
+		to: '/dashboard/english-quiz',
+		label: 'English Quiz',
+		icon: Languages,
+		exact: false,
+		testId: DASHBOARD_TEST_IDS.navLink('english-quiz'),
 	},
 	{
 		to: '/dashboard/settings',

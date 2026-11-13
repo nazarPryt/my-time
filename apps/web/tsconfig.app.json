@@ -29,6 +29,7 @@
 			"api": ["../../apps/api/src/public.ts"],
 			"@my-time/api": ["../../apps/api/src/public.ts"],
 			"contracts": ["../../contracts/src/index.ts"],
+			"@my-time/mfe-contracts": ["../../packages/mfe-contracts/src/index.ts"],
 			"features": ["../../packages/features/src/index.ts"],
 			"features/workout": ["../../packages/features/src/workout/index.ts"]
 		}

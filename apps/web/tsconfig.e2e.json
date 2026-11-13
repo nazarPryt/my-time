@@ -20,7 +20,8 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@my-time/api": ["../../apps/api/src/public.ts"],
-			"contracts": ["../../contracts/src/index.ts"]
+			"contracts": ["../../contracts/src/index.ts"],
+			"@my-time/mfe-contracts": ["../../packages/mfe-contracts/src/index.ts"]
 		}
 	},
 	"include": ["e2e"]
