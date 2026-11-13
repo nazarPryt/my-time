@@ -16,6 +16,7 @@ All commands run from the monorepo root using `bun`.
 bun run web:dev          # Vite dev server (http://localhost:5173)
 bun run api:dev          # Bun/Elysia API with --watch (http://localhost:3000)
 bun run extension:dev    # Browser extension (WXT)
+bun run quiz:dev         # English quiz micro frontend alone (http://localhost:5174/remotes/english-quiz/)
 bun run desktop:build   # GNOME desktop extension (Ubuntu / GNOME 46)
 bun run desktop:package # Installable GNOME extension zip
 bun run desktop:install # Package + install into the user's GNOME extensions
@@ -117,9 +118,10 @@ my-time/
 │   ├── api/        — Bun + Elysia REST API
 │   ├── web/        — React + Vite SPA
 │   ├── extension/  — Browser extension (WXT + React)
+│   ├── english-quiz/ — Vue micro frontend loaded by web at runtime (see below)
 │   └── desktop/    — GNOME Shell extension (TypeScript + GJS; see its AGENTS.md)
 ├── contracts/      — Shared Zod schemas (source of truth for API shapes)
-└── packages/       — Shared features and runtime-independent session synchronization
+└── packages/       — Shared features, session synchronization, micro-frontend contracts
 ```
 
 Package manager: **bun** with workspaces. Linter/formatter: **Biome** (no ESLint, no Prettier).
@@ -133,6 +135,24 @@ state when disconnected. Keep fetch/Soup, token storage, UI, and timers in their
 client adapters. Keep React synchronization hooks as thin lifecycle adapters;
 separate browser listeners, command handlers, and per-mount summary queues.
 Do not duplicate shared rules in either client.
+
+### Micro frontends
+
+`apps/english-quiz` is a Vue app loaded into `apps/web` at runtime through
+the Module Federation runtime. Full guide: `docs/micro-frontends.md`.
+
+- Host and remote share only `packages/mfe-contracts` (framework-agnostic
+  `mount(el, props) → { update, unmount }`, props, events, contract version).
+  Never import across `apps/web` ↔ `apps/english-quiz`.
+- Remotes are served same-origin under `/remotes/<name>/`: Vite proxy in dev,
+  `apps/web/nginx.conf` in production. Keep remote `base`, nginx paths and
+  proxies in sync.
+- The host loads remotes with `loadRemoteModule` and renders them with
+  `<RemoteApp>` (`apps/web/src/shared/lib/micro-frontends`), which handles
+  loading, errors/retry and lifecycle. A remote failure must never break the
+  rest of the dashboard.
+- Remotes render inside Shadow DOM and style themselves with the host's CSS
+  variables.
 
 ### Date & time
 

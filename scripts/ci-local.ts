@@ -25,6 +25,7 @@ const steps = [
 	['bun', '--filter', 'api', 'typecheck'],
 	['bun', '--filter', 'web', 'typecheck'],
 	['bun', '--filter', 'web', 'typecheck:e2e'],
+	['bun', '--filter', 'english-quiz', 'typecheck'],
 	['bun', '--filter', 'desktop', 'typecheck'],
 	['bun', '--filter', 'desktop', 'typecheck:integration'],
 	['bun', '--filter', 'extension', 'compile'],
@@ -32,11 +33,13 @@ const steps = [
 	['bun', '--filter', 'api', 'test'],
 	['bun', '--filter', 'web', 'test'],
 	['bun', '--filter', '@my-time/session-sync', 'test'],
+	['bun', '--filter', 'english-quiz', 'test'],
 	['bun', '--filter', 'desktop', 'test'],
 	['bun', '--filter', 'web', 'test:e2e'],
 	['bun', 'run', 'test:web:e2e:extension'],
 	['bun', 'run', 'test:web:e2e:integration'],
 	['bun', '--filter', 'web', 'build'],
+	['bun', '--filter', 'english-quiz', 'build'],
 ]
 
 if (process.argv.slice(2).length) {

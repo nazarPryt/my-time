@@ -51,6 +51,7 @@ jobs:
       - run: bun run --filter api typecheck
       - run: bun run --filter web typecheck
       - run: bun --filter web typecheck:e2e
+      - run: bun --filter english-quiz typecheck
       - run: bun --filter desktop typecheck
       - run: bun --filter desktop typecheck:integration
 
@@ -133,6 +134,7 @@ jobs:
       # Pure bun:test unit tests scoped to apps/web/src — no DB or browser needed.
       - run: bun --filter web test
       - run: bun --filter @my-time/session-sync test
+      - run: bun --filter english-quiz test
 
   test-desktop:
     name: Desktop unit tests
@@ -176,8 +178,8 @@ jobs:
       - run: bunx playwright install --with-deps chromium
         working-directory: apps/web
       # e2e specs mock every API call via page.route(...) — Playwright's own
-      # webServer config (apps/web/playwright.config.ts) starts Vite, no
-      # Postgres/API service needed here.
+      # webServer config (apps/web/playwright.config.ts) starts Vite for the
+      # web host and the english-quiz remote, no Postgres/API service needed.
       - run: bun --filter web test:e2e
       - run: bun run test:web:e2e:extension
       - name: Upload Playwright report
@@ -231,3 +233,4 @@ jobs:
           restore-keys: bun-${{ runner.os }}-
       - run: bun install --frozen-lockfile
       - run: bun --filter web build
+      - run: bun --filter english-quiz build
