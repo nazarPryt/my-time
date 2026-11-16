@@ -1,11 +1,13 @@
 import {
+	DEFAULT_QUIZ_LEVEL,
 	ENGLISH_QUIZ_CONTRACT_VERSION,
 	type EnglishQuizProps,
+	isQuizMode,
 	type RemoteMount,
 } from '@my-time/mfe-contracts'
 import { createApp, h, reactive } from 'vue'
-import QuizApp from './quiz-app.vue'
-import styles from './styles/quiz.css?inline'
+import AppRoot from './app/app-root.vue'
+import { styles } from './styles'
 
 /**
  * The module the host loads through Module Federation (`englishQuiz/mount`).
@@ -33,8 +35,10 @@ export const mount: RemoteMount<EnglishQuizProps> = (
 
 	const app = createApp({
 		render: () =>
-			h(QuizApp, {
-				initialLevel: props.initialLevel ?? 'B1',
+			h(AppRoot, {
+				// Don't trust the host to send a known id.
+				mode: isQuizMode(props.mode) ? props.mode : undefined,
+				initialLevel: props.initialLevel ?? DEFAULT_QUIZ_LEVEL,
 				report: (event) => props.onEvent?.(event),
 			}),
 	})

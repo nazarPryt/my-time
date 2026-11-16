@@ -1,0 +1,55 @@
+/* Same shimmer as the host's skeletons, using its tokens. */
+@keyframes skeleton-sweep {
+	from {
+		background-position: -120vw 0;
+	}
+	to {
+		background-position: 20vw 0;
+	}
+}
+
+.skeleton-block {
+	display: block;
+	max-width: 100%;
+	border-radius: var(--quiz-radius-sm);
+	background-color: var(--skeleton, #e5e7eb);
+	background-image: linear-gradient(
+		100deg,
+		transparent 42%,
+		var(--skeleton-highlight, rgb(255 255 255 / 0.85)) 50%,
+		transparent 58%
+	);
+	background-size: 200vw 100%;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	animation: skeleton-sweep 1.8s ease-in-out infinite;
+}
+
+.skeleton-block[data-shape="pill"] {
+	border-radius: 999px;
+}
+
+@keyframes skeleton-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* Delayed so fast loads never flash a skeleton. */
+.skeleton-status {
+	display: block;
+	animation: skeleton-fade-in 0.3s ease-out 0.1s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.skeleton-block {
+		animation: none;
+		background-image: none;
+	}
+	.skeleton-status {
+		animation: none;
+	}
+}
