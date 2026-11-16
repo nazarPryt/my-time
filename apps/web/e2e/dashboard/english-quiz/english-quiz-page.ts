@@ -1,55 +1,53 @@
+import type { QuizLevel, QuizMode } from '@my-time/mfe-contracts'
 import type { LinkProps } from '@tanstack/react-router'
-import { ENGLISH_QUIZ_TEST_IDS } from '@/features/english-quiz/test-ids'
-import { BaseLocators } from '../base-locators'
+import { ENGLISH_QUIZ_MODE_PARAM } from '@/features/english-quiz/lib/english-quiz-search'
+import { EnglishQuizLocators } from './english-quiz.locators'
 
 export const ENGLISH_QUIZ_PATH: LinkProps['to'] = '/dashboard/english-quiz'
-/** Every request the browser makes for the remote's files. */
-export const REMOTE_ASSETS = '**/remotes/english-quiz/**'
 
-/**
- * The quiz is a black box owned by another app: locate its content by role
- * and text (Playwright pierces open shadow roots), not by its internals.
- */
-export class EnglishQuizPage extends BaseLocators {
-	get root() {
-		return this.page.getByTestId(ENGLISH_QUIZ_TEST_IDS.page)
-	}
-	get remote() {
-		return this.page.getByTestId(ENGLISH_QUIZ_TEST_IDS.remote)
-	}
-	get error() {
-		return this.page.getByTestId(ENGLISH_QUIZ_TEST_IDS.error)
-	}
-	get retryButton() {
-		return this.page.getByTestId(ENGLISH_QUIZ_TEST_IDS.retry)
-	}
-	get lastResult() {
-		return this.page.getByTestId(ENGLISH_QUIZ_TEST_IDS.lastResult)
-	}
-	get quizHeading() {
-		return this.remote.getByRole('heading', { name: 'Test your English' })
-	}
-	get score() {
-		return this.remote.getByLabel('Score')
-	}
+/** For `toHaveURL`: true when the URL opens `mode` (null = the hub). */
+export function urlOpensMode(mode: QuizMode | null) {
+	return (url: URL) => url.searchParams.get(ENGLISH_QUIZ_MODE_PARAM) === mode
+}
 
-	async goto() {
-		await this.page.goto(ENGLISH_QUIZ_PATH)
+export class EnglishQuizPage extends EnglishQuizLocators {
+	/** Takes any string, to test unknown modes. */
+	async goto(mode?: QuizMode | string) {
+		const search = mode
+			? `?${new URLSearchParams({ [ENGLISH_QUIZ_MODE_PARAM]: mode })}`
+			: ''
+		await this.page.goto(`${ENGLISH_QUIZ_PATH}${search}`)
 		await this.root.waitFor({ state: 'visible' })
 	}
 
-	/** Plays a full quiz, always picking the first option. */
-	async playThrough(level: 'A2' | 'B1' | 'B2') {
-		await this.remote.getByRole('radio', { name: new RegExp(level) }).click()
-		await this.remote.getByRole('button', { name: 'Start quiz' }).click()
+	async openMode(mode: QuizMode) {
+		await this.modeCard(mode).click()
+	}
+
+	async backToHub() {
+		await this.backToHubButton.click()
+	}
+
+	/** Plays a full level quiz, always picking the first answer. */
+	async playThrough(level: QuizLevel) {
+		await this.levelOption(level).click()
+		await this.startQuizButton.click()
 		for (;;) {
-			await this.remote.locator('button.option').first().click()
-			const next = this.remote.getByRole('button', {
-				name: /Next question|See results/,
-			})
-			const isLast = (await next.textContent())?.includes('See results')
-			await next.click()
-			if (isLast) break
+			await this.answerOptions.first().click()
+			await this.nextQuestionButton.or(this.seeResultsButton).waitFor()
+			if (await this.seeResultsButton.isVisible()) {
+				await this.seeResultsButton.click()
+				return
+			}
+			await this.nextQuestionButton.click()
 		}
+	}
+
+	/** The finished quiz's score as the host formats it, e.g. "6/8". */
+	async readScore() {
+		await this.quizSummary.waitFor({ state: 'visible' })
+		const correct = (await this.scoreCorrect.textContent())?.trim()
+		const total = (await this.scoreTotal.textContent())?.trim()
+		return `${correct}/${total}`
 	}
 }
