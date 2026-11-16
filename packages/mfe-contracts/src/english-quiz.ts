@@ -5,8 +5,10 @@ import type { RemoteBaseProps, RemoteDescriptor } from './remote-module'
  * (apps/english-quiz). Changing anything here that is not purely additive is
  * a breaking change: bump ENGLISH_QUIZ_CONTRACT_VERSION and ship the remote
  * and host together, or keep the remote backwards compatible.
+ *
+ * v2: the host owns navigation (`mode` prop + `mode-changed` event).
  */
-export const ENGLISH_QUIZ_CONTRACT_VERSION = 1
+export const ENGLISH_QUIZ_CONTRACT_VERSION = 2
 
 export const ENGLISH_QUIZ_REMOTE = {
 	name: 'englishQuiz',
@@ -16,6 +18,16 @@ export const ENGLISH_QUIZ_REMOTE = {
 
 export const QUIZ_LEVELS = ['A2', 'B1', 'B2'] as const
 export type QuizLevel = (typeof QUIZ_LEVELS)[number]
+
+export const DEFAULT_QUIZ_LEVEL: QuizLevel = 'B1'
+
+/** Also the URL values (`?mode=<id>`): renaming one breaks bookmarks. */
+export const ENGLISH_QUIZ_MODES = ['level-quiz', 'sentence-builder'] as const
+export type QuizMode = (typeof ENGLISH_QUIZ_MODES)[number]
+
+export function isQuizMode(value: unknown): value is QuizMode {
+	return (ENGLISH_QUIZ_MODES as readonly unknown[]).includes(value)
+}
 
 export interface QuizResult {
 	level: QuizLevel
@@ -29,10 +41,14 @@ export interface QuizResult {
 export type EnglishQuizEvent =
 	| { type: 'quiz-started'; level: QuizLevel }
 	| { type: 'quiz-completed'; result: QuizResult }
+	/** `null` = the hub. The host updates the URL and passes `mode` back. */
+	| { type: 'mode-changed'; mode: QuizMode | null }
 
 /** Props the host passes to the quiz (host → remote communication). */
 export interface EnglishQuizProps extends RemoteBaseProps {
-	/** Level preselected on the start screen. */
+	/** `undefined` shows the hub. */
+	mode?: QuizMode
+	/** Level preselected on the level quiz start screen. */
 	initialLevel?: QuizLevel
 	onEvent?: (event: EnglishQuizEvent) => void
 }
