@@ -2,26 +2,9 @@ import type { EnglishQuizProps } from '@my-time/mfe-contracts'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { RemoteApp } from '@/shared/lib/micro-frontends'
 import { Button } from '@/shared/ui/button'
-import { Skeleton, SkeletonStatus } from '@/shared/ui/skeleton'
 import { loadEnglishQuiz } from '../model/load-english-quiz'
 import { ENGLISH_QUIZ_TEST_IDS } from '../test-ids'
-
-function QuizSkeleton() {
-	return (
-		<SkeletonStatus data-testid={ENGLISH_QUIZ_TEST_IDS.loading}>
-			<div className="max-w-xl mx-auto rounded-xl border border-border bg-card p-6 space-y-4">
-				<Skeleton className="h-5 w-40" />
-				<Skeleton className="h-4 w-full" />
-				<div className="grid grid-cols-3 gap-2">
-					<Skeleton className="h-14" />
-					<Skeleton className="h-14" />
-					<Skeleton className="h-14" />
-				</div>
-				<Skeleton className="h-10 w-full" />
-			</div>
-		</SkeletonStatus>
-	)
-}
+import { HubSkeleton } from './hub-skeleton'
 
 function QuizUnavailable({ onRetry }: { onRetry: () => void }) {
 	return (
@@ -60,7 +43,7 @@ export function EnglishQuizRemote(props: EnglishQuizProps) {
 			testId={ENGLISH_QUIZ_TEST_IDS.remote}
 			load={loadEnglishQuiz}
 			props={props}
-			fallback={<QuizSkeleton />}
+			fallback={<HubSkeleton />}
 			renderError={(_error, retry) => <QuizUnavailable onRetry={retry} />}
 		/>
 	)
