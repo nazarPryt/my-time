@@ -50,11 +50,18 @@ web container (nginx) ───────────────────�
    fails (the remote reports its own render errors through `onError`, since
    they never reach React's error boundaries). The rest of the dashboard
    keeps working.
-6. **Communication.** Host → remote through props (`initialLevel`,
+6. **Communication.** Host → remote through props (`mode`, `initialLevel`,
    `update()` on change). Remote → host through callbacks (`onEvent` with
-   `quiz-started` / `quiz-completed`). The "Last result" card on the page is
-   React rendering data that came from Vue.
-7. **Same-origin serving.** The browser always requests
+   `quiz-started` / `quiz-completed` / `mode-changed`). The "Last result" card
+   on the page is React rendering data that came from Vue.
+7. **Routing: one router, owned by the host.** The remote has no router. The
+   host keeps the open mode in its URL (`/dashboard/english-quiz?mode=<id>`,
+   validated against `ENGLISH_QUIZ_MODES` from the contract) and passes it as
+   the `mode` prop; no `mode` shows the remote's hub. When the learner picks a
+   mode or goes back, the remote sends `mode-changed` and waits for the new
+   prop. Two routers in one tab (e.g. Vue Router's web history next to
+   TanStack Router) would both write to `history` and drift apart.
+8. **Same-origin serving.** The browser always requests
    `/remotes/english-quiz/…` from the site itself. Vite's dev proxy and the
    production nginx forward that to the remote's server. Same URL in every
    environment, no CORS, no extra domain or certificate.
