@@ -1,6 +1,7 @@
 /**
- * Domain types of the sentence builder. Shaped like the future API responses:
- * when topics move to the database, only data/topic-source.ts changes.
+ * Domain types of the sentence builder, shaped like the future API responses
+ * (plain JSON, no functions). When topics move to the database, only
+ * data/topic-source.ts changes.
  */
 
 export const TOPIC_LEVELS = ['beginner', 'intermediate', 'advanced'] as const
@@ -16,14 +17,19 @@ export interface TopicSummary {
 	subtitle: string
 }
 
+/** A topic's page: the rule, but not its sentence bank (that can be large). */
 export interface Topic extends TopicSummary {
 	rule: readonly RuleSection[]
-	sentences: readonly Sentence[]
 }
+
+export const SENTENCE_FORMS = ['affirmative', 'question', 'negative'] as const
+export type SentenceForm = (typeof SENTENCE_FORMS)[number]
 
 /** One sentence the learner assembles word by word. */
 export interface Sentence {
+	/** Permanent: progress history is keyed by it, so never reuse or renumber. */
 	id: string
+	form: SentenceForm
 	/** The sentence in the learner's language — what they translate. */
 	prompt: string
 	/** The English translation, e.g. "How do you play?". */
@@ -36,12 +42,13 @@ export interface Sentence {
 	traps?: Readonly<Record<string, readonly string[]>>
 }
 
-export const RULE_SECTION_KINDS = [
-	'affirmative',
-	'question',
-	'negative',
-	'usage',
-] as const
+/** The sentences picked from a topic's bank for one attempt. */
+export interface Round {
+	topicId: string
+	sentences: readonly Sentence[]
+}
+
+export const RULE_SECTION_KINDS = [...SENTENCE_FORMS, 'usage'] as const
 export type RuleSectionKind = (typeof RULE_SECTION_KINDS)[number]
 
 export interface RuleExample {

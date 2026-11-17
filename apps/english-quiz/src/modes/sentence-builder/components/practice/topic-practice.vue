@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue'
 import { useTopicPractice } from '../../composables/use-topic-practice'
-import type { Topic } from '../../model/types'
+import type { Round, Topic } from '../../model/types'
 import RulePage from '../rule/rule-page.vue'
 import ProgressDots from './progress-dots.vue'
 import SentenceExercise from './sentence-exercise.vue'
 import TopicComplete from './topic-complete.vue'
 
-const { topic } = defineProps<{ topic: Topic }>()
-const emit = defineEmits<{ back: [] }>()
+const { topic, round } = defineProps<{ topic: Topic; round: Round }>()
+const emit = defineEmits<{ restart: []; back: [] }>()
 
-const {
-	currentSentence,
-	dots,
-	finished,
-	score,
-	total,
-	completeSentence,
-	restart,
-} = useTopicPractice(() => topic)
+const { currentSentence, dots, finished, score, total, completeSentence } =
+	useTopicPractice(() => round)
 
 const ruleOpen = shallowRef(false)
 </script>
@@ -36,7 +29,7 @@ const ruleOpen = shallowRef(false)
 			v-if="finished"
 			:score="score"
 			:total="total"
-			@restart="restart"
+			@restart="emit('restart')"
 			@back="emit('back')"
 		/>
 		<SentenceExercise

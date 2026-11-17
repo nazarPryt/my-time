@@ -14,21 +14,19 @@ import {
 	score,
 	startPractice,
 } from '../model/topic-practice'
-import type { Topic } from '../model/types'
+import type { Round } from '../model/types'
 
 /**
- * Walks through a topic's sentences: which one is current, the progress dots
- * and the final score. Starts over when a different topic is passed in.
+ * Walks through a round's sentences: which one is current, the progress dots
+ * and the final score. Starts over when a new round is passed in.
  */
-export function useTopicPractice(topic: MaybeRefOrGetter<Topic>) {
-	const sentences = computed(() => toValue(topic).sentences)
+export function useTopicPractice(round: MaybeRefOrGetter<Round>) {
+	const sentences = computed(() => toValue(round).sentences)
 	const state = shallowRef<PracticeState>(startPractice(sentences.value.length))
 
-	function restart() {
-		state.value = startPractice(sentences.value.length)
-	}
-
-	watch(() => toValue(topic).id, restart)
+	watch(sentences, (next) => {
+		state.value = startPractice(next.length)
+	})
 
 	const currentSentence = computed(
 		() => sentences.value[currentIndex(state.value)] ?? null,
@@ -43,6 +41,5 @@ export function useTopicPractice(topic: MaybeRefOrGetter<Topic>) {
 		completeSentence(firstTry: boolean) {
 			state.value = completeSentence(state.value, firstTry)
 		},
-		restart,
 	}
 }

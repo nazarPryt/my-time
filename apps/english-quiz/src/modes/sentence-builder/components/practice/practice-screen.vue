@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/mfe-contracts'
+import { computed } from 'vue'
 import QuizIcon from '../../../../shared/ui/quiz-icon.vue'
+import { useRound } from '../../composables/use-round'
 import { useTopic } from '../../composables/use-topic'
 import LoadError from '../load-error.vue'
 import PracticeSkeleton from './practice-skeleton.vue'
@@ -11,7 +13,20 @@ const TEST_IDS = ENGLISH_QUIZ_REMOTE_TEST_IDS.sentenceBuilder
 const { topicId } = defineProps<{ topicId: string }>()
 const emit = defineEmits<{ back: [] }>()
 
-const { topic, pending, error, reload } = useTopic(() => topicId)
+const topicData = useTopic(() => topicId)
+const roundData = useRound(() => topicId)
+const { topic } = topicData
+const { round } = roundData
+
+const pending = computed(
+	() => topicData.pending.value || roundData.pending.value,
+)
+const failed = computed(() => topicData.error.value || roundData.error.value)
+
+function retry() {
+	if (topicData.error.value) topicData.reload()
+	if (roundData.error.value) roundData.reload()
+}
 </script>
 
 <template>
@@ -30,11 +45,13 @@ const { topic, pending, error, reload } = useTopic(() => topicId)
 		</header>
 
 		<PracticeSkeleton v-if="pending" />
-		<LoadError v-else-if="error || !topic" @retry="reload" />
+		<LoadError v-else-if="failed || !topic || !round" @retry="retry" />
 		<TopicPractice
 			v-else
 			:key="topic.id"
 			:topic="topic"
+			:round="round"
+			@restart="roundData.reload"
 			@back="emit('back')"
 		/>
 	</section>

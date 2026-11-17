@@ -88,26 +88,43 @@ components  →  composables  →  model
   here and is unit-tested with `bun:test`.
 - **composables/** — hold reactive state (`shallowRef` of a model state),
   expose read-only `computed` values and named actions. One per stateful
-  responsibility: `use-topic-catalog`, `use-topic`, `use-topic-practice`,
-  `use-sentence-attempt`.
+  responsibility: `use-topic-catalog`, `use-topic`, `use-round`,
+  `use-topic-practice`, `use-sentence-attempt`.
 - **components/** — props down, events up. Each owns at most one composable;
   the rest only render what they receive.
-- **data/** — `TopicSource` is async (`listTopics`, `getTopic`). Today
-  `createLocalTopicSource` serves the hard-coded topics in `data/topics/`;
-  when the API exists, implement the same interface with fetch calls and
-  replace `topicSource`. Components and composables already handle
-  loading/error states, so nothing else changes.
+- **data/** — `TopicSource` is async and maps one method to one future
+  endpoint: `listTopics` (`GET /topics`), `getTopic` (`GET /topics/:id`, the
+  rule without sentences) and `getRound` (`GET /topics/:id/round?size=10`).
+  Today `createLocalTopicSource` serves the hard-coded topics and picks
+  rounds with `pickRound`; when the API exists, implement the same interface
+  with fetch calls and replace `topicSource`. Components and composables
+  already handle loading/error states, so nothing else changes.
+
+### Sentence content
+
+- One file per topic in `data/topics/<level>/<topic-id>.ts`, written with
+  `defineTopic` (later the database seed). The level's `index.ts` sets the
+  display order.
+- A topic holds a **bank** of sentences (aim for 100+); each attempt gets a
+  **round** of `ROUND_SIZE` (10) picked by `pickRound`: random, taking
+  affirmative / question / negative in turn so a round is never one kind.
+- Every sentence has a permanent `id` (`<topic-id>-<n>`; never renumber or
+  reuse one — progress history will be keyed by it) and a `form`.
+- A one-line `rule` becomes a "usage" section illustrated by the first three
+  sentences; write full sections for anything bigger.
+- `data/topic-source.test.ts` checks the content: unique ids, known forms,
+  traps that belong to the answer and differ from it.
 
 ## Sentence builder flow
 
 ```
-TopicList ──select──▶ PracticeScreen (loads the topic)
+TopicList ──select──▶ PracticeScreen (loads the topic + a round)
                          └─ TopicPractice (sentence index, progress dots, rule toggle)
                               ├─ SentenceExercise (one sentence; keyed → fresh state per sentence)
                               │    ├─ building: AnswerLine + WordTileGrid
                               │    ├─ wrong:    WrongAnswer (whole sentence, wrong words struck + fix above, Try again)
                               │    └─ correct:  CorrectAnswer (Next)
-                              ├─ TopicComplete (score, Practice again / Back to topics)
+                              ├─ TopicComplete (score, Practice again = new round / Back to topics)
                               └─ RulePage (sidebar sections + examples)
 ```
 
@@ -119,6 +136,10 @@ TopicList ──select──▶ PracticeScreen (loads the topic)
   sentence counts toward the score only if solved without mistakes.
 - The rule page is shown with `v-if` while the exercise is hidden with
   `v-show`, so the picked words survive opening the rule.
+- Punctuation is never a tile and never checked: `parseAnswer` splits
+  "Yes, I do." into the words `Yes` `I` `do`, each with the punctuation
+  printed `before`/`after` it. Apostrophes and hyphens stay inside words
+  (`doesn't`, `twenty-one`), and known abbreviations keep their dots (`Mr.`).
 - Tiles per step: the expected word + hand-picked `traps` for that word +
   other words of the sentence + the shared `WORD_POOL`, deduplicated
   case-insensitively, shuffled. The first step capitalises every tile.
