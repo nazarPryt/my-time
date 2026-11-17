@@ -7,7 +7,7 @@ import {
 } from 'vue'
 import type { RandomSource } from '../../../shared/lib/random'
 import { WORD_POOL } from '../data/word-pool'
-import { parseAnswer } from '../model/parse-answer'
+import { answerWords, parseAnswer } from '../model/parse-answer'
 import {
 	type AttemptState,
 	checkWords,
@@ -31,7 +31,8 @@ export function useSentenceAttempt(
 	sentence: MaybeRefOrGetter<Sentence>,
 	{ random = Math.random }: UseSentenceAttemptOptions = {},
 ) {
-	const parsed = computed(() => parseAnswer(toValue(sentence).answer))
+	const tokens = computed(() => parseAnswer(toValue(sentence).answer))
+	const words = computed(() => answerWords(tokens.value))
 	const state = shallowRef<AttemptState>(INITIAL_ATTEMPT)
 
 	watch(
@@ -46,7 +47,7 @@ export function useSentenceAttempt(
 	// when the learner moves to the next word, not on every re-render.
 	const tiles = computed(() =>
 		buildWordTiles({
-			words: parsed.value.words,
+			words: words.value,
 			step: step.value,
 			traps: toValue(sentence).traps,
 			pool: WORD_POOL,
@@ -58,13 +59,11 @@ export function useSentenceAttempt(
 		status: computed(() => state.value.status),
 		picked: computed(() => state.value.picked),
 		/** Each picked word against the answer; shown once the sentence is wrong. */
-		checkedWords: computed(() =>
-			checkWords(state.value.picked, parsed.value.words),
-		),
+		checkedWords: computed(() => checkWords(state.value.picked, tokens.value)),
 		isFirstTry: computed(() => state.value.mistakes === 0),
 		tiles,
 		pick(word: string) {
-			state.value = pickWord(state.value, parsed.value.words, word)
+			state.value = pickWord(state.value, words.value, word)
 		},
 		undo() {
 			state.value = undoWord(state.value)

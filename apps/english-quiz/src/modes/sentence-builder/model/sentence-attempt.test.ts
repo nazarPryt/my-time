@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { parseAnswer } from './parse-answer'
 import {
 	type AttemptState,
 	checkWords,
@@ -72,11 +73,18 @@ describe('sentence attempt', () => {
 
 describe('checkWords', () => {
 	test('marks every slot that differs from the answer', () => {
-		expect(checkWords(['How', 'do', 'it', 'plays'], WORDS)).toEqual([
-			{ picked: 'How', expected: 'How', correct: true },
-			{ picked: 'do', expected: 'do', correct: true },
-			{ picked: 'it', expected: 'you', correct: false },
-			{ picked: 'plays', expected: 'play', correct: false },
+		expect(
+			checkWords(['Yes', 'it', 'plays'], parseAnswer('Yes, you play.')),
+		).toEqual([
+			{ picked: 'Yes', expected: 'Yes', correct: true, before: '', after: ',' },
+			{ picked: 'it', expected: 'you', correct: false, before: '', after: '' },
+			{
+				picked: 'plays',
+				expected: 'play',
+				correct: false,
+				before: '',
+				after: '.',
+			},
 		])
 	})
 })

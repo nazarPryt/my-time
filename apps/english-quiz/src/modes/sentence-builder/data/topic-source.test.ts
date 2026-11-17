@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { parseAnswer } from '../model/parse-answer'
+import { answerWords, parseAnswer } from '../model/parse-answer'
 import {
 	ALL_TOPICS,
 	createLocalTopicSource,
@@ -29,7 +29,7 @@ describe('hard-coded topics', () => {
 	test('every trap belongs to a word of its answer', () => {
 		for (const topic of ALL_TOPICS) {
 			for (const sentence of topic.sentences) {
-				const words = parseAnswer(sentence.answer).words.map((word) =>
+				const words = answerWords(parseAnswer(sentence.answer)).map((word) =>
 					word.toLowerCase(),
 				)
 				expect(words.length, sentence.id).toBeGreaterThan(1)

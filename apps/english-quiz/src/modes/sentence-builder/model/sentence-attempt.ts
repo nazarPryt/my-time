@@ -1,3 +1,5 @@
+import type { AnswerToken } from './parse-answer'
+
 /**
  * State machine for assembling one sentence. Picks are not checked one by
  * one: the learner fills every slot, and the whole sentence is checked when
@@ -21,21 +23,26 @@ export const INITIAL_ATTEMPT: AttemptState = {
 	mistakes: 0,
 }
 
-/** One slot of a checked sentence: what was picked vs. what was expected. */
+/**
+ * One slot of a checked sentence: what was picked vs. what was expected,
+ * with the answer's punctuation around it (never part of the check).
+ */
 export interface CheckedWord {
 	readonly picked: string
 	readonly expected: string
 	readonly correct: boolean
+	readonly before: string
+	readonly after: string
 }
 
 /** Compares the picked words with the answer, position by position. */
 export function checkWords(
 	picked: readonly string[],
-	words: readonly string[],
+	tokens: readonly AnswerToken[],
 ): CheckedWord[] {
 	return picked.map((word, index) => {
-		const expected = words[index] ?? ''
-		return { picked: word, expected, correct: word === expected }
+		const { word: expected = '', before = '', after = '' } = tokens[index] ?? {}
+		return { picked: word, expected, correct: word === expected, before, after }
 	})
 }
 
@@ -48,7 +55,9 @@ export function pickWord(
 	const picked = [...state.picked, word]
 	if (picked.length < words.length) return { ...state, picked }
 
-	const correct = checkWords(picked, words).every((slot) => slot.correct)
+	const correct = picked.every(
+		(pickedWord, index) => pickedWord === words[index],
+	)
 	return correct
 		? { ...state, picked, status: 'correct' }
 		: { ...state, picked, status: 'wrong', mistakes: state.mistakes + 1 }

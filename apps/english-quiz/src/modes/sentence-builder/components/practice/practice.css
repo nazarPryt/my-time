@@ -127,6 +127,11 @@
 	font-weight: 500;
 }
 
+.wrong-answer-item {
+	display: inline-flex;
+	align-items: flex-end;
+}
+
 .wrong-answer-slot {
 	display: inline-flex;
 	flex-direction: column;
