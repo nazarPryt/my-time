@@ -23,9 +23,10 @@ const pending = computed(
 )
 const failed = computed(() => topicData.error.value || roundData.error.value)
 
+// Reload whatever is missing, so Retry never does nothing.
 function retry() {
-	if (topicData.error.value) topicData.reload()
-	if (roundData.error.value) roundData.reload()
+	if (topicData.error.value || !topic.value) topicData.reload()
+	if (roundData.error.value || !round.value) roundData.reload()
 }
 </script>
 

@@ -37,7 +37,8 @@ export interface Sentence {
 	/**
 	 * Other correct translations as patterns, expanded by expandVariants():
 	 * `{a|b}` is a choice, an empty option makes words optional, e.g.
-	 * `["I {do not|don't} know {|it}."]`. `answer` is always accepted.
+	 * `["I {really|} like {films|movies}."]`. `answer` is always accepted;
+	 * contractions (don't ↔ do not) are accepted automatically.
 	 */
 	accept?: readonly string[]
 	/**

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
 	acceptedAnswers,
 	expandVariants,
+	findPrefixConflict,
 	MAX_VARIANTS,
 	VariantSyntaxError,
 } from './answer-variants'
@@ -39,6 +40,13 @@ describe('expandVariants', () => {
 		}
 	})
 
+	test('starts every variant with a capital', () => {
+		expect(expandVariants('{Please|} sit down.')).toEqual([
+			'Please sit down.',
+			'Sit down.',
+		])
+	})
+
 	test('rejects a pattern with too many variants', () => {
 		const pattern = Array.from({ length: 7 }, () => '{a|b}').join(' ')
 		expect(2 ** 7).toBeGreaterThan(MAX_VARIANTS)
@@ -74,5 +82,26 @@ describe('acceptedAnswers', () => {
 			['Yes', 'I', 'do'],
 			['Yeah', 'I', 'do'],
 		])
+	})
+})
+
+describe('findPrefixConflict', () => {
+	test('finds an answer that is the start of another', () => {
+		expect(
+			findPrefixConflict([
+				['I', 'know', 'it'],
+				['I', 'know'],
+			]),
+		).toEqual(['I know', 'I know it'])
+	})
+
+	test('allows answers that only share a start', () => {
+		expect(
+			findPrefixConflict([
+				['I', 'like', 'it'],
+				['I', 'really', 'like', 'it'],
+				['I', 'like', 'them'],
+			]),
+		).toBeNull()
 	})
 })

@@ -55,13 +55,22 @@ describe('parseAnswer', () => {
 		])
 	})
 
-	test('glues detached punctuation to a neighbouring word', () => {
+	test('keeps detached punctuation, and its space, next to a word', () => {
 		expect(parseAnswer('Stop !')).toEqual([
-			{ word: 'Stop', before: '', after: '!' },
+			{ word: 'Stop', before: '', after: ' !' },
 		])
 		expect(parseAnswer('" Hi')).toEqual([
-			{ word: 'Hi', before: '"', after: '' },
+			{ word: 'Hi', before: '" ', after: '' },
 		])
+		expect(words('I came — and left.')).toEqual(['I', 'came', 'and', 'left'])
+	})
+
+	test('keeps a detached quote after the last word', () => {
+		expect(parseAnswer('Say " hi "').at(-1)).toEqual({
+			word: 'hi',
+			before: '" ',
+			after: ' "',
+		})
 	})
 
 	test('ignores extra spaces', () => {

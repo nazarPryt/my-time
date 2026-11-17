@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { seededRandom } from '../../../shared/lib/random'
-import { acceptedAnswers } from '../model/answer-variants'
+import { acceptedAnswers, findPrefixConflict } from '../model/answer-variants'
 import { answerWords, parseAnswer } from '../model/parse-answer'
 import { SENTENCE_FORMS } from '../model/types'
 import { defineTopic } from './define-topic'
@@ -43,14 +43,22 @@ describe('hard-coded topics', () => {
 		for (const sentence of ALL_SENTENCES) {
 			if (!sentence.accept) continue
 			// Throws on broken syntax, naming the pattern.
-			const answers = acceptedAnswers(sentence)
+			const withAccept = acceptedAnswers(sentence)
+			const withoutAccept = acceptedAnswers({ answer: sentence.answer })
 			expect(
-				answers.length,
-				`${sentence.id}: nothing new accepted`,
-			).toBeGreaterThan(1)
-			for (const tokens of answers) {
+				withAccept.length,
+				`${sentence.id}: accept adds nothing beyond contractions`,
+			).toBeGreaterThan(withoutAccept.length)
+			for (const tokens of withAccept) {
 				expect(tokens.length, sentence.id).toBeGreaterThan(1)
 			}
+		}
+	})
+
+	test('no accepted answer is the start of another', () => {
+		for (const sentence of ALL_SENTENCES) {
+			const lists = acceptedAnswers(sentence).map(answerWords)
+			expect(findPrefixConflict(lists), sentence.id).toBeNull()
 		}
 	})
 

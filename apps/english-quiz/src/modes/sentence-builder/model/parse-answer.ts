@@ -46,9 +46,10 @@ export function parseAnswer(answer: string): AnswerToken[] {
 	for (const raw of answer.trim().split(/\s+/).filter(Boolean)) {
 		const last = tokens.at(-1)
 		if (PUNCTUATION_ONLY.test(raw)) {
-			// A detached mark ("Stop !", "— yes"): glue it to a neighbour.
-			if (last && !LEADING.test(raw)) last.after += raw
-			else pendingBefore += raw
+			// A detached mark ("came — and", "" hi"): keep it, and its space,
+			// next to a neighbouring word.
+			if (last && !LEADING.test(raw)) last.after += ` ${raw}`
+			else pendingBefore += `${raw} `
 			continue
 		}
 		const before = raw.match(LEADING)?.[0] ?? ''
@@ -56,6 +57,9 @@ export function parseAnswer(answer: string): AnswerToken[] {
 		tokens.push({ word, before: pendingBefore + before, after })
 		pendingBefore = ''
 	}
+	// A mark after the last word that looked like an opening one: 'say " hi "'.
+	const last = tokens.at(-1)
+	if (last && pendingBefore) last.after += ` ${pendingBefore.trimEnd()}`
 	return tokens
 }
 

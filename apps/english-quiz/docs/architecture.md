@@ -112,15 +112,26 @@ components  →  composables  →  model
   reuse one — progress history will be keyed by it) and a `form`.
 - Other correct translations go in `accept` as patterns: `{a|b}` is a
   choice and an empty option makes words optional, e.g.
-  `accept: ["I {do not|don't} know {|it}."]`. The canonical `answer` is always
-  accepted and is what the rule examples show. Keep patterns small (at most
-  `MAX_VARIANTS` expansions) and add only translations a teacher would accept.
-- Unambiguous contractions are accepted automatically in both directions
-  (`model/contractions.ts`): `don't` ↔ `do not`, `I'm` ↔ `I am`, `can't` ↔
-  `cannot`… so content uses contractions and never lists them in `accept`.
-  Negatives are not swapped in questions ("Why don't you…?"), a pronoun +
-  verb is not contracted at a clause end ("Yes, I am."), `'ve` is only
-  expanded, and ambiguous `'s` / `'d` are left to `accept`.
+  `accept: ["I {really|} like {films|movies}."]`. The canonical `answer` is
+  always accepted and is what the rule examples show. Keep patterns small (at
+  most `MAX_VARIANTS` expansions) and add only translations a teacher would
+  accept: anything accepted is taught as correct English.
+- **No accepted answer may be the start of another** ("I know" and "I know
+  it"): there is no "check" button, a sentence is done as soon as it equals an
+  accepted answer, so the longer one could never be built. The content test
+  enforces this with `findPrefixConflict`; the API seed must enforce it too.
+- Contractions are accepted automatically (`model/contractions.ts`), so
+  content writes them and never lists them in `accept`. The rules only ever
+  accept correct English, so they accept less when in doubt:
+  - negatives swap both ways (`don't` ↔ `do not`, `can't` ↔ `cannot`), but
+    never in questions ("Why don't you…?" ≠ "Why do not you…?") or across
+    punctuation;
+  - pronoun forms are only expanded (`I'm` → `I am`): contracting them is
+    wrong at a clause end ("Yes, I am.", "who you are and…") and for a
+    main-verb have ("I have a car");
+  - swaps chain ("They're not" → "They are not" → "They aren't"), breadth
+    first, capped at `MAX_CONTRACTION_VARIANTS` dropping the most rewritten;
+  - ambiguous `'s` (is/has) and `'d` (had/would) are left to `accept`.
 - A one-line `rule` becomes a "usage" section illustrated by the first three
   sentences; write full sections for anything bigger.
 - `data/topic-source.test.ts` checks the content: unique ids, known forms,

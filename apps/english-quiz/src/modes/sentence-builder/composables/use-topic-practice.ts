@@ -1,10 +1,4 @@
-import {
-	computed,
-	type MaybeRefOrGetter,
-	shallowRef,
-	toValue,
-	watch,
-} from 'vue'
+import { computed, type MaybeRefOrGetter, shallowRef, toValue } from 'vue'
 import {
 	completeSentence,
 	currentIndex,
@@ -18,15 +12,12 @@ import type { Round } from '../model/types'
 
 /**
  * Walks through a round's sentences: which one is current, the progress dots
- * and the final score. Starts over when a new round is passed in.
+ * and the final score. A new round remounts the practice (the parent shows
+ * a skeleton while it loads), so the state never needs resetting here.
  */
 export function useTopicPractice(round: MaybeRefOrGetter<Round>) {
 	const sentences = computed(() => toValue(round).sentences)
 	const state = shallowRef<PracticeState>(startPractice(sentences.value.length))
-
-	watch(sentences, (next) => {
-		state.value = startPractice(next.length)
-	})
 
 	const currentSentence = computed(
 		() => sentences.value[currentIndex(state.value)] ?? null,
