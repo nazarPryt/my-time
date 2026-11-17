@@ -1,0 +1,74 @@
+import { contractionVariants } from './contractions'
+import { type AnswerToken, answerWords, parseAnswer } from './parse-answer'
+import type { Sentence } from './types'
+
+/** Guards against a pattern whose groups multiply into a huge list. */
+export const MAX_VARIANTS = 64
+
+export class VariantSyntaxError extends Error {
+	constructor(pattern: string, reason: string) {
+		super(`Invalid answer pattern "${pattern}": ${reason}`)
+		this.name = 'VariantSyntaxError'
+	}
+}
+
+const GROUP = /\{([^{}]*)\}/g
+
+/**
+ * Expands "I {do not|don't} know {|it}." into every sentence it describes:
+ * each `{a|b}` group is one choice, and an empty option makes the words
+ * optional. Groups cannot be nested.
+ */
+export function expandVariants(pattern: string): string[] {
+	const groups = [...pattern.matchAll(GROUP)]
+	if (/[{}]/.test(pattern.replace(GROUP, ''))) {
+		throw new VariantSyntaxError(pattern, 'unbalanced or nested braces')
+	}
+
+	let variants = ['']
+	let cursor = 0
+	for (const group of groups) {
+		const options = (group[1] ?? '').split('|')
+		if (options.length < 2) {
+			throw new VariantSyntaxError(pattern, `"${group[0]}" has one option`)
+		}
+		const text = pattern.slice(cursor, group.index)
+		variants = variants.flatMap((variant) =>
+			options.map((option) => variant + text + option),
+		)
+		if (variants.length > MAX_VARIANTS) {
+			throw new VariantSyntaxError(
+				pattern,
+				`more than ${MAX_VARIANTS} variants`,
+			)
+		}
+		cursor = group.index + group[0].length
+	}
+	const tail = pattern.slice(cursor)
+	return variants.map((variant) => (variant + tail).replace(/\s+/g, ' ').trim())
+}
+
+/**
+ * Every answer the learner may build, as tokens: the canonical `answer`
+ * first, then the expanded `accept` patterns, each also with its
+ * contractions swapped ("doesn't" ↔ "does not"), without duplicates.
+ */
+export function acceptedAnswers(
+	sentence: Pick<Sentence, 'answer' | 'accept'>,
+): AnswerToken[][] {
+	const seen = new Set<string>()
+	const answers: AnswerToken[][] = []
+	const texts = [
+		sentence.answer,
+		...(sentence.accept ?? []).flatMap(expandVariants),
+	]
+	for (const text of texts) {
+		for (const tokens of contractionVariants(parseAnswer(text))) {
+			const key = answerWords(tokens).join(' ')
+			if (seen.has(key)) continue
+			seen.add(key)
+			answers.push(tokens)
+		}
+	}
+	return answers
+}

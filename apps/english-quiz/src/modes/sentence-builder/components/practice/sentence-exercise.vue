@@ -15,8 +15,17 @@ const emit = defineEmits<{
 	showRule: []
 }>()
 
-const { status, picked, checkedWords, isFirstTry, tiles, pick, undo, retry } =
-	useSentenceAttempt(() => sentence)
+const {
+	status,
+	picked,
+	checkedWords,
+	answerText,
+	isFirstTry,
+	tiles,
+	pick,
+	undo,
+	retry,
+} = useSentenceAttempt(() => sentence)
 </script>
 
 <template>
@@ -25,7 +34,7 @@ const { status, picked, checkedWords, isFirstTry, tiles, pick, undo, retry } =
 
 		<CorrectAnswer
 			v-if="status === 'correct'"
-			:answer="sentence.answer"
+			:answer="answerText"
 			@next="emit('finish', isFirstTry)"
 		/>
 

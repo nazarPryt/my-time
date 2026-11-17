@@ -32,8 +32,14 @@ export interface Sentence {
 	form: SentenceForm
 	/** The sentence in the learner's language — what they translate. */
 	prompt: string
-	/** The English translation, e.g. "How do you play?". */
+	/** The English translation, e.g. "How do you play?". Shown as the model answer. */
 	answer: string
+	/**
+	 * Other correct translations as patterns, expanded by expandVariants():
+	 * `{a|b}` is a choice, an empty option makes words optional, e.g.
+	 * `["I {do not|don't} know {|it}."]`. `answer` is always accepted.
+	 */
+	accept?: readonly string[]
 	/**
 	 * Hand-picked wrong forms offered as tiles for a given answer word, e.g.
 	 * `{ play: ['played', 'plays'] }`. Matched case-insensitively. Other tiles

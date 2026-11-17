@@ -67,4 +67,21 @@ describe('buildWordTiles', () => {
 			}),
 		).toEqual([])
 	})
+
+	test('offers every alternative word and never repeats it as a distractor', () => {
+		const tiles = buildWordTiles({
+			words: ["I'm", 'not', 'tired'],
+			step: 0,
+			alternatives: ['I'],
+			traps: { I: ['Me', 'My'] },
+			pool: POOL,
+			random: seededRandom(7),
+		})
+		expect(tiles).toHaveLength(TILES_PER_STEP)
+		expect(tiles).toContain("I'm")
+		expect(tiles).toContain('I')
+		expect(tiles).toContain('Me')
+		expect(tiles).toContain('My')
+		expect(tiles.filter((tile) => tile.toLowerCase() === 'i')).toEqual(['I'])
+	})
 })

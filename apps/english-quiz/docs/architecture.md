@@ -110,6 +110,17 @@ components  →  composables  →  model
   affirmative / question / negative in turn so a round is never one kind.
 - Every sentence has a permanent `id` (`<topic-id>-<n>`; never renumber or
   reuse one — progress history will be keyed by it) and a `form`.
+- Other correct translations go in `accept` as patterns: `{a|b}` is a
+  choice and an empty option makes words optional, e.g.
+  `accept: ["I {do not|don't} know {|it}."]`. The canonical `answer` is always
+  accepted and is what the rule examples show. Keep patterns small (at most
+  `MAX_VARIANTS` expansions) and add only translations a teacher would accept.
+- Unambiguous contractions are accepted automatically in both directions
+  (`model/contractions.ts`): `don't` ↔ `do not`, `I'm` ↔ `I am`, `can't` ↔
+  `cannot`… so content uses contractions and never lists them in `accept`.
+  Negatives are not swapped in questions ("Why don't you…?"), a pronoun +
+  verb is not contracted at a clause end ("Yes, I am."), `'ve` is only
+  expanded, and ambiguous `'s` / `'d` are left to `accept`.
 - A one-line `rule` becomes a "usage" section illustrated by the first three
   sentences; write full sections for anything bigger.
 - `data/topic-source.test.ts` checks the content: unique ids, known forms,
@@ -140,6 +151,11 @@ TopicList ──select──▶ PracticeScreen (loads the topic + a round)
   "Yes, I do." into the words `Yes` `I` `do`, each with the punctuation
   printed `before`/`after` it. Apostrophes and hyphens stay inside words
   (`doesn't`, `twenty-one`), and known abbreviations keep their dots (`Mr.`).
+- With alternatives, the learner follows whichever accepted answer matches
+  their picks so far (`closestAnswer`): the sentence is correct as soon as it
+  equals any accepted answer, and a mistake is shown against the closest one.
+  Every word that continues a matching answer (`nextWords`) is always among
+  the tiles, so each alternative can actually be built.
 - Tiles per step: the expected word + hand-picked `traps` for that word +
   other words of the sentence + the shared `WORD_POOL`, deduplicated
   case-insensitively, shuffled. The first step capitalises every tile.

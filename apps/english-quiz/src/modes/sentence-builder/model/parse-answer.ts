@@ -62,3 +62,10 @@ export function parseAnswer(answer: string): AnswerToken[] {
 export function answerWords(tokens: readonly AnswerToken[]): string[] {
 	return tokens.map((token) => token.word)
 }
+
+/** Joins tokens back into a sentence: "Yes", ",", "I", "do", "." → "Yes, I do." */
+export function formatAnswer(tokens: readonly AnswerToken[]): string {
+	return tokens
+		.map(({ before, word, after }) => `${before}${word}${after}`)
+		.join(' ')
+}

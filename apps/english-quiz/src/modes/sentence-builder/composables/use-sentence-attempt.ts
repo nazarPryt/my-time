@@ -7,11 +7,14 @@ import {
 } from 'vue'
 import type { RandomSource } from '../../../shared/lib/random'
 import { WORD_POOL } from '../data/word-pool'
-import { answerWords, parseAnswer } from '../model/parse-answer'
+import { acceptedAnswers } from '../model/answer-variants'
+import { answerWords, formatAnswer } from '../model/parse-answer'
 import {
 	type AttemptState,
 	checkWords,
+	closestAnswer,
 	INITIAL_ATTEMPT,
+	nextWords,
 	pickWord,
 	retryAttempt,
 	undoWord,
@@ -25,14 +28,15 @@ export interface UseSentenceAttemptOptions {
 
 /**
  * Assembling one sentence from word tiles: the picked words, the tiles for
- * the next word, and the right/wrong outcome once the last word is placed. Resets for a new sentence.
+ * the next word, and the right/wrong outcome once the last word is placed.
+ * Any accepted answer counts. Resets for a new sentence.
  */
 export function useSentenceAttempt(
 	sentence: MaybeRefOrGetter<Sentence>,
 	{ random = Math.random }: UseSentenceAttemptOptions = {},
 ) {
-	const tokens = computed(() => parseAnswer(toValue(sentence).answer))
-	const words = computed(() => answerWords(tokens.value))
+	const answers = computed(() => acceptedAnswers(toValue(sentence)))
+	const wordLists = computed(() => answers.value.map(answerWords))
 	const state = shallowRef<AttemptState>(INITIAL_ATTEMPT)
 
 	watch(
@@ -42,13 +46,19 @@ export function useSentenceAttempt(
 		},
 	)
 
-	const step = computed(() => state.value.picked.length)
-	// Depends only on the sentence and the step, so the tiles are reshuffled
+	const picked = computed(() => state.value.picked)
+	// The accepted answer the learner is following, given the picks so far.
+	const target = computed(
+		() => answers.value[closestAnswer(wordLists.value, picked.value)] ?? [],
+	)
+
+	// Depends only on the sentence and the picks, so the tiles are reshuffled
 	// when the learner moves to the next word, not on every re-render.
 	const tiles = computed(() =>
 		buildWordTiles({
-			words: words.value,
-			step: step.value,
+			words: answerWords(target.value),
+			step: picked.value.length,
+			alternatives: nextWords(wordLists.value, picked.value),
 			traps: toValue(sentence).traps,
 			pool: WORD_POOL,
 			random,
@@ -57,13 +67,15 @@ export function useSentenceAttempt(
 
 	return {
 		status: computed(() => state.value.status),
-		picked: computed(() => state.value.picked),
-		/** Each picked word against the answer; shown once the sentence is wrong. */
-		checkedWords: computed(() => checkWords(state.value.picked, tokens.value)),
+		picked,
+		/** Each picked word against the closest answer; shown once it is wrong. */
+		checkedWords: computed(() => checkWords(picked.value, target.value)),
+		/** The accepted answer the learner built (or is closest to), punctuated. */
+		answerText: computed(() => formatAnswer(target.value)),
 		isFirstTry: computed(() => state.value.mistakes === 0),
 		tiles,
 		pick(word: string) {
-			state.value = pickWord(state.value, words.value, word)
+			state.value = pickWord(state.value, wordLists.value, word)
 		},
 		undo() {
 			state.value = undoWord(state.value)

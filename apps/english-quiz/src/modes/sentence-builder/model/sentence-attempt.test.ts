@@ -3,7 +3,9 @@ import { parseAnswer } from './parse-answer'
 import {
 	type AttemptState,
 	checkWords,
+	closestAnswer,
 	INITIAL_ATTEMPT,
+	nextWords,
 	pickWord,
 	retryAttempt,
 	undoWord,
@@ -13,7 +15,7 @@ const WORDS = ['How', 'do', 'you', 'play']
 
 function pickAll(words: readonly string[], state = INITIAL_ATTEMPT) {
 	return words.reduce<AttemptState>(
-		(current, word) => pickWord(current, WORDS, word),
+		(current, word) => pickWord(current, [WORDS], word),
 		state,
 	)
 }
@@ -42,9 +44,9 @@ describe('sentence attempt', () => {
 
 	test('ignores picks once the sentence is checked', () => {
 		const wrong = pickAll(['How', 'did', 'you', 'play'])
-		expect(pickWord(wrong, WORDS, 'do')).toBe(wrong)
+		expect(pickWord(wrong, [WORDS], 'do')).toBe(wrong)
 		const done = pickAll(WORDS)
-		expect(pickWord(done, WORDS, 'do')).toBe(done)
+		expect(pickWord(done, [WORDS], 'do')).toBe(done)
 	})
 
 	test('retry starts the same sentence over and keeps the mistake count', () => {
@@ -86,5 +88,42 @@ describe('checkWords', () => {
 				after: '.',
 			},
 		])
+	})
+})
+
+describe('several accepted answers', () => {
+	const ANSWERS = [
+		["I'm", 'not', 'tired'],
+		['I', 'am', 'not', 'tired'],
+	]
+	const pickAllOf = (words: readonly string[]) =>
+		words.reduce<AttemptState>(
+			(state, word) => pickWord(state, ANSWERS, word),
+			INITIAL_ATTEMPT,
+		)
+
+	test('accepts any of them', () => {
+		expect(pickAllOf(["I'm", 'not', 'tired']).status).toBe('correct')
+		expect(pickAllOf(['I', 'am', 'not', 'tired']).status).toBe('correct')
+	})
+
+	test('keeps building along a longer answer', () => {
+		expect(pickAllOf(['I', 'am', 'not']).status).toBe('building')
+	})
+
+	test('checks a mistake against the closest answer', () => {
+		const wrong = pickAllOf(['I', 'am', 'no', 'tired'])
+		expect(wrong.status).toBe('wrong')
+		expect(closestAnswer(ANSWERS, wrong.picked)).toBe(1)
+		// Nothing matches: measured against the canonical answer.
+		expect(pickAllOf(['You', 'not', 'tired']).status).toBe('wrong')
+		expect(closestAnswer(ANSWERS, ['You'])).toBe(0)
+	})
+
+	test('lists the words that continue any matching answer', () => {
+		expect(nextWords(ANSWERS, [])).toEqual(["I'm", 'I'])
+		expect(nextWords(ANSWERS, ['I'])).toEqual(['am'])
+		expect(nextWords(ANSWERS, ['You'])).toEqual([])
+		expect(nextWords(ANSWERS, ["I'm", 'not', 'tired'])).toEqual([])
 	})
 })

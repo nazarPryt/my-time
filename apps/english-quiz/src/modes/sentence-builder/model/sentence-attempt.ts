@@ -7,6 +7,10 @@ import type { AnswerToken } from './parse-answer'
  *
  *   building ──pick── … ──last word──▶ correct
  *                                 └──▶ wrong ──retry──▶ building (from scratch)
+ *
+ * A sentence can have several accepted answers (word lists, canonical first).
+ * The learner is measured against the one closest to what they picked, so
+ * "I am not" and "I'm not" both lead to a correct sentence.
  */
 export type AttemptStatus = 'building' | 'wrong' | 'correct'
 
@@ -46,21 +50,64 @@ export function checkWords(
 	})
 }
 
+type WordList = readonly string[]
+
+function sharedPrefix(answer: WordList, picked: WordList): number {
+	let length = 0
+	while (length < picked.length && answer[length] === picked[length]) length++
+	return length
+}
+
+/** Index of the answer sharing the longest start with `picked`; first on ties. */
+export function closestAnswer(
+	answers: readonly WordList[],
+	picked: WordList,
+): number {
+	let best = 0
+	let bestLength = -1
+	answers.forEach((answer, index) => {
+		const length = sharedPrefix(answer, picked)
+		if (length > bestLength) {
+			best = index
+			bestLength = length
+		}
+	})
+	return best
+}
+
+/** Every word that continues `picked` correctly in at least one answer. */
+export function nextWords(
+	answers: readonly WordList[],
+	picked: WordList,
+): string[] {
+	const words = answers
+		.filter(
+			(answer) =>
+				answer.length > picked.length &&
+				sharedPrefix(answer, picked) === picked.length,
+		)
+		.map((answer) => answer[picked.length] as string)
+	return [...new Set(words)]
+}
+
 export function pickWord(
 	state: AttemptState,
-	words: readonly string[],
+	answers: readonly WordList[],
 	word: string,
 ): AttemptState {
 	if (state.status !== 'building') return state
 	const picked = [...state.picked, word]
-	if (picked.length < words.length) return { ...state, picked }
 
-	const correct = picked.every(
-		(pickedWord, index) => pickedWord === words[index],
+	const complete = answers.some(
+		(answer) =>
+			answer.length === picked.length &&
+			sharedPrefix(answer, picked) === picked.length,
 	)
-	return correct
-		? { ...state, picked, status: 'correct' }
-		: { ...state, picked, status: 'wrong', mistakes: state.mistakes + 1 }
+	if (complete) return { ...state, picked, status: 'correct' }
+
+	const target = answers[closestAnswer(answers, picked)] ?? []
+	if (picked.length < target.length) return { ...state, picked }
+	return { ...state, picked, status: 'wrong', mistakes: state.mistakes + 1 }
 }
 
 /** Removes the last picked word (the backspace button). */

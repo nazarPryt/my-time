@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { answerWords, parseAnswer } from './parse-answer'
+import { answerWords, formatAnswer, parseAnswer } from './parse-answer'
 
 const words = (answer: string) => answerWords(parseAnswer(answer))
 
@@ -66,5 +66,15 @@ describe('parseAnswer', () => {
 
 	test('ignores extra spaces', () => {
 		expect(words('  I   am here ')).toEqual(['I', 'am', 'here'])
+	})
+
+	test('formats tokens back into the sentence', () => {
+		for (const answer of [
+			'Yes, I do.',
+			'He said "hello."',
+			'Mr. Smith left.',
+		]) {
+			expect(formatAnswer(parseAnswer(answer))).toBe(answer)
+		}
 	})
 })

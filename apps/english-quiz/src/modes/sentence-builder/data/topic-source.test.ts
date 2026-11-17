@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { seededRandom } from '../../../shared/lib/random'
+import { acceptedAnswers } from '../model/answer-variants'
 import { answerWords, parseAnswer } from '../model/parse-answer'
 import { SENTENCE_FORMS } from '../model/types'
 import { defineTopic } from './define-topic'
@@ -35,6 +36,21 @@ describe('hard-coded topics', () => {
 			expect(parseAnswer(sentence.answer).length, sentence.id).toBeGreaterThan(
 				1,
 			)
+		}
+	})
+
+	test('every accept pattern expands into real alternatives', () => {
+		for (const sentence of ALL_SENTENCES) {
+			if (!sentence.accept) continue
+			// Throws on broken syntax, naming the pattern.
+			const answers = acceptedAnswers(sentence)
+			expect(
+				answers.length,
+				`${sentence.id}: nothing new accepted`,
+			).toBeGreaterThan(1)
+			for (const tokens of answers) {
+				expect(tokens.length, sentence.id).toBeGreaterThan(1)
+			}
 		}
 	})
 

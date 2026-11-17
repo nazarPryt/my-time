@@ -8,6 +8,11 @@ export interface WordTilesInput {
 	words: readonly string[]
 	/** Index of the word the learner has to pick next. */
 	step: number
+	/**
+	 * Other words that are also correct at this step, from accepted
+	 * alternative answers. Always offered, never used as distractors.
+	 */
+	alternatives?: readonly string[]
 	traps?: Sentence['traps']
 	/** Generic distractors used when a word has too few traps. */
 	pool: readonly string[]
@@ -28,14 +33,15 @@ function trapsFor(traps: Sentence['traps'], word: string): readonly string[] {
 }
 
 /**
- * The tiles offered for one step: the expected word plus distractors,
- * shuffled. Hand-picked traps for the expected word come first, then other
- * words of the sentence, then the shared pool. No two tiles read the same
- * (case-insensitively), so the right answer is never ambiguous.
+ * The tiles offered for one step: the expected word (and any alternatives)
+ * plus distractors, shuffled. Hand-picked traps for the correct words come
+ * first, then other words of the sentence, then the shared pool. No two tiles
+ * read the same (case-insensitively).
  */
 export function buildWordTiles({
 	words,
 	step,
+	alternatives = [],
 	traps,
 	pool,
 	random,
@@ -44,7 +50,7 @@ export function buildWordTiles({
 	const expected = words[step]
 	if (expected === undefined) return []
 
-	const seen = new Set([expected.toLowerCase()])
+	const seen = new Set<string>()
 	const takeUnseen = (candidates: readonly string[]) =>
 		candidates.filter((word) => {
 			const key = word.toLowerCase()
@@ -55,12 +61,14 @@ export function buildWordTiles({
 
 	// The first word is skipped: it is capitalised, so it would read oddly
 	// in the middle of a sentence.
+	const correct = takeUnseen([expected, ...alternatives])
 	const sentenceWords = words.slice(1)
+	const correctTraps = correct.flatMap((word) => trapsFor(traps, word))
 	const distractors = [
-		...takeUnseen(shuffle(trapsFor(traps, expected), random)),
+		...takeUnseen(shuffle(correctTraps, random)),
 		...takeUnseen(shuffle([...sentenceWords, ...pool], random)),
-	].slice(0, count - 1)
+	].slice(0, Math.max(0, count - correct.length))
 
-	const tiles = shuffle([expected, ...distractors], random)
+	const tiles = shuffle([...correct, ...distractors], random)
 	return step === 0 ? tiles.map(capitalize) : tiles
 }
