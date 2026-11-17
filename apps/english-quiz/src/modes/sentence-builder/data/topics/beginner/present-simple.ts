@@ -828,5 +828,178 @@ export const presentSimple = defineTopic({
 				know: ['knows', 'knew'],
 			},
 		},
+		{
+			id: 'present-simple-83',
+			form: 'affirmative',
+			prompt: 'Мій син часто плаче вночі.',
+			answer: 'My son often cries at night.',
+			traps: {
+				cries: ['cry', 'crys', 'cried'],
+			},
+		},
+		{
+			id: 'present-simple-84',
+			form: 'affirmative',
+			prompt: 'Мій кіт часто ловить птахів.',
+			answer: 'My cat often catches birds.',
+			traps: {
+				catches: ['catch', 'catchs', 'caught'],
+			},
+		},
+		{
+			id: 'present-simple-85',
+			form: 'affirmative',
+			prompt: 'У Тараса завжди є гарні ідеї.',
+			answer: 'Taras always has good ideas.',
+			traps: {
+				has: ['have', 'is', 'had'],
+			},
+		},
+		{
+			id: 'present-simple-86',
+			form: 'affirmative',
+			prompt: 'Ірина завжди хвилюється за своїх дітей.',
+			answer: 'Iryna always worries about her children.',
+			accept: ['Iryna always worries about her kids.'],
+			traps: {
+				worries: ['worry', 'worrys', 'worried'],
+			},
+		},
+		{
+			id: 'present-simple-87',
+			form: 'affirmative',
+			prompt: 'Я часто бачу його в парку.',
+			answer: 'I often see him in the park.',
+			accept: ['I often see him at the park.'],
+			traps: {
+				see: ['sees', 'saw', 'seeing'],
+			},
+		},
+		{
+			id: 'present-simple-88',
+			form: 'affirmative',
+			prompt: 'Ти слухаєш радіо щоранку.',
+			answer: 'You listen to the radio every morning.',
+			traps: {
+				listen: ['listens', 'listened', 'listening'],
+			},
+		},
+		{
+			id: 'present-simple-89',
+			form: 'affirmative',
+			prompt: 'Вони грають у шахи щовечора.',
+			answer: 'They play chess every evening.',
+			traps: {
+				play: ['plays', 'played', 'playing'],
+			},
+		},
+		{
+			id: 'present-simple-90',
+			form: 'affirmative',
+			prompt: 'Сніг тане навесні.',
+			answer: 'Snow melts in spring.',
+			accept: ['Snow melts in the spring.'],
+			traps: {
+				melts: ['melt', 'melted', 'melting'],
+			},
+		},
+		{
+			id: 'present-simple-91',
+			form: 'affirmative',
+			prompt: 'Ми завжди святкуємо Різдво вдома.',
+			answer: 'We always celebrate Christmas at home.',
+			traps: {
+				celebrate: ['celebrates', 'celebrated', 'celebrating'],
+			},
+		},
+		{
+			id: 'present-simple-92',
+			form: 'affirmative',
+			prompt: 'Ця книжка коштує десять доларів.',
+			answer: 'This book costs ten dollars.',
+			traps: {
+				costs: ['cost', 'costed', 'costing'],
+			},
+		},
+		{
+			id: 'present-simple-93',
+			form: 'question',
+			prompt: 'О котрій годині ти зазвичай прокидаєшся?',
+			answer: 'What time do you usually wake up?',
+			traps: {
+				do: ['does', 'are', 'did'],
+				wake: ['wakes', 'woke'],
+			},
+		},
+		{
+			id: 'present-simple-94',
+			form: 'question',
+			prompt: 'Як часто він миє свою машину?',
+			answer: 'How often does he wash his car?',
+			traps: {
+				does: ['do', 'is', 'did'],
+				wash: ['washes', 'washed'],
+			},
+		},
+		{
+			id: 'present-simple-95',
+			form: 'question',
+			prompt: 'Хто готує у вашій родині?',
+			answer: 'Who cooks in your family?',
+			traps: {
+				cooks: ['cook', 'cooked', 'cooking'],
+			},
+		},
+		{
+			id: 'present-simple-96',
+			form: 'question',
+			prompt: 'Вони ходять на роботу пішки щодня?',
+			answer: 'Do they walk to work every day?',
+			traps: {
+				Do: ['Does', 'Are', 'Is'],
+				walk: ['walks', 'walked'],
+			},
+		},
+		{
+			id: 'present-simple-97',
+			form: 'negative',
+			prompt: 'Цей ресторан не відчиняється по понеділках.',
+			answer: "This restaurant doesn't open on Mondays.",
+			traps: {
+				"doesn't": ["don't", "isn't", "didn't"],
+				open: ['opens', 'opened'],
+			},
+		},
+		{
+			id: 'present-simple-98',
+			form: 'negative',
+			prompt: 'Ми не їмо хліба.',
+			answer: "We don't eat bread.",
+			traps: {
+				"don't": ["doesn't", "aren't", "didn't"],
+				eat: ['eats', 'ate'],
+			},
+		},
+		{
+			id: 'present-simple-99',
+			form: 'negative',
+			prompt: 'Я не люблю холодну погоду.',
+			answer: "I don't like cold weather.",
+			traps: {
+				"don't": ["doesn't", "isn't", "didn't"],
+				like: ['likes', 'liked'],
+			},
+		},
+		{
+			id: 'present-simple-100',
+			form: 'negative',
+			prompt: 'Мій брат не любить чекати.',
+			answer: "My brother doesn't like waiting.",
+			accept: ["My brother doesn't like to wait."],
+			traps: {
+				"doesn't": ["don't", "isn't", "didn't"],
+				like: ['likes', 'liked'],
+			},
+		},
 	],
 })
