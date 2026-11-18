@@ -18,7 +18,7 @@ bun run lint:check
 
 > **Node 18 caveat:** the system Node (18) is too old for WXT's CLI (`node:util` has no
 > `styleText`), so `bun --filter extension build`/`zip` fail. `extension:package` works
-> because it runs WXT on Bun's runtime: `cd apps/extension && bun --bun wxt <cmd>`.
+> because it runs WXT on Bun's runtime: `cd apps/extensions/browser && bun --bun wxt <cmd>`.
 > Use the same form for any other WXT command (the `postinstall` already does).
 
 ## Environment

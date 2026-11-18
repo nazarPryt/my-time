@@ -14,7 +14,7 @@ Generate high-quality, comprehensive bun:test test files for ElysiaJS API routes
 
 ## Project Context You Must Follow
 
-- **Monorepo root:** `my-time/` with packages `apps/api`, `apps/web`, `apps/extension`, `contracts/`
+- **Monorepo root:** `my-time/` with packages `apps/api`, `apps/web`, `apps/extensions/browser`, `contracts/`
 - **API framework:** Bun + Elysia at `apps/api/src/`
 - **Feature structure:** `src/features/<feature>/routes.ts`, `service.ts`, `repository.ts`, `schemas.ts`
 - **Contracts:** Zod schemas in `contracts/src/features/<feature>/` — import types from there, never redefine them

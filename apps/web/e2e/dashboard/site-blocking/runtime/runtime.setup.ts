@@ -4,7 +4,7 @@ import { RUNTIME_ORIGIN } from './runtime.mocks'
 
 export default async function setup() {
 	execFileSync('bun', ['--bun', 'wxt', 'build'], {
-		cwd: '../extension',
+		cwd: '../extensions/browser',
 		stdio: 'inherit',
 		env: {
 			...process.env,

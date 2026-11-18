@@ -116,9 +116,9 @@ my-time/
 ├── apps/
 │   ├── api/        — Bun + Elysia REST API
 │   ├── web/        — React + Vite SPA
-│   ├── extension/  — Browser extension (WXT + React)
 │   ├── desktop/    — GNOME Shell time-tracker extension (TypeScript + GJS; see its AGENTS.md)
 │   └── extensions/
+│       ├── browser/ — Browser extension (WXT + React; package `extension`)
 │       └── gnome/  — Other GNOME Shell extensions (player/ = MPRIS Player Controls)
 ├── contracts/      — Shared Zod schemas (source of truth for API shapes)
 └── packages/       — Shared features and runtime-independent session synchronization

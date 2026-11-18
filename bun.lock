@@ -56,7 +56,7 @@
         "typescript": "5.9.3",
       },
     },
-    "apps/extension": {
+    "apps/extensions/browser": {
       "name": "extension",
       "dependencies": {
         "react": "^19.2.4",
@@ -1856,7 +1856,7 @@
 
     "exsolve": ["exsolve@1.0.8", "", {}, "sha512-LmDxfWXwcTArk8fUEnOfSZpHOJ6zOMUJKOtFLFqJLoKJetuQG874Uc7/Kki7zFLzYybmZhp1M7+98pfMqeX8yA=="],
 
-    "extension": ["extension@workspace:apps/extension"],
+    "extension": ["extension@workspace:apps/extensions/browser"],
 
     "fast-copy": ["fast-copy@4.1.1", "", {}, "sha512-A4QTJmuiztpGtr6AMeJts9R4hbj2ZBUwtOaKrG6rw2y7t6+IaJKjz5M3XDs8BUznxDH43FVc6A0y/gWlMl4UtA=="],
 

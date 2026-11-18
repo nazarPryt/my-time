@@ -61,15 +61,15 @@ const MATCHERS: Array<{
 	},
 	// extension
 	{
-		re: /^apps\/extension\/src\/features\/([^/]+)\/(.+)$/,
+		re: /^apps\/extensions\/browser\/src\/features\/([^/]+)\/(.+)$/,
 		build: (m) => grp('extension', 'extension', m[1], m[2]),
 	},
 	{
-		re: /^apps\/extension\/src\/([^/]+)\/(.+)$/,
+		re: /^apps\/extensions\/browser\/src\/([^/]+)\/(.+)$/,
 		build: (m) => grp('extension', 'extension', m[1], m[2]),
 	},
 	{
-		re: /^apps\/extension\/src\/(.+)$/,
+		re: /^apps\/extensions\/browser\/src\/(.+)$/,
 		build: (m) => grp('extension', 'extension', '(root)', m[1]),
 	},
 	// mobile (no src/; uses singular "feature")

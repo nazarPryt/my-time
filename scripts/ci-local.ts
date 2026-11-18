@@ -49,7 +49,7 @@ if (process.argv.slice(2).length) {
 async function run(command: string[]) {
 	console.info(`\n> ${command.join(' ')}`)
 	return Bun.spawn(command, {
-		cwd: command[2] === 'wxt' ? resolve(root, 'apps/extension') : root,
+		cwd: command[2] === 'wxt' ? resolve(root, 'apps/extensions/browser') : root,
 		env,
 		stdin: 'inherit',
 		stdout: 'inherit',

@@ -73,7 +73,7 @@ test('api db file → api/db feature', () => {
 
 test('extension feature file → extension/<name> feature', () => {
 	const chain = chainForFile(
-		path.join(ROOT, 'apps/extension/src/features/auth/index.ts'),
+		path.join(ROOT, 'apps/extensions/browser/src/features/auth/index.ts'),
 		ROOT,
 	)
 	expect(chain?.feature.id).toBe('extension/auth')

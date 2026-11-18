@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json bun.lock* ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
-COPY apps/extension/package.json ./apps/extension/
+COPY apps/extensions/browser/package.json ./apps/extensions/browser/
 COPY apps/desktop/package.json ./apps/desktop/
 COPY contracts/package.json ./contracts/
 COPY packages/features/package.json ./packages/features/
@@ -19,7 +19,7 @@ COPY packages/session-sync ./packages/session-sync
 COPY apps/api/src ./apps/api/src
 COPY apps/api/tsconfig.json ./apps/api/
 COPY apps/web ./apps/web
-COPY apps/extension ./apps/extension
+COPY apps/extensions/browser ./apps/extensions/browser
 COPY apps/desktop ./apps/desktop
 
 ARG VITE_API_URL=http://localhost:3000
@@ -34,11 +34,11 @@ RUN bun --filter web build:docker
 # only talks to it — must match exactly, hence the trailing-slash trim) and the
 # API including /api/v1 (the web client adds that prefix itself, the extension
 # doesn't).
-RUN cd apps/extension \
+RUN cd apps/extensions/browser \
 	&& export VITE_WEB_URL="${FRONTEND_WEB_URL%/}" \
 	&& export VITE_API_URL="${VITE_API_URL%/}/api/v1" \
 	&& bun --bun wxt zip \
-	&& cp .output/*-chrome.zip ../web/dist/my-time-extension.zip
+	&& cp .output/*-chrome.zip ../../web/dist/my-time-extension.zip
 
 # Build the GNOME download without installing a desktop environment.
 RUN apk add --no-cache glib-dev zip \

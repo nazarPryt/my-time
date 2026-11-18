@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { defineConfig } from 'wxt'
 // Direct file import (not the `contracts` barrel) keeps zod out of the config.
-import { EXTENSION_VERSION } from '../../contracts/src/features/site-blocking/extension-version'
+import { EXTENSION_VERSION } from '../../../contracts/src/features/site-blocking/extension-version'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({

@@ -78,7 +78,7 @@ jobs:
       - run: bun --filter extension compile
       # --bun: WXT on Bun's runtime, same as the Dockerfile and extension:package.
       - run: bun --bun wxt build
-        working-directory: apps/extension
+        working-directory: apps/extensions/browser
 
   test-api:
     name: API tests
