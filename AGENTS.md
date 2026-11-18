@@ -19,6 +19,8 @@ bun run extension:dev    # Browser extension (WXT)
 bun run desktop:build   # GNOME desktop extension (Ubuntu / GNOME 46)
 bun run desktop:package # Installable GNOME extension zip
 bun run desktop:install # Package + install into the user's GNOME extensions
+bun run gnome-player:build   # GNOME "Player Controls" MPRIS extension
+bun run gnome-player:install # Package + install it into the user's GNOME extensions
 
 # Linting / formatting (Biome)
 bun run lint             # Check only
@@ -64,7 +66,7 @@ needed if you don't have SOPS/age set up yet:
 Run `bun run ci:local` against the final changes before opening a PR or pushing
 updates to it. This runs the checks in `.github/workflows/ci.yml`: frozen dependency
 installation, repository lint, all CI typechecks, extension compilation/build,
-API/web/shared/desktop tests, browser E2E, packaged extension E2E, real cross-client
+API/web/shared/desktop/GNOME-player tests, browser E2E, packaged extension E2E, real cross-client
 integration, and the web build. Keep the runner aligned when CI changes.
 
 Prerequisites: the CI Bun version, running Docker, Chromium installed for both
@@ -115,7 +117,9 @@ my-time/
 │   ├── api/        — Bun + Elysia REST API
 │   ├── web/        — React + Vite SPA
 │   ├── extension/  — Browser extension (WXT + React)
-│   └── desktop/    — GNOME Shell extension (TypeScript + GJS; see its AGENTS.md)
+│   ├── desktop/    — GNOME Shell time-tracker extension (TypeScript + GJS; see its AGENTS.md)
+│   └── extensions/
+│       └── gnome/  — Other GNOME Shell extensions (player/ = MPRIS Player Controls)
 ├── contracts/      — Shared Zod schemas (source of truth for API shapes)
 └── packages/       — Shared features and runtime-independent session synchronization
 ```

@@ -1,0 +1,8 @@
+{
+	"uuid": "player-controls@my-time.local",
+	"name": "Player Controls",
+	"description": "Play, pause, and skip tracks of one chosen media player from the GNOME panel.",
+	"shell-version": ["46"],
+	"settings-schema": "org.gnome.shell.extensions.player-controls",
+	"version": 1
+}

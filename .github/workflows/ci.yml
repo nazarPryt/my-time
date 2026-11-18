@@ -53,6 +53,7 @@ jobs:
       - run: bun --filter web typecheck:e2e
       - run: bun --filter desktop typecheck
       - run: bun --filter desktop typecheck:integration
+      - run: bun --filter gnome-player typecheck
 
   # Check only — nothing ships from here. The release zip is built inside the
   # web Docker image (apps/web/Dockerfile) on deploy; this catches a broken
@@ -151,6 +152,7 @@ jobs:
           restore-keys: bun-${{ runner.os }}-
       - run: bun install --frozen-lockfile
       - run: bun --filter desktop test
+      - run: bun --filter gnome-player test
 
   test-web-e2e:
     name: Web e2e tests
