@@ -16,7 +16,7 @@ Windows, macOS, KDE, and other desktop environments can use the web tracker.
 
 The web Time Tracker page includes a desktop download and installation guide.
 Production web Docker builds include the GNOME ZIP. For local web development,
-run `bun run desktop:web-package` from the repository root to build and copy it
+run `bun run gnome-time-tracker:web-package` from the repository root to build and copy it
 into the web public directory. The web app downloads the ZIP from
 `/my-time@my-time.local.shell-extension.zip` on the same host.
 
@@ -34,8 +34,8 @@ From the monorepo root:
 
 ```bash
 bun install
-bun --filter desktop typecheck
-bun run desktop:install
+bun --filter gnome-time-tracker typecheck
+bun run gnome-time-tracker:install
 ```
 
 The installer creates and installs
@@ -146,7 +146,7 @@ and the distinction between isolated keyfile settings and the native desktop.
 To test, build/typecheck, lint the repository, package, and install in one command:
 
 ```bash
-bun run desktop:update
+bun run gnome-time-tracker:update
 ```
 
 Each step must pass before the next runs. The build runs once. After installation,
@@ -154,16 +154,16 @@ reload GNOME as described above; this command does not restart your desktop.
 To run the same checks and packaging without installing:
 
 ```bash
-bun run desktop:update --skip-install
+bun run gnome-time-tracker:update --skip-install
 ```
 
 Individual commands:
 
 ```bash
-bun --filter desktop typecheck
-bun --filter desktop test
-bun run desktop:build
-bun run desktop:package
+bun --filter gnome-time-tracker typecheck
+bun --filter gnome-time-tracker test
+bun run gnome-time-tracker:build
+bun run gnome-time-tracker:package
 bun run lint:check
 bun --filter web test:e2e e2e/dashboard/time-tracker/time-tracker.spec.ts
 ```
@@ -172,7 +172,7 @@ Source lives in `src/`; `dist/` and `build/` are generated and ignored. Bun bund
 TypeScript and compatible dependencies into GJS JavaScript. GNOME imports stay
 external. Build scripts also compile the settings schema.
 
-To update, run `bun run desktop:install` again, then reload your GNOME session as
+To update, run `bun run gnome-time-tracker:install` again, then reload your GNOME session as
 described above. Disabling and enabling alone does not reliably reload changed
 JavaScript. GNOME 46 is the supported version; test before adding other shell
 versions to `metadata.json`.

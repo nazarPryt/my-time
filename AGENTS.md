@@ -16,11 +16,11 @@ All commands run from the monorepo root using `bun`.
 bun run web:dev          # Vite dev server (http://localhost:5173)
 bun run api:dev          # Bun/Elysia API with --watch (http://localhost:3000)
 bun run extension:dev    # Browser extension (WXT)
-bun run desktop:build   # GNOME desktop extension (Ubuntu / GNOME 46)
-bun run desktop:package # Installable GNOME extension zip
-bun run desktop:install # Package + install into the user's GNOME extensions
-bun run gnome-player:build   # GNOME "Player Controls" MPRIS extension
-bun run gnome-player:install # Package + install it into the user's GNOME extensions
+bun run gnome-time-tracker:build   # GNOME time-tracker extension (Ubuntu / GNOME 46)
+bun run gnome-time-tracker:package # Installable GNOME extension zip
+bun run gnome-time-tracker:install # Package + install into the user's GNOME extensions
+bun run gnome-player:build         # GNOME "Player Controls" MPRIS extension
+bun run gnome-player:install       # Package + install it into the user's GNOME extensions
 
 # Linting / formatting (Biome)
 bun run lint             # Check only
@@ -118,7 +118,7 @@ my-time/
 │   ├── web/        — React + Vite SPA
 │   ├── extension/  — Browser extension (WXT + React)
 │   └── extensions/
-│       └── gnome/  — GNOME Shell extensions (time-tracker/ = package `desktop`, player/ = MPRIS Player Controls)
+│       └── gnome/  — GNOME Shell extensions (time-tracker/, player/ = MPRIS Player Controls)
 ├── contracts/      — Shared Zod schemas (source of truth for API shapes)
 └── packages/       — Shared features and runtime-independent session synchronization
 ```

@@ -8,15 +8,15 @@ for Ubuntu 24.04 / GNOME 46, implemented in TypeScript and executed by GJS.
 
 Run from the monorepo root with Bun:
 
-- `bun run desktop:build` — bundle the extension and preferences, compile settings.
-- `bun run desktop:package` — build an installable GNOME extension zip.
-- `bun run desktop:install` — package and install into the user's GNOME extensions.
-- `bun run desktop:update` — tests → build/typecheck → repository lint → package
+- `bun run gnome-time-tracker:build` — bundle the extension and preferences, compile settings.
+- `bun run gnome-time-tracker:package` — build an installable GNOME extension zip.
+- `bun run gnome-time-tracker:install` — package and install into the user's GNOME extensions.
+- `bun run gnome-time-tracker:update` — tests → build/typecheck → repository lint → package
   → install; stops on failure. Use `--skip-install` to verify without installation.
-- `bun --filter desktop typecheck` — check TypeScript against GNOME 46 definitions.
-- `bun --filter desktop typecheck:integration` — check the restartable offline
+- `bun --filter gnome-time-tracker typecheck` — check TypeScript against GNOME 46 definitions.
+- `bun --filter gnome-time-tracker typecheck:integration` — check the restartable offline
   integration workers and adapters against Bun and GNOME settings types.
-- `bun --filter desktop test` — test the controller and HTTP client with fake adapters.
+- `bun --filter gnome-time-tracker test` — test the controller and HTTP client with fake adapters.
 - `bun run lint:check` — repository Biome checks.
 
 ## Structure and runtime

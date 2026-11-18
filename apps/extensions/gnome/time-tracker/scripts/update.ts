@@ -3,15 +3,18 @@ import path from 'node:path'
 const root = path.resolve(import.meta.dir, '../../../../..')
 const args = process.argv.slice(2)
 if (args.some((argument) => argument !== '--skip-install')) {
-	console.error('Usage: bun run desktop:update [--skip-install]')
+	console.error('Usage: bun run gnome-time-tracker:update [--skip-install]')
 	process.exit(1)
 }
 
 const steps = [
-	{ label: 'Desktop tests', command: ['bun', '--filter', 'desktop', 'test'] },
+	{
+		label: 'Desktop tests',
+		command: ['bun', '--filter', 'gnome-time-tracker', 'test'],
+	},
 	{
 		label: 'Desktop build and typecheck',
-		command: ['bun', 'run', 'desktop:build'],
+		command: ['bun', 'run', 'gnome-time-tracker:build'],
 	},
 	{ label: 'Repository lint', command: ['bun', 'run', 'lint:check'] },
 	{
