@@ -39,23 +39,6 @@
         "typescript": "7.0.2",
       },
     },
-    "apps/desktop": {
-      "name": "desktop",
-      "version": "0.1.0",
-      "dependencies": {
-        "@my-time/session-sync": "workspace:*",
-        "contracts": "workspace:*",
-        "date-fns": "4.4.0",
-      },
-      "devDependencies": {
-        "@girs/gjs": "4.0.0-beta.12",
-        "@girs/gnome-shell": "46.0.2",
-        "@girs/secret-1": "0.21.0-4.0.0-beta.12",
-        "@girs/soup-3.0": "3.4.4-4.0.0-beta.12",
-        "bun-types": "1.4.2",
-        "typescript": "5.9.3",
-      },
-    },
     "apps/extension": {
       "name": "extension",
       "dependencies": {
@@ -76,6 +59,23 @@
       "devDependencies": {
         "@girs/gjs": "4.0.0-beta.12",
         "@girs/gnome-shell": "46.0.2",
+        "bun-types": "1.4.2",
+        "typescript": "5.9.3",
+      },
+    },
+    "apps/extensions/gnome/time-tracker": {
+      "name": "desktop",
+      "version": "0.1.0",
+      "dependencies": {
+        "@my-time/session-sync": "workspace:*",
+        "contracts": "workspace:*",
+        "date-fns": "4.4.0",
+      },
+      "devDependencies": {
+        "@girs/gjs": "4.0.0-beta.12",
+        "@girs/gnome-shell": "46.0.2",
+        "@girs/secret-1": "0.21.0-4.0.0-beta.12",
+        "@girs/soup-3.0": "3.4.4-4.0.0-beta.12",
         "bun-types": "1.4.2",
         "typescript": "5.9.3",
       },
@@ -1646,7 +1646,7 @@
 
     "dequal": ["dequal@2.0.3", "", {}, "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="],
 
-    "desktop": ["desktop@workspace:apps/desktop"],
+    "desktop": ["desktop@workspace:apps/extensions/gnome/time-tracker"],
 
     "destr": ["destr@2.0.5", "", {}, "sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA=="],
 

@@ -40,7 +40,7 @@ export default defineConfig({
 		},
 		{
 			command: 'bun run integration/server.ts',
-			cwd: '../desktop',
+			cwd: '../extensions/gnome/time-tracker',
 			url: `${INTEGRATION_DESKTOP_URL}/health`,
 			reuseExistingServer: false,
 		},

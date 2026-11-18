@@ -1,5 +1,5 @@
 import { API_PREFIX } from 'contracts'
-import { INTEGRATION_API_URL } from '../../../scripts/e2e-integration-config'
+import { INTEGRATION_API_URL } from '../../../../../scripts/e2e-integration-config'
 import { ConnectionError, type HttpTransport } from '../src/dal/api-client'
 import type { SessionStreamTransport } from '../src/dal/session-stream'
 

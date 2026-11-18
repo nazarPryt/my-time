@@ -1,6 +1,7 @@
 # Desktop development
 
-Read the root `AGENTS.md` first. This package is a personal GNOME Shell extension
+Read the root `AGENTS.md` and `apps/extensions/gnome/AGENTS.md` (shared GJS
+runtime, lifecycle, and GNOME version rules) first. This package is a personal GNOME Shell extension
 for Ubuntu 24.04 / GNOME 46, implemented in TypeScript and executed by GJS.
 
 ## Commands
@@ -54,11 +55,7 @@ Architecture references:
 - `scripts/`: Bun build, packaging, and installation tooling.
 - `metadata.json`: extension identifier and supported GNOME versions.
 
-GJS has no browser DOM or Node/Bun APIs. Use GNOME's St/Clutter widgets in the
-panel and GTK4/libadwaita in preferences. Bun is build/test tooling only. Bundle
-compatible JS dependencies; keep `gi://` and `resource://` imports external.
-Pin GNOME type definitions to the supported shell version. Do not claim support
-for other GNOME versions until tested on them.
+Bundle compatible JS dependencies; keep `gi://` and `resource://` imports external.
 
 ## Lifecycle and data
 

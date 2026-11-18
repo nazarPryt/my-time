@@ -27,7 +27,7 @@ for (const name of ['metadata.json', 'stylesheet.css', 'schemas']) {
 // Read the web's local env files; explicit build environment takes precedence.
 const localEnv: Record<string, string> = {}
 for (const name of ['.env', '.env.local']) {
-	const file = Bun.file(path.resolve(root, '../web', name))
+	const file = Bun.file(path.resolve(root, '../../../web', name))
 	if (await file.exists()) Object.assign(localEnv, parseEnv(await file.text()))
 }
 const schemaPath = path.join(

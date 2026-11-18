@@ -1,8 +1,8 @@
 # GNOME extensions
 
 Read the root `AGENTS.md` first. Rules here apply to every GNOME Shell extension
-under `apps/extensions/gnome/` (currently `player/`; the time tracker still lives
-in `apps/desktop/` and follows its own `AGENTS.md`).
+under `apps/extensions/gnome/` (`player/` and `time-tracker/`). Each extension's
+own `AGENTS.md` adds extension-specific rules.
 
 ## Runtime
 

@@ -1,6 +1,6 @@
 import { API_PREFIX } from 'contracts'
 import { parseISO } from 'date-fns'
-import { INTEGRATION_API_URL } from '../../../scripts/e2e-integration-config'
+import { INTEGRATION_API_URL } from '../../../../../scripts/e2e-integration-config'
 import { OfflineTracker } from '../src/bll/offline-tracker'
 import { TrackerController } from '../src/bll/tracker-controller'
 import type { Tokens } from '../src/dal/api-client'

@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-const root = path.resolve(import.meta.dir, '../../..')
+const root = path.resolve(import.meta.dir, '../../../../..')
 const args = process.argv.slice(2)
 if (args.some((argument) => argument !== '--skip-install')) {
 	console.error('Usage: bun run desktop:update [--skip-install]')
@@ -16,13 +16,13 @@ const steps = [
 	{ label: 'Repository lint', command: ['bun', 'run', 'lint:check'] },
 	{
 		label: 'Package extension',
-		command: ['bun', 'apps/desktop/scripts/package.ts'],
+		command: ['bun', 'apps/extensions/gnome/time-tracker/scripts/package.ts'],
 	},
 ]
 if (!args.includes('--skip-install')) {
 	steps.push({
 		label: 'Install extension',
-		command: ['bun', 'apps/desktop/scripts/install.ts'],
+		command: ['bun', 'apps/extensions/gnome/time-tracker/scripts/install.ts'],
 	})
 }
 

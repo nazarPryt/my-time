@@ -7,7 +7,7 @@ import {
 	ExchangeExtensionTokenResponseSchema,
 	MeResponseSchema,
 } from 'contracts'
-import { INTEGRATION_API_URL } from '../../../scripts/e2e-integration-config'
+import { INTEGRATION_API_URL } from '../../../../../scripts/e2e-integration-config'
 import type { Tokens } from '../src/dal/api-client'
 
 interface Device {

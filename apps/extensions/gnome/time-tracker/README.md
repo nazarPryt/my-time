@@ -39,7 +39,7 @@ bun run desktop:install
 ```
 
 The installer creates and installs
-`apps/desktop/build/my-time@my-time.local.shell-extension.zip` into your user
+`apps/extensions/gnome/time-tracker/build/my-time@my-time.local.shell-extension.zip` into your user
 extensions directory. Log out and back in after the first installation, then:
 
 ```bash
@@ -138,7 +138,7 @@ The cross-client suite additionally tests real API/browser synchronization with
 desktop workers restarted from disk-backed GNOME settings, including a simulated
 week offline and a committed upload whose response is lost. Run
 `bun run test:web:e2e:integration offline-sync.spec.ts` from the repository root.
-See [the integration test guide](../web/e2e-integration/README.md) for coverage
+See [the integration test guide](../../../web/e2e-integration/README.md) for coverage
 and the distinction between isolated keyfile settings and the native desktop.
 
 ## Develop and update

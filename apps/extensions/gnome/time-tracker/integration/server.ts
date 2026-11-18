@@ -2,7 +2,7 @@ import { API_PREFIX } from 'contracts'
 import {
 	INTEGRATION_API_URL as API_URL,
 	INTEGRATION_DESKTOP_PORT,
-} from '../../../scripts/e2e-integration-config'
+} from '../../../../../scripts/e2e-integration-config'
 import { TrackerController } from '../src/bll/tracker-controller'
 import { ApiClient, type Tokens } from '../src/dal/api-client'
 import { disposeOfflineDevices, offlineDeviceRoute } from './offline-devices'
