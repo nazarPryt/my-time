@@ -32,6 +32,8 @@ const steps = [
 	['bun', '--filter', 'api', 'test'],
 	['bun', '--filter', 'web', 'test'],
 	['bun', '--filter', '@my-time/session-sync', 'test'],
+	['bun', '--filter', 'contracts', 'test'],
+	['bun', 'run', 'test:scripts'],
 	['bun', '--filter', 'desktop', 'test'],
 	['bun', '--filter', 'web', 'test:e2e'],
 	['bun', 'run', 'test:web:e2e:extension'],
@@ -53,6 +55,17 @@ async function run(command: string[]) {
 		stdout: 'inherit',
 		stderr: 'inherit',
 	}).exited
+}
+
+// dev is the branch PR'd into main, where CI also checks the release version.
+const branch = Bun.spawnSync(['git', 'branch', '--show-current'])
+	.stdout.toString()
+	.trim()
+if (branch === 'dev') {
+	steps.push(
+		['git', 'fetch', 'origin', 'main', '--tags', '--quiet'],
+		['bun', 'run', 'release:check', 'origin/main'],
+	)
 }
 
 let databaseStarted = false
