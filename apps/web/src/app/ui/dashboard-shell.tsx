@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { type ComponentType, type ReactNode, useState } from 'react'
 import { SignOutButton } from '@/features/auth/logout'
+import { WhatsNew } from '@/features/releases'
 import { ExtensionUpdateDot } from '@/features/site-blocking'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
@@ -169,9 +170,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 			{/* Footer */}
 			<div className="shrink-0 p-3 border-t border-sidebar-border space-y-1">
-				<span className="block px-3 text-[10px] font-medium tracking-widest uppercase text-sidebar-foreground/25">
-					v0.1
-				</span>
+				<WhatsNew />
 				<SignOutButton />
 			</div>
 		</>

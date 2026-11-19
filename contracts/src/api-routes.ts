@@ -57,3 +57,8 @@ export const PERMESSO_ROUTES = {
 	telegramWebhook: '/telegram/webhook',
 	reset: '/reset',
 } as const
+
+export const RELEASES_ROUTES = {
+	prefix: '/releases',
+	seen: '/seen',
+} as const

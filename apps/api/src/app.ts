@@ -1,6 +1,7 @@
 import cors from '@elysiajs/cors'
 import { authPlugin } from '@features/auth/routes'
 import { permessoPlugin } from '@features/permesso/routes'
+import { releasesPlugin } from '@features/releases/routes'
 import { siteBlockingPlugin } from '@features/site-blocking/routes'
 import { timeTrackerPlugin } from '@features/time-tracker/routes'
 import { workoutPlugin } from '@features/workout/routes'
@@ -17,6 +18,7 @@ export const app = new Elysia({ prefix: API_PREFIX })
 	.use(timeTrackerPlugin)
 	.use(siteBlockingPlugin)
 	.use(permessoPlugin)
+	.use(releasesPlugin)
 	.get('/', () => '✅ my-time api — up and running')
 	.get('/health', () => ({ status: 'ok' }))
 
