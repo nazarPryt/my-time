@@ -1,6 +1,6 @@
 import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useCopyToClipboard } from '../../model/use-copy-to-clipboard'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 
 /** An address chip that copies itself — for URLs a website can't link to. */
 export function CopyableUrl({ url }: { url: string }) {

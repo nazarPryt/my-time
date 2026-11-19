@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { DesktopPairingIdSchema } from 'contracts'
+import { DashboardPending } from '@/app/ui/dashboard-pending'
 import { DashboardShell } from '@/app/ui/dashboard-shell'
 import { fetchMe } from '@/features/auth/shared/api'
 import { tokenStorage } from '@/shared/lib/token-storage'
@@ -20,6 +21,10 @@ export const Route = createFileRoute('/dashboard')({
 		}
 	},
 	component: DashboardLayout,
+	pendingComponent: DashboardPending,
+	// Show the shell skeleton quickly on a cold load instead of a blank page.
+	pendingMs: 200,
+	pendingMinMs: 300,
 	notFoundComponent: () => <NotFoundScreen />,
 })
 

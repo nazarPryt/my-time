@@ -1,7 +1,7 @@
 import { ExternalLinkIcon } from 'lucide-react'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { Button } from '@/shared/ui'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 import { DownloadExtensionButton } from '../shared/download-extension-button'
 import { InstructionList, UiLabel } from '../shared/instruction-list'
 import { OpenExtensionsPageStep } from '../shared/open-extensions-page-step'

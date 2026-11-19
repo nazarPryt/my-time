@@ -1,8 +1,7 @@
 import { AUTH_ERRORS } from 'contracts'
-import { WORKOUT_TEST_IDS } from '@/features/workout/testIds'
-import { LOGIN_PATH } from '../../auth/login/LoginPage'
+import { WORKOUT_TEST_IDS } from '@/features/workout/test-ids'
+import { LOGIN_PATH } from '../../auth/login/login-page'
 import { API_ME } from '../../support/auth.mocks'
-import { WORKOUT_PATH } from './WorkoutPage'
 import { expect, test } from './workout.fixtures'
 import {
 	API_WORKOUT_GOAL,
@@ -12,6 +11,7 @@ import {
 	MOCK_TODAY_EMPTY,
 	mockWorkoutToday,
 } from './workout.mocks'
+import { WORKOUT_PATH } from './workout-page'
 
 test.describe('Workout page', () => {
 	// ─── Page Load ──────────────────────────────────────────────────────────────

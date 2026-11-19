@@ -1,1 +1,1 @@
-export { DesktopConnectionCard } from './ui/DesktopConnectionCard'
+export { DesktopConnectionCard } from './ui/desktop-connection-card'

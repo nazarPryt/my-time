@@ -1,6 +1,6 @@
 import { test as base } from '../../support/dashboard.fixtures'
-import { WorkoutPage } from './WorkoutPage'
 import { mockWorkoutProgress, mockWorkoutToday } from './workout.mocks'
+import { WorkoutPage } from './workout-page'
 
 export const test = base.extend<{ workoutPage: WorkoutPage }>({
 	workoutPage: async ({ page }, use) => {

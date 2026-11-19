@@ -1,1 +1,1 @@
-export { DesktopPage } from './ui/DesktopPage'
+export { DesktopPage } from './ui/desktop-page'

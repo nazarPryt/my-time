@@ -6,7 +6,7 @@ import {
 	CardTitle,
 } from '@/shared/ui'
 import { type ExtensionStatus, isInstalled } from '../../lib/extension-status'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 import { ConnectInstructions } from './connect-instructions'
 import { InstallInstructions } from './install-instructions'
 import { SetupStep } from './setup-step'

@@ -59,6 +59,79 @@ needed if you don't have SOPS/age set up yet:
 - `DATABASE_URL`, `JWT_SECRET`, `API_URL`, `FRONTEND_WEB_URL`, `DB_DATA_PATH`
 - `LOG_LEVEL` (optional, defaults to `info`)
 
+## Before opening or updating a PR
+
+Run `bun run ci:local` against the final changes before opening a PR or pushing
+updates to it. This runs the checks in `.github/workflows/ci.yml`: frozen dependency
+installation, repository lint, all CI typechecks, extension compilation/build,
+API/web/shared/desktop tests, browser E2E, packaged extension E2E, real cross-client
+integration, and the web build. Keep the runner aligned when CI changes.
+
+Prerequisites: the CI Bun version, running Docker, Chromium installed for both
+Playwright and Puppeteer, and `glib-compile-schemas`/`gsettings`. Use
+`bun apps/web/node_modules/@playwright/test/cli.js install --with-deps chromium` to prepare
+Playwright. The runner supplies the required test API URL and uses a disposable
+API-test database on port 5435; cross-client integration uses its own port 5434.
+It stops on failure and cleans up its API-test database on normal exit.
+
+Fix failures and rerun before creating or updating the PR. Do not substitute
+partial checks or remote CI for this local gate. If a prerequisite prevents the
+full run, report the exact blocker and leave PR creation/push pending until it
+is resolved or the user explicitly authorizes an exception. Never claim unrun
+checks passed. Re-run after code changes; documentation-only changes may reuse
+results when they do not affect executable checks.
+
+## Releasing
+
+One product version lives in the root `package.json` (SemVer, tags `vX.Y.Z`).
+The browser extension (`EXTENSION_VERSION`) and GNOME extension keep their own
+versions for their update prompts.
+
+- Feature branches are merged into `dev` locally by the maintainer
+  (`git merge`, never squash; `--no-ff` keeps each feature grouped). Write
+  commits as Conventional Commits (`feat: …`, `fix: …`); they drive the
+  version bump and draft notes. Do not bump the version on feature branches.
+  The only PR is the release PR `dev → main`.
+- To release, on `dev` run `bun run release` (or `bun run release minor`,
+  `--dry-run` to preview). It reads commits since `v<current version>`,
+  picks the bump (`feat!`/`BREAKING CHANGE` → major, `feat` → minor,
+  `fix`/`perf` → patch), updates `package.json`, and drafts an entry in
+  `contracts/src/features/releases/release-notes.data.ts`. Reword that entry
+  for users, commit `chore(release): vX.Y.Z`, then open the PR `dev → main`.
+  Agents follow the `release` skill (`.agents/skills/release/SKILL.md`) for
+  the whole release, notes and the `dev → main` PR included.
+- CI's `Release version` job (`bun run release:check`) fails a PR into main
+  whose version isn't newer than main's or lacks a newest notes entry.
+- After the merge passes CI on main, `.github/workflows/release.yml` creates
+  the tag and GitHub Release. Then bring `dev` up to date with `main`.
+- The web app shows the version (Vite `__APP_VERSION__`) in the sidebar; a
+  "What's new" dot appears until the user opens the notes, tracked per user in
+  `users.last_seen_release_version` via `/releases/seen`.
+
+## Code style
+
+One style guide for the whole monorepo (api, web, extension, mobile, desktop,
+packages, contracts, scripts). App-level `AGENTS.md` files may add rules but
+must not contradict these.
+
+### File and folder naming — kebab-case
+
+- Every source file (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`) and every
+  folder is **kebab-case**, whatever it exports. Identifiers inside keep normal
+  TypeScript casing:
+  - `dashboard-pending.tsx` → `export function DashboardPending`
+  - `use-rest-timer.ts` → `export function useRestTimer`
+  - `test-ids.ts` → `export const WORKOUT_TEST_IDS`
+  - `helpers/build-day-range/build-day-range.ts` → `export function buildDayRange`
+- Extra dot segments describe the file's role and are fine:
+  `workout.locators.ts`, `build-day-range.test.ts`, `vite.config.ts`.
+- Framework-mandated names are exempt: TanStack Router (`__root.tsx`,
+  `time-tracker_.desktop.tsx`, generated `routeTree.gen.ts`), Expo Router
+  (`_layout.tsx`, `(auth)/` groups), and `__tests__/` folders.
+- Biome's `useFilenamingConvention` (root `biome.jsonc`) enforces file names, so a
+  PascalCase or camelCase file fails `lint:check`/CI. Biome does not check folder
+  names; keep them kebab-case by hand and in review.
+
 ## Architecture
 
 ### Monorepo layout

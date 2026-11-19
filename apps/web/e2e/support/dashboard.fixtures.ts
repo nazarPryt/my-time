@@ -1,14 +1,17 @@
 import { test as base } from '@playwright/test'
 import { mockAuth } from './auth.mocks'
+import { mockReleasesSeen } from './releases.mocks'
 
 /**
  * Base fixture for every dashboard tab: overrides `page` so `/auth/me`
  * always resolves as logged-in before the test body runs. A test that needs
- * to exercise the unauthenticated path re-routes `API_ME` itself.
+ * to exercise the unauthenticated path re-routes `API_ME` itself. Release
+ * notes default to already seen, so the shell shows no "What's new" dot.
  */
 export const test = base.extend({
 	page: async ({ page }, use) => {
 		await mockAuth(page)
+		await mockReleasesSeen(page)
 		await use(page)
 	},
 })

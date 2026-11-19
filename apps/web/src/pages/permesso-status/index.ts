@@ -1,1 +1,1 @@
-export * from './ui/PermessoStatusPage'
+export * from './ui/permesso-status-page'

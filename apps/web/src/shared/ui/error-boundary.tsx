@@ -1,6 +1,6 @@
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { SHARED_TEST_IDS } from './testIds'
+import { SHARED_TEST_IDS } from './test-ids'
 
 interface ErrorScreenProps {
 	error?: Error

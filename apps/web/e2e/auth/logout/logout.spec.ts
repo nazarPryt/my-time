@@ -1,4 +1,4 @@
-import { LOGIN_PATH } from '../login/LoginPage'
+import { LOGIN_PATH } from '../login/login-page'
 import { expect, test } from './logout.fixtures'
 
 test.describe('Sign out', () => {

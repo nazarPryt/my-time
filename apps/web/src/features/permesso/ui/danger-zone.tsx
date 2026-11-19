@@ -9,7 +9,7 @@ import {
 	CardTitle,
 } from '@/shared/ui/card'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 
 type Props = {
 	resetting: boolean

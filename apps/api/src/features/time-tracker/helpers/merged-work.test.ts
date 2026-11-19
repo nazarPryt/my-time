@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { addDays, addMinutes, format, startOfDay, subMinutes } from 'date-fns'
-import { groupCompletedWorkByDay } from './groupCompletedWorkByDay'
+import { groupCompletedWorkByDay } from './group-completed-work-by-day'
 import { mergedWorkMilliseconds } from './merged-work'
 
 test('nested and adjacent intervals merge, abandoned work is excluded, and days are clipped independently', () => {

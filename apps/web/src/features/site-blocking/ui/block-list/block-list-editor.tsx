@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSiteBlockingActions, useSiteBlockingState } from '../../model/store'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 import { AddSiteForm } from './add-site-form'
 import { SiteList } from './site-list'
 

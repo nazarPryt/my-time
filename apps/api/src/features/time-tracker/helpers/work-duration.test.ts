@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import { computeTodayStats } from './computeTodayStats'
-import { groupCompletedWorkByDay } from './groupCompletedWorkByDay'
+import { computeTodayStats } from './compute-today-stats'
+import { groupCompletedWorkByDay } from './group-completed-work-by-day'
 import type { SessionLike } from './types'
 import { workMilliseconds } from './work-duration'
 

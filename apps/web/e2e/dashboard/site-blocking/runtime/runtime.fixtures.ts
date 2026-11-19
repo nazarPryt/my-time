@@ -2,8 +2,8 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { type BrowserContext, test as base, chromium } from '@playwright/test'
-import { RuntimePage } from './RuntimePage'
 import { startRuntimeServer } from './runtime.mocks'
+import { RuntimePage } from './runtime-page'
 
 type Fixtures = {
 	runtimeContext: BrowserContext

@@ -1,15 +1,15 @@
 import { test as base } from '@playwright/test'
-import { HomePage } from '../../dashboard/home/HomePage'
 import { mockTimeTrackerWeekly } from '../../dashboard/home/home.mocks'
+import { HomePage } from '../../dashboard/home/home-page'
 import { mockWorkoutProgress } from '../../dashboard/workout/workout.mocks'
 import { mockLogoutResponse } from '../logout/logout.mocks'
-import { LoginPage } from './LoginPage'
 import {
 	MOCK_LOGIN_SUCCESS,
 	mockAuthenticatedAccount,
 	mockLoginResponse,
 	mockRefreshResponse,
 } from './login.mocks'
+import { LoginPage } from './login-page'
 
 export const test = base.extend<{ loginPage: LoginPage; homePage: HomePage }>({
 	loginPage: async ({ page }, use) => {

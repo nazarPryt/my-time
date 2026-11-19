@@ -1,6 +1,6 @@
 import { cn } from '@/shared/lib/cn.ts'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 
 const HOUR_CONFIRMATION = {
 	enable: {

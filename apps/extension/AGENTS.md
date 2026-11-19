@@ -67,10 +67,10 @@ dal/                      the only code that touches fetch(), browser.storage, d
   401 retries once via `/auth/refresh-extension`, rotating both tokens.
 - `dal/storage/*Repository.ts` — one repository per `browser.storage.local` key
   (`my_time_tokens`, `blocked_sites`).
-- `dal/dnrAdapter.ts` — the only DNR owner. Each domain gets two rules: redirect `main_frame`
+- `dal/dnr-adapter.ts` — the only DNR owner. Each domain gets two rules: redirect `main_frame`
   to `block.html`, block `sub_frame`/`xmlhttprequest`/`other`. Updates replace **all**
   dynamic rules atomically.
-- `bll/siteBlocking/siteBlockingService.ts` — `syncBlockedSites()` = fetch → store → apply DNR.
+- `bll/site-blocking/site-blocking-service.ts` — `syncBlockedSites()` = fetch → store → apply DNR.
 
 DNR changes must happen in the background context — the popup asks the background to sync
 via a `SYNC` message rather than calling the service itself.

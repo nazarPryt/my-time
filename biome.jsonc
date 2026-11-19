@@ -36,6 +36,32 @@
 	},
 	"overrides": [
 		{
+			// Every source file in the monorepo is kebab-case (`dashboard-pending.tsx`,
+			// `use-rest-timer.ts`, `test-ids.ts`) regardless of what it exports.
+			// See "File naming" in the root AGENTS.md.
+			"includes": [
+				"**/*.ts",
+				"**/*.tsx",
+				"**/*.js",
+				"**/*.jsx",
+				"**/*.mjs",
+				"**/*.cjs"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"useFilenamingConvention": {
+							"level": "error",
+							"options": {
+								"filenameCases": ["kebab-case"],
+								"requireAscii": true
+							}
+						}
+					}
+				}
+			}
+		},
+		{
 			// Test files use `data!` after Eden Treaty calls where we know the
 			// response is non-null by construction (successful status asserted above).
 			"includes": ["**/*.test.ts", "**/*.spec.ts"],

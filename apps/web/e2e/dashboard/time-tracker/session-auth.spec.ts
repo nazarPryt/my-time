@@ -1,5 +1,4 @@
 import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
-import { LoginPage } from '../../auth/login/LoginPage'
 import {
 	API_REFRESH,
 	MOCK_ACCESS_TOKEN,
@@ -10,9 +9,10 @@ import {
 	mockLoginResponse,
 	mockRefreshResponse,
 } from '../../auth/login/login.mocks'
+import { LoginPage } from '../../auth/login/login-page'
 import { MOCK_USER } from '../../support/auth.mocks'
-import { DASHBOARD_PATH } from '../home/HomePage'
 import { mockTimeTrackerWeekly } from '../home/home.mocks'
+import { DASHBOARD_PATH } from '../home/home-page'
 import { mockWorkoutProgress } from '../workout/workout.mocks'
 import {
 	expireTimeEvents,

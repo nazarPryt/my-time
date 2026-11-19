@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { AUTH_ERRORS } from 'contracts'
-import { LOGIN_PATH } from '../auth/login/LoginPage'
+import { LOGIN_PATH } from '../auth/login/login-page'
 import { API_ME } from '../support/auth.mocks'
 
 test.describe('Auth guard', () => {

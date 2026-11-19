@@ -1,7 +1,6 @@
 import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
 import { MOCK_ACCESS_TOKEN } from '../../auth/login/login.mocks'
 import { test as base } from '../../support/dashboard.fixtures'
-import { TimeTrackerPage } from './TimeTrackerPage'
 import {
 	mockTimeActive,
 	mockTimeDelete,
@@ -10,6 +9,7 @@ import {
 	mockTimeToday,
 	mockTimeWeekly,
 } from './time-tracker.mocks'
+import { TimeTrackerPage } from './time-tracker-page'
 
 export const test = base.extend<{ timeTrackerPage: TimeTrackerPage }>({
 	timeTrackerPage: async ({ page }, use) => {

@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { FileQuestion } from 'lucide-react'
-import { SHARED_TEST_IDS } from './testIds'
+import { SHARED_TEST_IDS } from './test-ids'
 
 export function NotFoundScreen() {
 	return (

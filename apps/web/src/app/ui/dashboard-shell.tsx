@@ -11,11 +11,12 @@ import {
 } from 'lucide-react'
 import { type ComponentType, type ReactNode, useState } from 'react'
 import { SignOutButton } from '@/features/auth/logout'
+import { WhatsNew } from '@/features/releases'
 import { ExtensionUpdateDot } from '@/features/site-blocking'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/shared/ui/sheet'
-import { DASHBOARD_TEST_IDS } from '@/shared/ui/testIds'
+import { DASHBOARD_TEST_IDS } from '@/shared/ui/test-ids'
 
 type NavItemType = {
 	to: LinkProps['to']
@@ -108,7 +109,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	)
 }
 
-function Wordmark() {
+export function Wordmark() {
 	return (
 		<span
 			className="text-[17px] font-bold text-sidebar-foreground"
@@ -169,9 +170,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 			{/* Footer */}
 			<div className="shrink-0 p-3 border-t border-sidebar-border space-y-1">
-				<span className="block px-3 text-[10px] font-medium tracking-widest uppercase text-sidebar-foreground/25">
-					v0.1
-				</span>
+				<WhatsNew />
 				<SignOutButton />
 			</div>
 		</>

@@ -1,4 +1,3 @@
-import { PERMESSO_PATH } from './PermessoStatusPage'
 import { expect, test } from './permesso-status.fixtures'
 import {
 	API_PERMESSO,
@@ -21,6 +20,7 @@ import {
 	mockPermessoStatus,
 	mockTelegramEvent,
 } from './permesso-status.mocks'
+import { PERMESSO_PATH } from './permesso-status-page'
 
 test.describe('Permesso status', () => {
 	test('first setup saves a practice number and unlocks checks and schedule', async ({

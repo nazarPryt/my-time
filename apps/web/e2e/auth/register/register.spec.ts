@@ -1,9 +1,9 @@
 import { AUTH_ERRORS } from 'contracts'
 import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
-import { DASHBOARD_PATH } from '../../dashboard/home/HomePage'
+import { DASHBOARD_PATH } from '../../dashboard/home/home-page'
 import { MOCK_USER } from '../../support/auth.mocks'
-import { LOGIN_PATH } from '../login/LoginPage'
 import { MOCK_ACCESS_TOKEN, MOCK_LOGIN_SUCCESS } from '../login/login.mocks'
+import { LOGIN_PATH } from '../login/login-page'
 import { expect, test } from './register.fixtures'
 import { API_REGISTER, mockRegisterResponse } from './register.mocks'
 

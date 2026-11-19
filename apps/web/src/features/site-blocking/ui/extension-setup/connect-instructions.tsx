@@ -1,5 +1,5 @@
 import { Button } from '@/shared/ui'
-import { SITE_BLOCKING_TEST_IDS as SB } from '../../testIds'
+import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 
 interface ConnectInstructionsProps {
 	connecting: boolean

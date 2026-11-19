@@ -9,7 +9,7 @@ import {
 } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { usePracticeNumberForm } from '../model/use-practice-number-form'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 
 type Props = {
 	defaultValue: string

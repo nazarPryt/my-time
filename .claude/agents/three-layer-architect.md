@@ -49,8 +49,8 @@ layer rules while doing it (e.g. never make a feature import another feature or 
   files (Biome enforces this). Within the slice, use relative imports.
 - **Auth is a feature group:** `features/auth/` holds sub-slices `login/`, `register/`,
   `logout/` (each with its own `ui/model/api` + barrel) plus `shared/` for
-  auth-internal shared code (`shared/api.ts` = `fetchMe`, `shared/lib/authErrorHandler.ts`,
-  `shared/testIds.ts`).
+  auth-internal shared code (`shared/api.ts` = `fetchMe`, `shared/lib/auth-error-handler.ts`,
+  `shared/test-ids.ts`).
 
 ### contracts types — mandatory usage
 
@@ -170,7 +170,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
 ```
 
 ```tsx
-// features/workout/ui/WorkoutHeader.tsx  ← UI (no api, no store logic)
+// features/workout/ui/workout-header.tsx  ← UI (no api, no store logic)
 import { useWorkoutStore } from '../model/store'
 
 export function WorkoutHeader() {

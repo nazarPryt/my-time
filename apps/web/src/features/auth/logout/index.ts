@@ -1,4 +1,4 @@
 // Public API of the logout slice.
 
-export * from './model/useLogout'
-export * from './ui/SignOutButton'
+export * from './model/use-logout'
+export * from './ui/sign-out-button'

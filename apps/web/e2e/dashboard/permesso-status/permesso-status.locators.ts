@@ -1,6 +1,6 @@
-import { PERMESSO_TEST_IDS } from '@/features/permesso/testIds'
-import { SHARED_TEST_IDS } from '@/shared/ui/testIds'
-import { BaseLocators } from '../BaseLocators'
+import { PERMESSO_TEST_IDS } from '@/features/permesso/test-ids'
+import { SHARED_TEST_IDS } from '@/shared/ui/test-ids'
+import { BaseLocators } from '../base-locators'
 
 export class PermessoStatusLocators extends BaseLocators {
 	get root() {

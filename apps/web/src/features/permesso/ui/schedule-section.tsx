@@ -5,7 +5,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shared/ui/card'
-import { PERMESSO_TEST_IDS } from '../testIds'
+import { PERMESSO_TEST_IDS } from '../test-ids'
 import { ScheduleEditor } from './schedule-editor'
 
 type Props = {
