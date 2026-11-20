@@ -103,7 +103,9 @@ versions for their update prompts.
 - CI's `Release version` job (`bun run release:check`) fails a PR into main
   whose version isn't newer than main's or lacks a newest notes entry.
 - After the merge passes CI on main, `.github/workflows/release.yml` creates
-  the tag and GitHub Release. Then bring `dev` up to date with `main`.
+  the tag and GitHub Release, then fast-forwards `dev` to `main` so it gets
+  the PR's merge commit. Pull `dev` locally afterwards. If `dev` gained
+  commits meanwhile, the job only warns; merge `main` into `dev` by hand.
 - The web app shows the version (Vite `__APP_VERSION__`) in the sidebar; a
   "What's new" dot appears until the user opens the notes, tracked per user in
   `users.last_seen_release_version` via `/releases/seen`.
