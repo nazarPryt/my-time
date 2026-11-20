@@ -63,7 +63,7 @@ src/
     └── sentence-builder/
         ├── index.ts              Mode definition (the only public surface)
         ├── sentence-builder.vue  Screen switch: topic list ↔ practice
-        ├── data/                 Where topics come from (swap point for the API)
+        ├── data/                 Topic source over the host's apiFetch, word pool
         ├── model/                Pure TS: types, state machines, tile logic (+ tests)
         ├── composables/          Vue state wrapping the model
         └── components/           Rendering only, grouped by screen (+ one CSS file each)
@@ -92,21 +92,24 @@ components  →  composables  →  model
   `use-topic-practice`, `use-sentence-attempt`.
 - **components/** — props down, events up. Each owns at most one composable;
   the rest only render what they receive.
-- **data/** — `TopicSource` is async and maps one method to one future
-  endpoint: `listTopics` (`GET /topics`), `getTopic` (`GET /topics/:id`, the
-  rule without sentences) and `getRound` (`GET /topics/:id/round?size=10`).
-  Today `createLocalTopicSource` serves the hard-coded topics and picks
-  rounds with `pickRound`; when the API exists, implement the same interface
-  with fetch calls and replace `topicSource`. Components and composables
-  already handle loading/error states, so nothing else changes.
+- **data/** — `TopicSource` is async and maps one method to one endpoint of
+  the API's `english-quiz` feature: `listTopics` (`GET /topics`), `getTopic`
+  (`GET /topics/:id`, the rule without sentences) and `getRound`
+  (`GET /topics/:id/round?size=10`, picked by the server so the bank never
+  reaches the browser). `useTopicSource()` builds it on the host's `apiFetch`
+  prop, which `mount.ts` provides (`shared/api/api-fetch.ts`); responses are
+  parsed with the `contracts/english-quiz` schemas. Standalone dev
+  (`main.ts`) passes a tiny fake API from `src/dev/`.
 
 ### Sentence content
 
-- One file per topic in `data/topics/<level>/<topic-id>.ts`, written with
-  `defineTopic` (later the database seed). The level's `index.ts` sets the
-  display order.
+- Content lives in the API, not here: one file per topic in
+  `apps/api/src/features/english-quiz/content/topics/<level>/<topic-id>.ts`,
+  written with `defineTopic`. The level's `index.ts` sets the display order.
+  On every start the API validates the files and syncs them into Postgres
+  (`content/sync-content.ts`): the files in git are the source of truth.
 - A topic holds a **bank** of sentences (aim for 100+); each attempt gets a
-  **round** of `ROUND_SIZE` (10) picked by `pickRound`: random, taking
+  **round** of `ROUND_SIZE` (10) picked by the API's `pickRound`: random, taking
   affirmative / question / negative in turn so a round is never one kind.
 - Every sentence has a permanent `id` (`<topic-id>-<n>`; never renumber or
   reuse one — progress history will be keyed by it) and a `form`.
@@ -119,8 +122,10 @@ components  →  composables  →  model
 - **No accepted answer may be the start of another** ("I know" and "I know
   it"): there is no "check" button, a sentence is done as soon as it equals an
   accepted answer, so the longer one could never be built. The content test
-  enforces this with `findPrefixConflict`; the API seed must enforce it too.
-- Contractions are accepted automatically (`model/contractions.ts`), so
+  enforces this with `findPrefixConflict`, and the API refuses to seed it.
+- The answer rules are shared with the API, in
+  `contracts/src/features/english-quiz/answers/`.
+- Contractions are accepted automatically (`answers/contractions.ts`), so
   content writes them and never lists them in `accept`. The rules only ever
   accept correct English, so they accept less when in doubt:
   - negatives swap both ways (`don't` ↔ `do not`, `can't` ↔ `cannot`), but
@@ -134,8 +139,9 @@ components  →  composables  →  model
   - ambiguous `'s` (is/has) and `'d` (had/would) are left to `accept`.
 - A one-line `rule` becomes a "usage" section illustrated by the first three
   sentences; write full sections for anything bigger.
-- `data/topic-source.test.ts` checks the content: unique ids, known forms,
-  traps that belong to the answer and differ from it.
+- `content/validate-content.ts` in the API checks the content (unique ids,
+  known forms, accept patterns, prefix conflicts, traps that belong to the
+  answer and differ from it); `__tests__/content.test.ts` runs it.
 
 ## Sentence builder flow
 
@@ -191,24 +197,8 @@ element, add its id to the contract and render it here.
 
 ## Content
 
-Topics live in `data/topics/{beginner,intermediate,advanced}.ts`, written with
-the `defineTopics` helper:
-
-```ts
-{
-	id: 'past-simple',
-	title: 'Past Simple',
-	subtitle: 'Минулий простий час',          // learner's language (Ukrainian)
-	rule: 'One-line explanation…',            // or full RuleSection[] (see present-simple)
-	sentences: [
-		['Я бачив його вчора.', 'I saw him yesterday.', { saw: ['see', 'seen'] }],
-	],
-}
-```
-
-A string `rule` becomes a single "Usage" section illustrated by the topic's
-own sentences. `data/topic-source.test.ts` checks ids are unique, every topic
-has sentences and a rule, and every trap key is a word of its answer.
+See "Sentence content" above and `content-brief.md` for how topics are
+written and checked.
 
 ## Not built yet
 

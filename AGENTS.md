@@ -182,6 +182,9 @@ the Module Federation runtime. Full guide: `docs/micro-frontends.md`.
   rest of the dashboard.
 - Remotes render inside Shadow DOM and style themselves with the host's CSS
   variables.
+- Remotes reach the API only through the host's `apiFetch` prop (the host adds
+  the origin, token and refresh); request/response shapes still come from
+  `contracts`.
 
 ### Date & time
 

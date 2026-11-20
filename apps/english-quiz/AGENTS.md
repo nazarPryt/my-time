@@ -20,6 +20,10 @@ Vue 3 micro frontend loaded by `apps/web` through Module Federation. Read
   PascalCase advice).
 - Keep `base` in `vite.config.ts`, the nginx paths, and the host proxy path
   (`/remotes/english-quiz/`) identical.
+- Sentence-builder content comes from the API through the host's `apiFetch`
+  prop (never `fetch` directly, never tokens); shapes and answer rules come
+  from `contracts/english-quiz`. Topic files live in
+  `apps/api/src/features/english-quiz/content/`.
 - Report unrecoverable errors through `onError` and user-facing outcomes
   through `onEvent`; never reach into the host's DOM, storage or globals.
   The one exception is the remote's own namespaced localStorage entry

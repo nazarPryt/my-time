@@ -51,7 +51,7 @@ web container (nginx) ───────────────────�
    they never reach React's error boundaries). The rest of the dashboard
    keeps working.
 6. **Communication.** Host → remote through props (`mode`, `initialLevel`,
-   `update()` on change). Remote → host through callbacks (`onEvent` with
+   `apiFetch`, `update()` on change). Remote → host through callbacks (`onEvent` with
    `quiz-started` / `quiz-completed` / `mode-changed`). The "Last result" card
    on the page is React rendering data that came from Vue.
 7. **Routing: one router, owned by the host.** The remote has no router. The
@@ -61,14 +61,22 @@ web container (nginx) ───────────────────�
    mode or goes back, the remote sends `mode-changed` and waits for the new
    prop. Two routers in one tab (e.g. Vue Router's web history next to
    TanStack Router) would both write to `history` and drift apart.
-8. **Same-origin serving.** The browser always requests
+8. **API access through the host.** The remote never handles tokens or the
+   API URL. The host passes `apiFetch(path, init)` (`RemoteApiFetch` in the
+   contract; `apps/web/src/shared/lib/api-fetch.ts`): `path` follows the API
+   prefix (`/english-quiz/topics`), and the host adds the origin, the access
+   token and the refresh on 401. Request/response shapes come from
+   `contracts` (the remote imports only `contracts/english-quiz`, never
+   `apps/web`). The sentence builder loads topics, a topic's rule and a
+   server-picked round this way (contract v3).
+9. **Same-origin serving.** The browser always requests
    `/remotes/english-quiz/…` from the site itself. Vite's dev proxy and the
    production nginx forward that to the remote's server. Same URL in every
    environment, no CORS, no extra domain or certificate.
-8. **Caching.** Entry files (`mf-manifest.json`, `remoteEntry.js`) are
+10. **Caching.** Entry files (`mf-manifest.json`, `remoteEntry.js`) are
    `no-cache`, so a new deploy is picked up on the next page load; hashed
    chunks are cached for a year.
-9. **Independent deploy.** The remote has its own Dockerfile, compose
+11. **Independent deploy.** The remote has its own Dockerfile, compose
    service and GHCR image. nginx resolves the remote per request (Docker DNS
    `resolver`), so the host boots even if the remote is down — users just see
    the quiz's error card until it is back.
@@ -77,9 +85,15 @@ web container (nginx) ───────────────────�
 
 ```bash
 bun run dev           # api + web (:5173) + english-quiz (:5174)
-bun run quiz:dev      # remote only; open http://localhost:5174/remotes/english-quiz/ for standalone mode
-bun --filter web test:e2e e2e/dashboard/english-quiz   # starts both dev servers
+bun run quiz:dev      # remote only, with a small fake API (src/dev); open http://localhost:5174/remotes/english-quiz/
+bun --filter web test:e2e e2e/dashboard/english-quiz   # web dev server + a built remote (vite preview)
 ```
+
+E2E specs mock the topic endpoints with `page.route(...)`
+(`english-quiz.mocks.ts`). Playwright builds the remote and serves it with
+`vite preview`: the remote's dev server, loaded by several workers at once,
+kept the remote loading past 5s. A running `bun run dev` is reused instead,
+so stop it for a reliable run.
 
 ## Changing the contract
 
