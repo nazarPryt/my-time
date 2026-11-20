@@ -1,5 +1,5 @@
+import type { SessionResponse, TimerSnapshot } from '@my-time/contracts'
 import { reconnectSessions } from '@my-time/session-sync'
-import type { SessionResponse, TimerSnapshot } from 'contracts'
 import {
 	SessionAuthenticationError,
 	watchSessions,

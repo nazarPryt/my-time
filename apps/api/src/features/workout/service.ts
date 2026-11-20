@@ -4,7 +4,7 @@ import type {
 	ProgressResponse,
 	SetResponse,
 	TodayResponse,
-} from 'contracts'
+} from '@my-time/contracts'
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from 'date-fns'
 import { buildMonthDays, sumRepsByDay } from './lib/progress'
 import { toGoalResponse, toSetResponse } from './lib/responses'

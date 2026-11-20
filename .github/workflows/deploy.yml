@@ -19,6 +19,7 @@ env:
   # rather than interpolated.
   API_IMAGE: ghcr.io/nazarpryt/my-time-api
   WEB_IMAGE: ghcr.io/nazarpryt/my-time-web
+  ENGLISH_QUIZ_IMAGE: ghcr.io/nazarpryt/my-time-english-quiz
 
 jobs:
   build-and-push:
@@ -76,6 +77,21 @@ jobs:
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
+      # Micro frontend: its own image and release cadence. It needs no build
+      # args — it is served same-origin through web's nginx, so it never
+      # needs to know the site's URL.
+      - name: Build & push english-quiz image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/english-quiz/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ENGLISH_QUIZ_IMAGE }}:sha-${{ steps.sha.outputs.short }}
+            ${{ env.ENGLISH_QUIZ_IMAGE }}:latest
+          cache-from: type=gha,scope=english-quiz
+          cache-to: type=gha,mode=max,scope=english-quiz
+
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
@@ -83,9 +99,9 @@ jobs:
     environment: production
     # STUBBED — flip this on once VPS SSH access exists. Two prerequisites
     # beyond adding secrets:
-    #   1. docker-compose.prod.yml's `api`/`web` services currently `build:`
+    #   1. docker-compose.prod.yml's `api`/`web`/`english-quiz` services currently `build:`
     #      from source on the server. Switch them to
-    #      `image: ghcr.io/nazarpryt/my-time-{api,web}:${IMAGE_TAG:-latest}`
+    #      `image: ghcr.io/nazarpryt/my-time-{api,web,english-quiz}:${IMAGE_TAG:-latest}`
     #      so `pull` + `up --no-build` below actually has something to pull —
     #      left as-is for now so local `bun run docker:build`/`docker:up`
     #      (which build from source) keep working unchanged.

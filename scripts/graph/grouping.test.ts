@@ -73,7 +73,7 @@ test('api db file → api/db feature', () => {
 
 test('extension feature file → extension/<name> feature', () => {
 	const chain = chainForFile(
-		path.join(ROOT, 'apps/extension/src/features/auth/index.ts'),
+		path.join(ROOT, 'apps/extensions/browser/src/features/auth/index.ts'),
 		ROOT,
 	)
 	expect(chain?.feature.id).toBe('extension/auth')
@@ -91,7 +91,7 @@ test('mobile feature file (singular "feature") → mobile/<name> feature', () =>
 
 test('contracts feature file → contracts/<name> feature', () => {
 	const chain = chainForFile(
-		path.join(ROOT, 'contracts/src/features/auth/schema.ts'),
+		path.join(ROOT, 'packages/contracts/src/features/auth/schema.ts'),
 		ROOT,
 	)
 	expect(chain?.app.id).toBe('contracts')
@@ -99,22 +99,25 @@ test('contracts feature file → contracts/<name> feature', () => {
 })
 
 test('contracts root file → contracts/(root) feature', () => {
-	const chain = chainForFile(path.join(ROOT, 'contracts/src/index.ts'), ROOT)
+	const chain = chainForFile(
+		path.join(ROOT, 'packages/contracts/src/index.ts'),
+		ROOT,
+	)
 	expect(chain?.feature.id).toBe('contracts/(root)')
 })
 
 test('packages file → each package is its own group', () => {
 	const chain = chainForFile(
-		path.join(ROOT, 'packages/features/src/workout/store.ts'),
+		path.join(ROOT, 'packages/client-features/src/workout/store.ts'),
 		ROOT,
 	)
 	expect(chain?.app).toEqual({
-		id: 'packages/features',
-		label: 'features',
-		app: 'packages/features',
+		id: 'packages/client-features',
+		label: 'client-features',
+		app: 'packages/client-features',
 		type: 'app',
 	})
-	expect(chain?.feature.id).toBe('packages/features/workout')
+	expect(chain?.feature.id).toBe('packages/client-features/workout')
 })
 
 test('unknown file → null', () => {

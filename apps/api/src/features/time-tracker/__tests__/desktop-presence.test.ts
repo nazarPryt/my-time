@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, spyOn } from 'bun:test'
 import { db } from '@db'
 import { desktopPresence } from '@db/schema'
-import { DesktopPresenceSchema } from 'contracts'
+import { DesktopPresenceSchema } from '@my-time/contracts'
 import { subSeconds } from 'date-fns'
 import { eq } from 'drizzle-orm'
 import { app } from '@/app'

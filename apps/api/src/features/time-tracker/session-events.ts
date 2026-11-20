@@ -1,9 +1,9 @@
-import { logger } from '@shared/logger'
 import {
 	DESKTOP_PRESENCE_EVENT,
 	SESSION_STREAM_EVENT,
 	type SessionStreamState,
-} from 'contracts'
+} from '@my-time/contracts'
+import { logger } from '@shared/logger'
 import { differenceInMilliseconds } from 'date-fns'
 import {
 	desktopPresenceService,

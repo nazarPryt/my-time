@@ -20,7 +20,7 @@ config.resolver.nodeModulesPaths = [
 const _resolveRequest = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
 	// Force zustand to always resolve from mobile's node_modules.
-	// packages/features has its own bun-managed zustand symlink that points to a
+	// packages/client-features has its own bun-managed zustand symlink that points to a
 	// different physical copy — two zustand instances → two React instances → hooks crash.
 	if (moduleName === 'zustand' || moduleName.startsWith('zustand/')) {
 		return {
@@ -34,9 +34,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
 			type: 'sourceFile',
 		}
 	}
-	if (moduleName === 'features') {
+	if (moduleName === '@my-time/client-features') {
 		return {
-			filePath: path.resolve(monorepoRoot, 'packages/features/src/index.ts'),
+			filePath: path.resolve(
+				monorepoRoot,
+				'packages/client-features/src/index.ts',
+			),
 			type: 'sourceFile',
 		}
 	}

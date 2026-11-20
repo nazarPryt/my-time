@@ -1,10 +1,10 @@
 import { execFileSync } from 'node:child_process'
-import { API_PREFIX } from 'contracts'
+import { API_PREFIX } from '@my-time/contracts'
 import { RUNTIME_ORIGIN } from './runtime.mocks'
 
 export default async function setup() {
 	execFileSync('bun', ['--bun', 'wxt', 'build'], {
-		cwd: '../extension',
+		cwd: '../extensions/browser',
 		stdio: 'inherit',
 		env: {
 			...process.env,

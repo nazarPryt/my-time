@@ -1,6 +1,6 @@
 import { db } from '@db'
 import { desktopPairings, refreshTokens, users } from '@db/schema'
-import type { DesktopPairingPoll } from 'contracts'
+import type { DesktopPairingPoll } from '@my-time/contracts'
 import { addSeconds, isBefore, subMinutes } from 'date-fns'
 import { and, count, eq, gt, isNull, lt, sql } from 'drizzle-orm'
 import type { SignedTokenPair } from './token'

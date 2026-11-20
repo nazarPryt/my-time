@@ -1,4 +1,4 @@
-import { DESKTOP_EXTENSION_DOWNLOAD_FILENAME } from 'contracts'
+import { DESKTOP_EXTENSION_DOWNLOAD_FILENAME } from '@my-time/contracts'
 import { Download, Monitor } from 'lucide-react'
 import {
 	Button,

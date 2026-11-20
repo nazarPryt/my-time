@@ -1,5 +1,5 @@
+import { DesktopPairingIdSchema } from '@my-time/contracts'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { DesktopPairingIdSchema } from 'contracts'
 import { DashboardPending } from '@/app/ui/dashboard-pending'
 import { DashboardShell } from '@/app/ui/dashboard-shell'
 import { fetchMe } from '@/features/auth/shared/api'

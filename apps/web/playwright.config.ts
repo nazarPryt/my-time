@@ -18,9 +18,20 @@ export default defineConfig({
 			use: { ...devices['Desktop Chrome'] },
 		},
 	],
-	webServer: {
-		command: 'bun run dev',
-		url: 'http://localhost:5173',
-		reuseExistingServer: !process.env.CI,
-	},
+	webServer: [
+		{
+			// Micro frontend remotes; the host proxies /remotes/* to them. A built
+			// remote, not its dev server: parallel workers each pulling hundreds of
+			// unbundled modules through the proxy kept the remote loading past 5s.
+			command:
+				'bun --filter english-quiz build && bun --filter english-quiz preview',
+			url: 'http://localhost:5174/remotes/english-quiz/mf-manifest.json',
+			reuseExistingServer: !process.env.CI,
+		},
+		{
+			command: 'bun run dev',
+			url: 'http://localhost:5173',
+			reuseExistingServer: !process.env.CI,
+		},
+	],
 })

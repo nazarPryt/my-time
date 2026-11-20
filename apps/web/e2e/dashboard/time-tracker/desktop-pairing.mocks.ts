@@ -1,5 +1,5 @@
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
 
 export const DESKTOP_REQUEST_ID = 'b1537b0a-47c7-4a28-bbc6-b4bb5c2b3e7d'
 export const API_DESKTOP_INFO = `**${API_PREFIX}${AUTH_ROUTES.prefix}${AUTH_ROUTES.desktopPairingInfo}`

@@ -1,7 +1,11 @@
 import type { users } from '@db/schema'
+import type {
+	LoginRequest,
+	MeResponse,
+	RegisterRequest,
+} from '@my-time/contracts'
+import { MeResponseSchema } from '@my-time/contracts'
 import { logger } from '@shared/logger'
-import type { LoginRequest, MeResponse, RegisterRequest } from 'contracts'
-import { MeResponseSchema } from 'contracts'
 import { EXTENSION_TOKEN_TTL_MS } from './constants'
 import {
 	authRepository,

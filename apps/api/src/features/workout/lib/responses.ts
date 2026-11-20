@@ -4,7 +4,7 @@ import {
 	ExerciseTypeSchema,
 	type GoalResponse,
 	type SetResponse,
-} from 'contracts'
+} from '@my-time/contracts'
 import type { WorkoutGoalRecord, WorkoutSetRecord } from '../types'
 
 export function toSetResponse(set: WorkoutSetRecord): SetResponse {

@@ -1,4 +1,4 @@
-import type { PermessoStatusResponse } from 'contracts'
+import type { PermessoStatusResponse } from '@my-time/contracts'
 import { Send } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/shared/ui/badge'

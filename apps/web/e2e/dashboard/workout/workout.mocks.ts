@@ -1,6 +1,10 @@
+import type {
+	ProgressResponse,
+	SetResponse,
+	TodayResponse,
+} from '@my-time/contracts'
+import { API_PREFIX, WORKOUT_ROUTES } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import type { ProgressResponse, SetResponse, TodayResponse } from 'contracts'
-import { API_PREFIX, WORKOUT_ROUTES } from 'contracts'
 
 /** Convert Elysia route params (`:id`) to Playwright glob wildcards (`*`). */
 const glob = (route: string) => route.replace(/:[^/]+/g, '*')

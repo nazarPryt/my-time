@@ -1,6 +1,6 @@
+import type { MeResponse } from '@my-time/contracts'
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import type { MeResponse } from 'contracts'
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
 
 export const API_ME = `**${API_PREFIX}${AUTH_ROUTES.prefix}${AUTH_ROUTES.me}`
 

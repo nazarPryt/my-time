@@ -1,6 +1,7 @@
 import { connectToDatabase } from '@db/connect'
 import { runMigrations } from '@db/migrate'
 import { scheduleAuthJobs } from '@features/auth/jobs'
+import { syncEnglishQuizContent } from '@features/english-quiz/content/sync-content'
 import { schedulePermessoJobs } from '@features/permesso/jobs'
 import { startTelegramBot } from '@features/permesso/telegram/bot'
 import { startTelegramLinkListener } from '@features/permesso/telegram/link-events'
@@ -12,6 +13,7 @@ import { app } from './app'
 await connectToDatabase()
 
 await runMigrations()
+await syncEnglishQuizContent()
 
 scheduleAuthJobs()
 schedulePermessoJobs()

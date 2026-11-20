@@ -14,10 +14,10 @@ Generate high-quality, comprehensive bun:test test files for ElysiaJS API routes
 
 ## Project Context You Must Follow
 
-- **Monorepo root:** `my-time/` with packages `apps/api`, `apps/web`, `apps/extension`, `contracts/`
+- **Monorepo root:** `my-time/` with packages `apps/api`, `apps/web`, `apps/extensions/browser`, `packages/contracts/`
 - **API framework:** Bun + Elysia at `apps/api/src/`
 - **Feature structure:** `src/features/<feature>/routes.ts`, `service.ts`, `repository.ts`, `schemas.ts`
-- **Contracts:** Zod schemas in `contracts/src/features/<feature>/` — import types from there, never redefine them
+- **Contracts:** Zod schemas in `packages/contracts/src/features/<feature>/` — import types from there, never redefine them
 - **DB:** Drizzle ORM with Postgres; test DB started via `bun run test:db:up`
 - **Auth:** JWT Bearer tokens (15 min access) + refresh tokens. Use the Bearer token pattern in test request headers.
 - **Path aliases:** `@db`, `@features/*`, `@shared/*`, `@/*` → `src/*` in the API package

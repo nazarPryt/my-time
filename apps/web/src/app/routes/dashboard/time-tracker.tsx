@@ -1,5 +1,5 @@
+import { DesktopPairingIdSchema } from '@my-time/contracts'
 import { createFileRoute } from '@tanstack/react-router'
-import { DesktopPairingIdSchema } from 'contracts'
 import { TimeTrackerPage } from '@/pages/time-tracker'
 
 export const Route = createFileRoute('/dashboard/time-tracker')({

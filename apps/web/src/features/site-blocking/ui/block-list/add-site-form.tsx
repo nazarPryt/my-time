@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
 	type CreateBlockedSiteRequest,
 	CreateBlockedSiteRequestSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { useForm } from 'react-hook-form'
 import { Button, Input } from '@/shared/ui'
 import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'

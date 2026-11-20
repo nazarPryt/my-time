@@ -24,7 +24,7 @@ export const test = base.extend<Fixtures>({
 	runtimeContext: async ({ runtimeServer }, use) => {
 		void runtimeServer
 		const profile = await mkdtemp(path.join(tmpdir(), 'my-time-extension-'))
-		const extension = path.resolve('../extension/.output/chrome-mv3')
+		const extension = path.resolve('../extensions/browser/.output/chrome-mv3')
 		const context = await chromium.launchPersistentContext(profile, {
 			channel: 'chromium',
 			headless: true,

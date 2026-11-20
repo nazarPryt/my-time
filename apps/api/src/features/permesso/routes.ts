@@ -1,9 +1,9 @@
-import { authMacro } from '@shared/auth-macro'
 import {
 	PERMESSO_ROUTES,
 	SetPracticeNumberRequestSchema,
 	UpdateCheckHoursRequestSchema,
-} from 'contracts'
+} from '@my-time/contracts'
+import { authMacro } from '@shared/auth-macro'
 import { Elysia, sse } from 'elysia'
 import { PERMESSO_ERROR_MESSAGES, PERMESSO_FAILURE_REASONS } from './constants'
 import { permessoService } from './service'

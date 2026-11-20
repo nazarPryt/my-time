@@ -1,6 +1,7 @@
 export * from './blocked-sites'
 export * from './desktop-pairings'
 export * from './desktop-presence'
+export * from './english-quiz'
 export * from './extension-tokens'
 export * from './permesso'
 export * from './refresh-tokens'

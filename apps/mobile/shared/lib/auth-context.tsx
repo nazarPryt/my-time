@@ -1,4 +1,4 @@
-import type { MeResponse } from 'contracts'
+import type { MeResponse } from '@my-time/contracts'
 import type React from 'react'
 import {
 	createContext,

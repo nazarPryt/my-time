@@ -1,0 +1,13 @@
+{
+	"extends": "./.wxt/tsconfig.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"jsx": "react-jsx",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@my-time/contracts": ["../../../packages/contracts/src/index.ts"],
+			"@my-time/contracts/*": ["../../../packages/contracts/src/*"]
+		}
+	}
+}

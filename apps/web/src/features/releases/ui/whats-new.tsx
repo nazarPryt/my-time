@@ -1,4 +1,4 @@
-import { RELEASE_NOTES, type ReleaseNote } from 'contracts'
+import { RELEASE_NOTES, type ReleaseNote } from '@my-time/contracts'
 import { format, parseISO } from 'date-fns'
 import { useEffect, useMemo, useState } from 'react'
 import { APP_VERSION } from '@/shared/config/app-version'

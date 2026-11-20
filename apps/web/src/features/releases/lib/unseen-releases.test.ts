@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import type { ReleaseNote } from 'contracts'
+import type { ReleaseNote } from '@my-time/contracts'
 import { releasedNotes, unseenVersions } from './unseen-releases'
 
 function note(version: string): ReleaseNote {

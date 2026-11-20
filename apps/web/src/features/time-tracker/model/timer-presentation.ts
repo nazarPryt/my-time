@@ -1,5 +1,5 @@
+import type { TimerSnapshot } from '@my-time/contracts'
 import { createClockCheck, TimerDisplay } from '@my-time/session-sync'
-import type { TimerSnapshot } from 'contracts'
 import { differenceInSeconds } from 'date-fns'
 import type { SetTrackerState, TimeTrackerState } from './types'
 

@@ -1,4 +1,4 @@
-import { AUTH_ERRORS } from 'contracts'
+import { AUTH_ERRORS } from '@my-time/contracts'
 import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
 import { DASHBOARD_PATH } from '../../dashboard/home/home-page'
 import { MOCK_USER } from '../../support/auth.mocks'

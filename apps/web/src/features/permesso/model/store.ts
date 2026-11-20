@@ -1,7 +1,7 @@
 import type {
 	PermessoCheckHistoryResponse,
 	PermessoStatusResponse,
-} from 'contracts'
+} from '@my-time/contracts'
 import { create } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import {

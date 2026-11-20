@@ -1,0 +1,62 @@
+import {
+	DEFAULT_QUIZ_LEVEL,
+	ENGLISH_QUIZ_CONTRACT_VERSION,
+	type EnglishQuizProps,
+	isQuizMode,
+	type RemoteMount,
+} from '@my-time/micro-frontends'
+import { createApp, h, reactive } from 'vue'
+import AppRoot from './app/app-root.vue'
+import { API_FETCH_KEY } from './shared/api/api-fetch'
+import { styles } from './styles'
+
+/**
+ * The module the host loads through Module Federation (`englishQuiz/mount`).
+ * See RemoteModule in @my-time/micro-frontends.
+ */
+export const contractVersion = ENGLISH_QUIZ_CONTRACT_VERSION
+
+export const mount: RemoteMount<EnglishQuizProps> = (
+	container,
+	initialProps,
+) => {
+	// Shadow DOM isolates styles in both directions: the host's Tailwind reset
+	// can't restyle the quiz, and the quiz's CSS can't leak into the host.
+	// CSS custom properties DO inherit through the boundary, so the quiz
+	// still picks up the host's design tokens (and dark mode) for free.
+	const shadow =
+		container.shadowRoot ?? container.attachShadow({ mode: 'open' })
+	const style = document.createElement('style')
+	style.textContent = styles
+	const root = document.createElement('div')
+	shadow.replaceChildren(style, root)
+
+	// Reactive so update() re-renders without losing the quiz's own state.
+	const props = reactive({ ...initialProps })
+
+	const app = createApp({
+		render: () =>
+			h(AppRoot, {
+				// Don't trust the host to send a known id.
+				mode: isQuizMode(props.mode) ? props.mode : undefined,
+				initialLevel: props.initialLevel ?? DEFAULT_QUIZ_LEVEL,
+				report: (event) => props.onEvent?.(event),
+			}),
+	})
+	// Reads the latest prop on each call, so update() can swap the fetch.
+	app.provide(API_FETCH_KEY, (path, init) => props.apiFetch(path, init))
+	app.config.errorHandler = (error) => {
+		props.onError?.(error instanceof Error ? error : new Error(String(error)))
+	}
+	app.mount(root)
+
+	return {
+		update(next) {
+			Object.assign(props, next)
+		},
+		unmount() {
+			app.unmount()
+			shadow.replaceChildren()
+		},
+	}
+}

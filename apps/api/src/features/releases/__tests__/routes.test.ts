@@ -1,12 +1,12 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { treaty } from '@elysiajs/eden'
-import type { RegisterRequest } from 'contracts'
+import type { RegisterRequest } from '@my-time/contracts'
 import {
 	AuthResponseSchema,
 	RELEASE_NOTES,
 	RELEASES_ERRORS,
 	SeenReleaseResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 

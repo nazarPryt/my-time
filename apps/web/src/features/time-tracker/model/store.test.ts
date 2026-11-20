@@ -1,5 +1,5 @@
 import { afterEach, expect, spyOn, test } from 'bun:test'
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse } from '@my-time/contracts'
 import * as trackerApi from '../api/api'
 import { useTimeTrackerStore } from './store'
 

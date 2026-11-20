@@ -1,4 +1,4 @@
-import type { BlockedSiteResponse } from 'contracts'
+import type { BlockedSiteResponse } from '@my-time/contracts'
 import { format } from 'date-fns'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'

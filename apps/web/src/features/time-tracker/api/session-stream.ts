@@ -1,11 +1,11 @@
-import { SessionStreamParser } from '@my-time/session-sync'
 import {
 	API_PREFIX,
 	type DesktopPresence,
 	type SessionResponse,
 	TIME_TRACKER_ROUTES,
 	type TimerSnapshot,
-} from 'contracts'
+} from '@my-time/contracts'
+import { SessionStreamParser } from '@my-time/session-sync'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { fetchStreamWithRefresh } from '@/shared/lib/fetch-with-refresh'
 import { tokenStorage } from '@/shared/lib/token-storage'

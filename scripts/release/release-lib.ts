@@ -2,7 +2,7 @@ import {
 	compareVersions,
 	type ReleaseNote,
 	type Version,
-} from '../../contracts/src/features/releases'
+} from '../../packages/contracts/src/features/releases'
 
 export type Bump = 'major' | 'minor' | 'patch'
 

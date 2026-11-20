@@ -62,6 +62,18 @@ services:
     depends_on:
       - api
 
+  # English quiz micro frontend. Not exposed publicly: web's nginx proxies
+  # /remotes/english-quiz/ to it, so it shares the site's origin. web does
+  # not depend_on it on purpose — the site must work while it is down.
+  english-quiz:
+    build:
+      context: .
+      dockerfile: apps/english-quiz/Dockerfile
+    restart: unless-stopped
+    logging: *default-logging
+    expose:
+      - "80"
+
   # --- Observability stack: Loki stores logs, Promtail ships them from every
   # container's Docker logs, Grafana is where you actually read them. All
   # free/self-hosted — see observability/ for their configs. ---

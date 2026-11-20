@@ -20,7 +20,10 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@my-time/api": ["../../apps/api/src/public.ts"],
-			"contracts": ["../../contracts/src/index.ts"]
+			"@my-time/contracts": ["../../packages/contracts/src/index.ts"],
+			"@my-time/micro-frontends": [
+				"../../packages/micro-frontends/src/index.ts"
+			]
 		}
 	},
 	"include": ["e2e"]

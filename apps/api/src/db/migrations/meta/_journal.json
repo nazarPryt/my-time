@@ -127,6 +127,13 @@
 			"when": 1795090130019,
 			"tag": "0017_rare_khan",
 			"breakpoints": true
+		},
+		{
+			"idx": 18,
+			"version": "7",
+			"when": 1795196615939,
+			"tag": "0018_open_ben_grimm",
+			"breakpoints": true
 		}
 	]
 }

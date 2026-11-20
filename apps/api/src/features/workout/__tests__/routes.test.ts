@@ -5,7 +5,7 @@ import {
 	ProgressResponseSchema,
 	SetResponseSchema,
 	TodayResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import {

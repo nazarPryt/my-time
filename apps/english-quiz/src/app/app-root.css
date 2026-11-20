@@ -1,0 +1,33 @@
+.app-root {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.mode-screen {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.mode-breadcrumb {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	font-size: 0.85rem;
+}
+
+.mode-breadcrumb .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	color: var(--muted-foreground, #6b7280);
+}
+
+.mode-breadcrumb-separator {
+	color: var(--muted-foreground, #6b7280);
+}
+
+.mode-breadcrumb-current {
+	font-weight: 500;
+}

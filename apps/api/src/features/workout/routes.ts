@@ -1,4 +1,3 @@
-import { authMacro } from '@shared/auth-macro'
 import {
 	CreateSetRequestSchema,
 	ExerciseTypeQuerySchema,
@@ -9,7 +8,8 @@ import {
 	TodayResponseSchema,
 	UpdateGoalRequestSchema,
 	WORKOUT_ROUTES,
-} from 'contracts'
+} from '@my-time/contracts'
+import { authMacro } from '@shared/auth-macro'
 import { Elysia } from 'elysia'
 import { workoutService } from './service'
 

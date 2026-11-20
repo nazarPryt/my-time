@@ -1,5 +1,9 @@
 import { createServer } from 'node:http'
-import { API_PREFIX, AUTH_ROUTES, SITE_BLOCKING_ROUTES } from 'contracts'
+import {
+	API_PREFIX,
+	AUTH_ROUTES,
+	SITE_BLOCKING_ROUTES,
+} from '@my-time/contracts'
 
 export const RUNTIME_ORIGIN = 'http://127.0.0.1:3199'
 export const BLOCKED_DOMAIN = 'blocked.localhost'

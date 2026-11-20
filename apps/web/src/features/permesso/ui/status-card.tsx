@@ -1,4 +1,4 @@
-import type { PermessoStatusResponse } from 'contracts'
+import type { PermessoStatusResponse } from '@my-time/contracts'
 import { formatDistanceToNow, formatISO, toDate } from 'date-fns'
 import { FileCheck2 } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'

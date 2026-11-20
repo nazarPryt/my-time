@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, expect, test } from 'bun:test'
 import { db } from '@db'
 import { timeSessions } from '@db/schema'
-import { SyncOfflineSessionsRequestSchema, TimerStateSchema } from 'contracts'
+import {
+	SyncOfflineSessionsRequestSchema,
+	TimerStateSchema,
+} from '@my-time/contracts'
 import { addMinutes, startOfDay, subMinutes } from 'date-fns'
 import { eq } from 'drizzle-orm'
 import { app } from '@/app'

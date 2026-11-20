@@ -1,4 +1,7 @@
-import type { CheckResultResponse, TelegramLinkResponse } from 'contracts'
+import type {
+	CheckResultResponse,
+	TelegramLinkResponse,
+} from '@my-time/contracts'
 import type { PERMESSO_FAILURE_REASONS } from './constants'
 
 export type PermessoCheckResult =

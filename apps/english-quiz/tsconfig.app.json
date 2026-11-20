@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"types": ["vite/client", "bun-types"],
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"jsx": "preserve",
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"erasableSyntaxOnly": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
+		"paths": {
+			"@my-time/micro-frontends": [
+				"../../packages/micro-frontends/src/index.ts"
+			],
+			"@my-time/contracts/english-quiz": [
+				"../../packages/contracts/src/features/english-quiz/index.ts"
+			]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.vue"]
+}

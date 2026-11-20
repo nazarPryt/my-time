@@ -1,4 +1,4 @@
-import { AUTH_ERRORS } from 'contracts'
+import { AUTH_ERRORS } from '@my-time/contracts'
 import { WORKOUT_TEST_IDS } from '@/features/workout/test-ids'
 import { LOGIN_PATH } from '../../auth/login/login-page'
 import { API_ME } from '../../support/auth.mocks'
