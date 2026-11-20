@@ -1,5 +1,9 @@
 import { expect, mock, test } from 'bun:test'
-import type { OfflineJournal, SessionResponse, TimerState } from 'contracts'
+import type {
+	OfflineJournal,
+	SessionResponse,
+	TimerState,
+} from '@my-time/contracts'
 import { addMinutes } from 'date-fns'
 import { ConnectionError } from '@/dal/api-client'
 import { emptyOfflineJournal } from '@/dal/offline-store'

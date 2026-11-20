@@ -1,5 +1,5 @@
-import type { RemoteApiFetch } from '@my-time/mfe-contracts'
-import { API_PREFIX } from 'contracts'
+import { API_PREFIX } from '@my-time/contracts'
+import type { RemoteApiFetch } from '@my-time/micro-frontends'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { fetchWithRefresh } from './fetch-with-refresh'
 import { tokenStorage } from './token-storage'

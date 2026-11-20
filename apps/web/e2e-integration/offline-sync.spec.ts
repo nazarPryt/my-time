@@ -4,7 +4,7 @@ import {
 	TimerStateSchema,
 	TodaySummaryResponseSchema,
 	WeeklySummaryResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import {
 	differenceInMilliseconds,
 	differenceInSeconds,

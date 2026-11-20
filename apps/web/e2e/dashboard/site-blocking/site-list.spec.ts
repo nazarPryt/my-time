@@ -1,5 +1,5 @@
+import { SITE_BLOCKING_ERRORS } from '@my-time/contracts'
 import type { LinkProps } from '@tanstack/react-router'
-import { SITE_BLOCKING_ERRORS } from 'contracts'
 import { readFakeExtensionLog } from './fake-extension'
 import { expect, linkedTest as test } from './site-blocking.fixtures'
 import {

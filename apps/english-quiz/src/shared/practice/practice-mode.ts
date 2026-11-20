@@ -1,4 +1,4 @@
-import type { EnglishQuizEvent, QuizLevel } from '@my-time/mfe-contracts'
+import type { EnglishQuizEvent, QuizLevel } from '@my-time/micro-frontends'
 import type { Component } from 'vue'
 import type { PracticeCategoryId } from './practice-categories'
 

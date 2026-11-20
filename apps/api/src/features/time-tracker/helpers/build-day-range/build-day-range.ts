@@ -1,4 +1,4 @@
-import type { DailySummary } from 'contracts'
+import type { DailySummary } from '@my-time/contracts'
 import { format, subDays } from 'date-fns'
 import type { DayStats } from '../types'
 

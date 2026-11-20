@@ -1,4 +1,4 @@
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse } from '@my-time/contracts'
 
 export function toSessionResponse(s: SessionResponse): SessionResponse {
 	return {

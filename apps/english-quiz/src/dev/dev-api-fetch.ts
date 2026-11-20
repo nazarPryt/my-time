@@ -1,10 +1,10 @@
-import type { RemoteApiFetch } from '@my-time/mfe-contracts'
 import {
 	ENGLISH_QUIZ_ROUTES,
 	type Round,
 	type Topic,
 	type TopicSummary,
-} from 'contracts/english-quiz'
+} from '@my-time/contracts/english-quiz'
+import type { RemoteApiFetch } from '@my-time/micro-frontends'
 
 // Standalone dev only: a tiny stand-in for the API, so the remote runs
 // without the host. Real content lives in apps/api.

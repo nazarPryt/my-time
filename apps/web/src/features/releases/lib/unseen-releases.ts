@@ -1,4 +1,4 @@
-import { compareVersions, type ReleaseNote } from 'contracts'
+import { compareVersions, type ReleaseNote } from '@my-time/contracts'
 
 /** Notes for this build and older, newest first. */
 export function releasedNotes(

@@ -1,4 +1,4 @@
-import { PRACTICE_NUMBER_HINT } from 'contracts'
+import { PRACTICE_NUMBER_HINT } from '@my-time/contracts'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
 import {

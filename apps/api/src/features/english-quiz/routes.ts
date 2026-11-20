@@ -1,4 +1,3 @@
-import { authMacro } from '@shared/auth-macro'
 import {
 	ENGLISH_QUIZ_ERRORS,
 	ENGLISH_QUIZ_ROUTES,
@@ -8,7 +7,8 @@ import {
 	RoundSchema,
 	TopicListResponseSchema,
 	TopicSchema,
-} from 'contracts'
+} from '@my-time/contracts'
+import { authMacro } from '@shared/auth-macro'
 import { Elysia } from 'elysia'
 import { englishQuizService } from './service'
 

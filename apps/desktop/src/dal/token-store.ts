@@ -1,6 +1,6 @@
 import Gio from 'gi://Gio'
 import Secret from 'gi://Secret?version=1'
-import { ExchangeExtensionTokenResponseSchema } from 'contracts'
+import { ExchangeExtensionTokenResponseSchema } from '@my-time/contracts'
 import { normalizeApiUrl } from '@/shared/urls'
 import type { TokenStore, Tokens } from './api-client.js'
 

@@ -1,6 +1,6 @@
-import type { OfflineJournal } from 'contracts'
+import type { OfflineJournal } from '@my-time/contracts'
 
-export { type OfflineJournal, OfflineJournalSchema } from 'contracts'
+export { type OfflineJournal, OfflineJournalSchema } from '@my-time/contracts'
 
 export interface OfflineStore {
 	load(): OfflineJournal

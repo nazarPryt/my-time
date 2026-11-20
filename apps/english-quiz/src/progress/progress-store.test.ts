@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { ENGLISH_QUIZ_MODES } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_MODES } from '@my-time/micro-frontends'
 import { EMPTY_PROGRESS, withScore } from './practice-progress'
 import { createStorageProgressStore } from './progress-store'
 

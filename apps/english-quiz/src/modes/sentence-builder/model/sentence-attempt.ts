@@ -1,4 +1,4 @@
-import type { AnswerToken } from 'contracts/english-quiz'
+import type { AnswerToken } from '@my-time/contracts/english-quiz'
 
 /**
  * State machine for assembling one sentence. Picks are not checked one by

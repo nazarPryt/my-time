@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { AUTH_ROUTES } from 'contracts'
+import { AUTH_ROUTES } from '@my-time/contracts'
 import type { HttpTransport, TokenStore, Tokens } from './api-client'
 import { BrowserLogin } from './browser-login'
 

@@ -89,7 +89,7 @@ Bun.spawn([openCmd, `http://localhost:${server.port}`], {
 await reparse()
 
 chokidar
-	.watch(['apps/web', 'apps/api', 'apps/extension', 'contracts', 'packages'], {
+	.watch(['apps/web', 'apps/api', 'apps/extension', 'packages'], {
 		cwd: ROOT,
 		ignored: (filePath: string) =>
 			filePath.includes('/node_modules/') ||

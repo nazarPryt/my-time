@@ -1,5 +1,5 @@
 import { createInstance } from '@module-federation/runtime'
-import type { RemoteDescriptor, RemoteModule } from '@my-time/mfe-contracts'
+import type { RemoteDescriptor, RemoteModule } from '@my-time/micro-frontends'
 
 const DEFAULT_TIMEOUT_MS = 15_000
 

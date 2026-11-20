@@ -34,7 +34,7 @@ const steps = [
 	['bun', '--filter', 'web', 'test'],
 	['bun', '--filter', '@my-time/session-sync', 'test'],
 	['bun', '--filter', 'english-quiz', 'test'],
-	['bun', '--filter', 'contracts', 'test'],
+	['bun', '--filter', '@my-time/contracts', 'test'],
 	['bun', 'run', 'test:scripts'],
 	['bun', '--filter', 'desktop', 'test'],
 	['bun', '--filter', 'web', 'test:e2e'],

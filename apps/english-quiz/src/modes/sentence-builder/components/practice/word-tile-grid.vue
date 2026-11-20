@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/micro-frontends'
 
 const TEST_IDS = ENGLISH_QUIZ_REMOTE_TEST_IDS.sentenceBuilder
 defineProps<{ tiles: readonly string[] }>()

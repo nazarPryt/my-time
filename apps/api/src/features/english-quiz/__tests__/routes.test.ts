@@ -8,7 +8,7 @@ import {
 	RoundSchema,
 	TopicListResponseSchema,
 	TopicSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { syncEnglishQuizContent } from '../content/sync-content'

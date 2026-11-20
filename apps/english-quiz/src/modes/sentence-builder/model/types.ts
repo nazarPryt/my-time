@@ -15,4 +15,4 @@ export {
 	type Topic,
 	type TopicLevel,
 	type TopicSummary,
-} from 'contracts/english-quiz'
+} from '@my-time/contracts/english-quiz'

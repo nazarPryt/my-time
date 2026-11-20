@@ -9,9 +9,9 @@
 		"noEmit": true,
 		"paths": {
 			"api": ["../../apps/api/src/public.ts"],
-			"contracts": ["../../contracts/src/index.ts"]
+			"@my-time/contracts": ["../contracts/src/index.ts"]
 		}
 	},
 	"include": ["src"],
-	"references": [{ "path": "../../apps/api" }, { "path": "../../contracts" }]
+	"references": [{ "path": "../../apps/api" }, { "path": "../contracts" }]
 }

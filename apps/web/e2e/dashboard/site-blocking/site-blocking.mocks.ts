@@ -1,6 +1,13 @@
+import type {
+	BlockedSiteResponse,
+	ExtensionTokenResponse,
+} from '@my-time/contracts'
+import {
+	API_PREFIX,
+	AUTH_ROUTES,
+	SITE_BLOCKING_ROUTES,
+} from '@my-time/contracts'
 import type { Page, Route } from '@playwright/test'
-import type { BlockedSiteResponse, ExtensionTokenResponse } from 'contracts'
-import { API_PREFIX, AUTH_ROUTES, SITE_BLOCKING_ROUTES } from 'contracts'
 
 /** Convert Elysia route params (`:id`) to Playwright glob wildcards (`*`). */
 const glob = (route: string) => route.replace(/:[^/]+/g, '*')

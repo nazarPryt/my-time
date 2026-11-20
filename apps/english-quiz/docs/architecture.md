@@ -22,7 +22,7 @@ with a `mode-changed` event. It never switches mode by itself.
 
 ### Adding a mode
 
-1. Add its id to `ENGLISH_QUIZ_MODES` in `packages/mfe-contracts` (this is
+1. Add its id to `ENGLISH_QUIZ_MODES` in `packages/micro-frontends` (this is
    also its URL value, so the host accepts it with no other change).
 2. Create `src/modes/<id>/` with its root component, and an `index.ts` that
    exports a `PracticeModeDefinition` (title, description, category, levels,
@@ -98,7 +98,7 @@ components  →  composables  →  model
   (`GET /topics/:id/round?size=10`, picked by the server so the bank never
   reaches the browser). `useTopicSource()` builds it on the host's `apiFetch`
   prop, which `mount.ts` provides (`shared/api/api-fetch.ts`); responses are
-  parsed with the `contracts/english-quiz` schemas. Standalone dev
+  parsed with the `@my-time/contracts/english-quiz` schemas. Standalone dev
   (`main.ts`) passes a tiny fake API from `src/dev/`.
 
 ### Sentence content
@@ -124,7 +124,7 @@ components  →  composables  →  model
   accepted answer, so the longer one could never be built. The content test
   enforces this with `findPrefixConflict`, and the API refuses to seed it.
 - The answer rules are shared with the API, in
-  `contracts/src/features/english-quiz/answers/`.
+  `packages/contracts/src/features/english-quiz/answers/`.
 - Contractions are accepted automatically (`answers/contractions.ts`), so
   content writes them and never lists them in `accept`. The rules only ever
   accept correct English, so they accept less when in doubt:
@@ -190,7 +190,7 @@ skeleton is also shown while its lazy code downloads. The host shows its own
 ## Test ids
 
 Every `data-testid` the remote renders comes from
-`ENGLISH_QUIZ_REMOTE_TEST_IDS` in `packages/mfe-contracts`. The host's
+`ENGLISH_QUIZ_REMOTE_TEST_IDS` in `packages/micro-frontends`. The host's
 Playwright tests (`apps/web/e2e/dashboard/english-quiz/`) find elements
 only by these ids, never by role, text or CSS. When a test needs a new
 element, add its id to the contract and render it here.

@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, spyOn } from 'bun:test'
-import { RELEASE_NOTES } from 'contracts'
+import { RELEASE_NOTES } from '@my-time/contracts'
 import { releasesRepository } from '../repository'
 import { releasesService } from '../service'
 

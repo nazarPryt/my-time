@@ -6,7 +6,7 @@ import {
 	AUTH_ROUTES,
 	ExchangeExtensionTokenResponseSchema,
 	MeResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { INTEGRATION_API_URL } from '../../../scripts/e2e-integration-config'
 import type { Tokens } from '../src/dal/api-client'
 

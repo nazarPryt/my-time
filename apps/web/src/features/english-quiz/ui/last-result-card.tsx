@@ -1,4 +1,4 @@
-import type { QuizResult } from '@my-time/mfe-contracts'
+import type { QuizResult } from '@my-time/micro-frontends'
 import { format, parseISO } from 'date-fns'
 import { ENGLISH_QUIZ_TEST_IDS } from '../test-ids'
 

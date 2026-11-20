@@ -1,5 +1,5 @@
+import { API_PREFIX, RELEASE_NOTES, RELEASES_ROUTES } from '@my-time/contracts'
 import type { Page, Request } from '@playwright/test'
-import { API_PREFIX, RELEASE_NOTES, RELEASES_ROUTES } from 'contracts'
 
 export const API_RELEASES_SEEN = `**${API_PREFIX}${RELEASES_ROUTES.prefix}${RELEASES_ROUTES.seen}`
 

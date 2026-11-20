@@ -1,4 +1,4 @@
-import type { QuizLevel } from '@my-time/mfe-contracts'
+import type { QuizLevel } from '@my-time/micro-frontends'
 
 export type QuizTopic =
 	| 'grammar'

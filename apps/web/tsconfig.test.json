@@ -15,7 +15,7 @@
 		"types": ["bun-types"],
 		"paths": {
 			"@/*": ["./src/*"],
-			"contracts": ["../../contracts/src/index.ts"]
+			"@my-time/contracts": ["../../packages/contracts/src/index.ts"]
 		}
 	},
 	"include": ["src/**/*.test.ts"]

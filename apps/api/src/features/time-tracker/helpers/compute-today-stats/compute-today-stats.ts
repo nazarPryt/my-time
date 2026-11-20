@@ -1,4 +1,4 @@
-import type { TodaySummaryResponse } from 'contracts'
+import type { TodaySummaryResponse } from '@my-time/contracts'
 import { isCompletedWork } from '../is-completed-work'
 import { mergedWorkMilliseconds } from '../merged-work'
 import type { SessionLike } from '../types'

@@ -1,4 +1,9 @@
-import type { RuleSection, Sentence, SentenceForm, TopicLevel } from 'contracts'
+import type {
+	RuleSection,
+	Sentence,
+	SentenceForm,
+	TopicLevel,
+} from '@my-time/contracts'
 import { index, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 
 // Content tables: synced from the topic files on startup, never edited by hand.

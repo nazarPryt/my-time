@@ -1,4 +1,4 @@
-import type { RemoteApiFetch } from '@my-time/mfe-contracts'
+import type { RemoteApiFetch } from '@my-time/micro-frontends'
 import { type InjectionKey, inject } from 'vue'
 
 /** Provided by mount.ts from the host's `apiFetch` prop. */

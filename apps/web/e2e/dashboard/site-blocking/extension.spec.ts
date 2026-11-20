@@ -1,5 +1,5 @@
+import { EXTENSION_VERSION } from '@my-time/contracts'
 import type { LinkProps } from '@tanstack/react-router'
-import { EXTENSION_VERSION } from 'contracts'
 import {
 	announceFakeExtension,
 	installFakeExtension,

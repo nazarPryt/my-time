@@ -6,7 +6,7 @@ import {
 	type SessionResponse,
 	SessionStreamStateSchema,
 	type TimerSnapshot,
-} from 'contracts'
+} from '@my-time/contracts'
 
 /** Decode complete lines so split UTF-8 works without GJS decoder streaming. */
 export class SessionStreamParser {

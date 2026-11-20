@@ -1,4 +1,4 @@
-import { API_PREFIX } from 'contracts'
+import { API_PREFIX } from '@my-time/contracts'
 import {
 	INTEGRATION_API_URL as API_URL,
 	INTEGRATION_DESKTOP_PORT,

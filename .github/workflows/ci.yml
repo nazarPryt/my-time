@@ -157,7 +157,7 @@ jobs:
       - run: bun --filter web test
       - run: bun --filter @my-time/session-sync test
       - run: bun --filter english-quiz test
-      - run: bun --filter contracts test
+      - run: bun --filter @my-time/contracts test
       - run: bun run test:scripts
 
   test-desktop:

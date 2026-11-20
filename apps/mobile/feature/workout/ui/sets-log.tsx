@@ -1,4 +1,4 @@
-import type { SetResponse } from 'contracts'
+import type { SetResponse } from '@my-time/contracts'
 import { format } from 'date-fns'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/micro-frontends'
 import { computed, shallowRef } from 'vue'
 import QuizIcon from '../../../../shared/ui/quiz-icon.vue'
 import type { RuleSection, RuleSectionKind } from '../../model/types'

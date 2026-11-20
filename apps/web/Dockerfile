@@ -6,19 +6,19 @@ COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 COPY apps/extension/package.json ./apps/extension/
 COPY apps/desktop/package.json ./apps/desktop/
-COPY contracts/package.json ./contracts/
-COPY packages/features/package.json ./packages/features/
+COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/client-features/package.json ./packages/client-features/
 COPY packages/session-sync/package.json ./packages/session-sync/
-COPY packages/mfe-contracts/package.json ./packages/mfe-contracts/
+COPY packages/micro-frontends/package.json ./packages/micro-frontends/
 COPY apps/english-quiz/package.json ./apps/english-quiz/
 # --ignore-scripts: the extension's postinstall (`wxt prepare`) needs its
 # sources, which aren't copied yet — `wxt zip` below runs it anyway.
 RUN bun install --ignore-scripts
 
-COPY contracts ./contracts
-COPY packages/features ./packages/features
+COPY packages/contracts ./packages/contracts
+COPY packages/client-features ./packages/client-features
 COPY packages/session-sync ./packages/session-sync
-COPY packages/mfe-contracts ./packages/mfe-contracts
+COPY packages/micro-frontends ./packages/micro-frontends
 COPY apps/api/src ./apps/api/src
 COPY apps/api/tsconfig.json ./apps/api/
 COPY apps/web ./apps/web

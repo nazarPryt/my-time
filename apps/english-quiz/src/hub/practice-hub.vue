@@ -2,7 +2,7 @@
 import {
 	ENGLISH_QUIZ_REMOTE_TEST_IDS,
 	type QuizMode,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { groupByCategory, PRACTICE_MODES } from '../catalog'
 import type { PracticeProgress } from '../progress'
 import CategorySection from './components/category-section.vue'

@@ -1,4 +1,4 @@
-import type { PermessoCheckHistoryResponse } from 'contracts'
+import type { PermessoCheckHistoryResponse } from '@my-time/contracts'
 import { PERMESSO_TEST_IDS } from '../test-ids'
 import { CheckHistory } from './check-history'
 

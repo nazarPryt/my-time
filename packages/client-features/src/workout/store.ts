@@ -1,4 +1,8 @@
-import type { ExerciseType, SetResponse, TodayResponse } from 'contracts'
+import type {
+	ExerciseType,
+	SetResponse,
+	TodayResponse,
+} from '@my-time/contracts'
 import { format, subMonths } from 'date-fns'
 import { create } from 'zustand'
 import type { WorkoutApiActions } from './api'

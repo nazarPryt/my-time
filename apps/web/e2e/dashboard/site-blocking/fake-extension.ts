@@ -1,5 +1,5 @@
+import { EXTENSION_VERSION } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import { EXTENSION_VERSION } from 'contracts'
 
 /**
  * Stand-in for the browser extension's content script

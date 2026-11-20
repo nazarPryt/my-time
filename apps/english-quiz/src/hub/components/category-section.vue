@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { QuizMode } from '@my-time/mfe-contracts'
+import type { QuizMode } from '@my-time/micro-frontends'
 import type { PracticeMode } from '../../catalog'
 import type { PracticeProgress } from '../../progress'
 import ModeCard from './mode-card.vue'

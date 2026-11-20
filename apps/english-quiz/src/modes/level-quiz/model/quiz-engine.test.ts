@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { seededRandom } from 'contracts/english-quiz'
+import { seededRandom } from '@my-time/contracts/english-quiz'
 import { formatISO } from 'date-fns'
 import { QUESTION_BANK } from '../data/questions'
 import {

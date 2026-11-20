@@ -1,6 +1,6 @@
 import { db } from '@db'
 import { englishQuizSentences, englishQuizTopics } from '@db/schema'
-import type { Sentence, Topic, TopicSummary } from 'contracts'
+import type { Sentence, Topic, TopicSummary } from '@my-time/contracts'
 import { asc, eq, notInArray, sql } from 'drizzle-orm'
 import type { TopicRecord } from './content/define-topic'
 

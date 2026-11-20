@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
 	type SetPracticeNumberRequest,
 	SetPracticeNumberRequestSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 

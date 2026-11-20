@@ -1,5 +1,9 @@
 import { describe, expect, mock, test } from 'bun:test'
-import type { SessionResponse, TimerSnapshot, TimerState } from 'contracts'
+import type {
+	SessionResponse,
+	TimerSnapshot,
+	TimerState,
+} from '@my-time/contracts'
 import { AuthenticationError } from '@/dal/api-client'
 import { reconnectDelay, TrackerController } from './tracker-controller'
 

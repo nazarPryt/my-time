@@ -8,7 +8,7 @@ export interface NodeChain {
 }
 
 interface FileDescriptor {
-	groupId: string // top-level group id, e.g. "web" or "packages/features"
+	groupId: string // top-level group id, e.g. "web" or "packages/client-features"
 	groupLabel: string // display label for the group
 	featureName: string // module name within the group
 	fileSubPath: string // path from the feature root, extension stripped
@@ -81,17 +81,17 @@ const MATCHERS: Array<{
 		re: /^apps\/mobile\/([^/]+)\/(.+)$/,
 		build: (m) => grp('mobile', 'mobile', m[1], m[2]),
 	},
-	// contracts
+	// packages/contracts (before the generic packages matchers)
 	{
-		re: /^contracts\/src\/features\/([^/]+)\/(.+)$/,
+		re: /^packages\/contracts\/src\/features\/([^/]+)\/(.+)$/,
 		build: (m) => grp('contracts', 'contracts', m[1], m[2]),
 	},
 	{
-		re: /^contracts\/src\/([^/]+)\/(.+)$/,
+		re: /^packages\/contracts\/src\/([^/]+)\/(.+)$/,
 		build: (m) => grp('contracts', 'contracts', m[1], m[2]),
 	},
 	{
-		re: /^contracts\/src\/(.+)$/,
+		re: /^packages\/contracts\/src\/(.+)$/,
 		build: (m) => grp('contracts', 'contracts', '(root)', m[1]),
 	},
 	// packages/<pkg> — each package is its own top-level group

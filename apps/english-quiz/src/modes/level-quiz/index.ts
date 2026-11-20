@@ -1,4 +1,4 @@
-import { QUIZ_LEVELS } from '@my-time/mfe-contracts'
+import { QUIZ_LEVELS } from '@my-time/micro-frontends'
 import { formatLevelRange } from '../../shared/lib/format-level-range'
 import { lazyModeComponent } from '../../shared/practice/lazy-mode-component'
 import type { PracticeModeDefinition } from '../../shared/practice/practice-mode'

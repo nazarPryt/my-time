@@ -1,6 +1,6 @@
 // DAL — sole owner of chrome.storage.local for blocked sites.
 
-import type { BlockedSiteResponse } from 'contracts'
+import type { BlockedSiteResponse } from '@my-time/contracts'
 
 const STORAGE_KEY = 'blocked_sites'
 

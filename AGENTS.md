@@ -99,7 +99,7 @@ versions for their update prompts.
   `--dry-run` to preview). It reads commits since `v<current version>`,
   picks the bump (`feat!`/`BREAKING CHANGE` → major, `feat` → minor,
   `fix`/`perf` → patch), updates `package.json`, and drafts an entry in
-  `contracts/src/features/releases/release-notes.data.ts`. Reword that entry
+  `packages/contracts/src/features/releases/release-notes.data.ts`. Reword that entry
   for users, commit `chore(release): vX.Y.Z`, then open the PR `dev → main`.
   Agents follow the `release` skill (`.agents/skills/release/SKILL.md`) for
   the whole release, notes and the `dev → main` PR included.
@@ -149,9 +149,24 @@ my-time/
 │   ├── extension/  — Browser extension (WXT + React)
 │   ├── english-quiz/ — Vue micro frontend loaded by web at runtime (see below)
 │   └── desktop/    — GNOME Shell extension (TypeScript + GJS; see its AGENTS.md)
-├── contracts/      — Shared Zod schemas (source of truth for API shapes)
-└── packages/       — Shared features, session synchronization, micro-frontend contracts
+└── packages/
+    ├── contracts/        — @my-time/contracts: Zod schemas for every API shape
+    ├── client-features/  — @my-time/client-features: client code shared by web + mobile
+    ├── session-sync/     — @my-time/session-sync: SSE sync logic shared by web + desktop
+    └── micro-frontends/  — @my-time/micro-frontends: host ↔ remote mount contract
 ```
+
+Shared packages are named `@my-time/<folder>`. Keep them separate; each has
+one job and its own dependencies:
+
+- `contracts` sits at the bottom of the graph (only `zod`, `date-fns`) and is
+  imported by every app, including the API. Put only data shapes there, never
+  runtime client logic.
+- `client-features` imports the API's `App` type, so it can never live in
+  `contracts` (that would make `api → contracts → api` a cycle).
+- `session-sync` is runtime behaviour (reconnects, timers), not a shape.
+- `micro-frontends` describes the frontend ↔ frontend boundary and needs DOM
+  types, which `api` and `desktop` do not have.
 
 Package manager: **bun** with workspaces. Linter/formatter: **Biome** (no ESLint, no Prettier).
 
@@ -170,7 +185,7 @@ Do not duplicate shared rules in either client.
 `apps/english-quiz` is a Vue app loaded into `apps/web` at runtime through
 the Module Federation runtime. Full guide: `docs/micro-frontends.md`.
 
-- Host and remote share only `packages/mfe-contracts` (framework-agnostic
+- Host and remote share only `packages/micro-frontends` (framework-agnostic
   `mount(el, props) → { update, unmount }`, props, events, contract version).
   Never import across `apps/web` ↔ `apps/english-quiz`.
 - Remotes are served same-origin under `/remotes/<name>/`: Vite proxy in dev,
@@ -184,7 +199,7 @@ the Module Federation runtime. Full guide: `docs/micro-frontends.md`.
   variables.
 - Remotes reach the API only through the host's `apiFetch` prop (the host adds
   the origin, token and refresh); request/response shapes still come from
-  `contracts`.
+  `@my-time/contracts`.
 
 ### Date & time
 
@@ -194,16 +209,16 @@ Always use **`date-fns`** (installed in both `apps/api` and `apps/web`) for any 
 
 The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` ships every container's logs into **Loki** via **Promtail**, viewable/searchable in **Grafana** (`http://<host>:3001`) — all self-hosted and free. Configs live in `observability/`.
 
-### contracts package — the API contract layer
+### @my-time/contracts — the API contract layer
 
-`contracts/` is a shared package imported by both `api` and `web`. It exports Zod schemas and TypeScript types for every API request/response shape. **Never duplicate schema definitions** — always define them in `contracts/src/features/<feature>/` and import from there.
+`packages/contracts/` is a shared package imported by both `api` and `web`. It exports Zod schemas and TypeScript types for every API request/response shape. **Never duplicate schema definitions** — always define them in `packages/contracts/src/features/<feature>/` and import from there.
 
 ### api — Elysia + Drizzle
 
 - **Entry:** `src/index.ts` → connects DB, starts server.
 - **App:** `src/app.ts` — mounts all plugins under `/api/v1`, exports `App` type and `type { App }` via `src/public.ts`.
 - **Feature structure:** `src/features/<feature>/routes.ts` (Elysia plugin), `service.ts`, `repository.ts`, `schemas.ts`.
-- **Schemas in routes** use Elysia's `t` (TypeBox) for runtime validation; business schemas live in `contracts/`.
+- **Schemas in routes** use Elysia's `t` (TypeBox) for runtime validation; business schemas live in `packages/contracts/`.
 - **DB:** Drizzle ORM with Postgres (`src/db/`). Schema files in `src/db/schema/`. Always generate + run migrations after schema changes.
 - **Auth:** JWT access tokens (15 min) + refresh tokens (7 days) stored in `refresh_tokens` table. `/auth/me` validates the Bearer token on every dashboard load.
 - **Path aliases** (tsconfig): `@db`, `@features/*`, `@shared/*`, `@/*` → `src/*`.
@@ -262,7 +277,7 @@ To share code between two slices, move it *down* a layer, don't import sideways.
 
 ### How to add a new feature end-to-end
 
-1. **Schema:** Add Zod schema(s) to `contracts/src/features/<feature>/`.
+1. **Schema:** Add Zod schema(s) to `packages/contracts/src/features/<feature>/`.
 2. **API route:** Create `apps/api/src/features/<feature>/routes.ts` as an Elysia plugin, wire it into `apps/api/src/app.ts`.
 3. **DB (if needed):** Add Drizzle table to `apps/api/src/db/schema/`, run `db:generate` + `db:migrate`.
 4. **Web feature:** Create `apps/web/src/features/<feature>/` with `ui/`, `model/`, `api/` segments and an `index.ts` barrel (copy an existing slice like `time-tracker`).

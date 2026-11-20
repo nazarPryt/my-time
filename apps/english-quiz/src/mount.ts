@@ -4,7 +4,7 @@ import {
 	type EnglishQuizProps,
 	isQuizMode,
 	type RemoteMount,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { createApp, h, reactive } from 'vue'
 import AppRoot from './app/app-root.vue'
 import { API_FETCH_KEY } from './shared/api/api-fetch'
@@ -12,7 +12,7 @@ import { styles } from './styles'
 
 /**
  * The module the host loads through Module Federation (`englishQuiz/mount`).
- * See RemoteModule in @my-time/mfe-contracts.
+ * See RemoteModule in @my-time/micro-frontends.
  */
 export const contractVersion = ENGLISH_QUIZ_CONTRACT_VERSION
 

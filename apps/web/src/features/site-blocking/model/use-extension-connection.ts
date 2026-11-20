@@ -1,4 +1,4 @@
-import { EXTENSION_VERSION } from 'contracts'
+import { EXTENSION_VERSION } from '@my-time/contracts'
 import { useEffect } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import {

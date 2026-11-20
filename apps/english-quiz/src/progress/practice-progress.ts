@@ -2,7 +2,7 @@ import {
 	type EnglishQuizEvent,
 	isQuizMode,
 	type QuizMode,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 
 export interface ModeScore {
 	correct: number

@@ -20,7 +20,7 @@ web container (nginx) ───────────────────�
 
 | Piece | Where | Role |
 |---|---|---|
-| Contract | `packages/mfe-contracts` | Types both sides compile against: `mount(el, props) → { update, unmount }`, props, events, contract version |
+| Contract | `packages/micro-frontends` | Types both sides compile against: `mount(el, props) → { update, unmount }`, props, events, contract version |
 | Remote | `apps/english-quiz` | Vue 3 app; Module Federation exposes `./mount` |
 | Host runtime | `apps/web/src/shared/lib/micro-frontends` | `loadRemoteModule` (MF runtime, timeout, version check) + `<RemoteApp>` (React lifecycle adapter) |
 | Host slot | `apps/web/src/features/english-quiz` | Loading skeleton, error/retry UI, passes props, receives events |
@@ -28,7 +28,7 @@ web container (nginx) ───────────────────�
 
 ## How it works, step by step
 
-1. **Contract first.** `packages/mfe-contracts` defines what host and remote
+1. **Contract first.** `packages/micro-frontends` defines what host and remote
    may assume about each other. It is framework-agnostic on purpose: the
    host passes a DOM element and plain props; the remote returns
    `update()`/`unmount()`. React never sees Vue and vice versa.
@@ -66,7 +66,7 @@ web container (nginx) ───────────────────�
    contract; `apps/web/src/shared/lib/api-fetch.ts`): `path` follows the API
    prefix (`/english-quiz/topics`), and the host adds the origin, the access
    token and the refresh on 401. Request/response shapes come from
-   `contracts` (the remote imports only `contracts/english-quiz`, never
+   `contracts` (the remote imports only `@my-time/contracts/english-quiz`, never
    `apps/web`). The sentence builder loads topics, a topic's rule and a
    server-picked round this way (contract v3).
 9. **Same-origin serving.** The browser always requests
@@ -98,7 +98,7 @@ so stop it for a reliable run.
 ## Changing the contract
 
 - **Additive** (new optional prop, new event type): edit
-  `packages/mfe-contracts`, ship the remote, then the host. Old hosts ignore
+  `packages/micro-frontends`, ship the remote, then the host. Old hosts ignore
   what they don't know.
 - **Breaking** (renamed/removed prop, changed event shape): bump
   `ENGLISH_QUIZ_CONTRACT_VERSION`. The host shows the error card instead of
@@ -110,7 +110,7 @@ so stop it for a reliable run.
 1. Create `apps/<name>` with `@module-federation/vite`, `base:
    '/remotes/<name>/'`, a unique federation `name`, and expose `./mount`
    implementing `RemoteModule` from the contracts package.
-2. Add its descriptor + props to `packages/mfe-contracts`.
+2. Add its descriptor + props to `packages/micro-frontends`.
 3. Proxy `/remotes/<name>` in `apps/web/vite.config.ts` and `apps/web/nginx.conf`.
 4. Add a feature slice in `apps/web` that renders `<RemoteApp>`.
 5. Add its Dockerfile, compose service, deploy image, and CI steps

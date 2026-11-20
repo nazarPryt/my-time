@@ -1,4 +1,4 @@
-import { API_PREFIX, PERMESSO_ROUTES } from 'contracts'
+import { API_PREFIX, PERMESSO_ROUTES } from '@my-time/contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { tokenStorage } from '@/shared/lib/token-storage'
 

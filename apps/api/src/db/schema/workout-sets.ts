@@ -1,4 +1,4 @@
-import { DEFAULT_EXERCISE_TYPE, type ExerciseType } from 'contracts'
+import { DEFAULT_EXERCISE_TYPE, type ExerciseType } from '@my-time/contracts'
 import {
 	index,
 	integer,

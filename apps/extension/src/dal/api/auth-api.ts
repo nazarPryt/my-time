@@ -1,6 +1,9 @@
 // DAL — all auth-related HTTP calls.
 
-import type { ExchangeExtensionTokenResponse, LoginRequest } from 'contracts'
+import type {
+	ExchangeExtensionTokenResponse,
+	LoginRequest,
+} from '@my-time/contracts'
 import { apiFetch, publicPost } from './client'
 
 export interface LoginTokens {

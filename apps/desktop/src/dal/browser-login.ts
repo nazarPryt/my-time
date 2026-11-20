@@ -3,7 +3,7 @@ import {
 	DesktopPairingPollSchema,
 	type DesktopPairingStart,
 	DesktopPairingStartSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import type { HttpTransport, TokenStore } from './api-client'
 
 export interface LoginDelay {

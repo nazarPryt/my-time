@@ -3,7 +3,7 @@ import {
 	SENTENCE_FORMS,
 	type Sentence,
 	shuffle,
-} from 'contracts'
+} from '@my-time/contracts'
 
 /**
  * Picks `size` random sentences from a topic's bank, taking the forms

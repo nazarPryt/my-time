@@ -1,5 +1,5 @@
+import { DesktopPairingIdSchema } from '@my-time/contracts'
 import { createFileRoute } from '@tanstack/react-router'
-import { DesktopPairingIdSchema } from 'contracts'
 import { LoginPage } from '@/pages/login'
 
 export const Route = createFileRoute('/auth/login')({

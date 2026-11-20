@@ -1,5 +1,5 @@
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import { type APIRequestContext, test as base } from '@playwright/test'
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
 import {
 	INTEGRATION_API_URL as API_URL,
 	INTEGRATION_DESKTOP_URL as DESKTOP_URL,

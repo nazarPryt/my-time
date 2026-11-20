@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EnglishQuizEvent, QuizLevel } from '@my-time/mfe-contracts'
+import type { EnglishQuizEvent, QuizLevel } from '@my-time/micro-frontends'
 import { ref } from 'vue'
 import LevelPicker from './components/level-picker.vue'
 import QuestionCard from './components/question-card.vue'

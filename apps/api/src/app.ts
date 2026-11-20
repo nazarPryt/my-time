@@ -6,9 +6,9 @@ import { releasesPlugin } from '@features/releases/routes'
 import { siteBlockingPlugin } from '@features/site-blocking/routes'
 import { timeTrackerPlugin } from '@features/time-tracker/routes'
 import { workoutPlugin } from '@features/workout/routes'
+import { API_PREFIX } from '@my-time/contracts'
 import { API_CONFIG } from '@shared/api-config'
 import { httpLoggerPlugin } from '@shared/http-logger'
-import { API_PREFIX } from 'contracts'
 import { Elysia } from 'elysia'
 
 export const app = new Elysia({ prefix: API_PREFIX })

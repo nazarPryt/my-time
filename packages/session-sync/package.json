@@ -8,7 +8,7 @@
 	},
 	"dependencies": {
 		"@date-fns/tz": "^1.5.0",
-		"contracts": "workspace:*",
+		"@my-time/contracts": "workspace:*",
 		"date-fns": "4.4.0"
 	},
 	"scripts": {

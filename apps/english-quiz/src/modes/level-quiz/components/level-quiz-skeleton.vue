@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { QUIZ_LEVELS } from '@my-time/mfe-contracts'
+import { QUIZ_LEVELS } from '@my-time/micro-frontends'
 import SkeletonBlock from '../../../shared/ui/skeleton-block.vue'
 import SkeletonStatus from '../../../shared/ui/skeleton-status.vue'
 </script>

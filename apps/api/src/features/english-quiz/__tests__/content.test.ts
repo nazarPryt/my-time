@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { Sentence } from 'contracts'
+import type { Sentence } from '@my-time/contracts'
 import { defineTopic, type TopicRecord } from '../content/define-topic'
 import { ALL_TOPICS } from '../content/index'
 import { findContentProblems } from '../content/validate-content'

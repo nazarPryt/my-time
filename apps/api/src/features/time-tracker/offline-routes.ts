@@ -1,8 +1,8 @@
-import { authMacro } from '@shared/auth-macro'
 import {
 	SyncOfflineSessionsRequestSchema,
 	TIME_TRACKER_ROUTES,
-} from 'contracts'
+} from '@my-time/contracts'
+import { authMacro } from '@shared/auth-macro'
 import { Elysia } from 'elysia'
 import { OfflineSyncError, syncOfflineSessions } from './offline-sync'
 import { timeTrackerService } from './service'

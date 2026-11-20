@@ -1,4 +1,4 @@
-import type { SentenceForm } from 'contracts'
+import type { SentenceForm } from '@my-time/contracts'
 import { defineTopic, type TopicRecord } from '../content/define-topic'
 
 const FORMS: SentenceForm[] = ['affirmative', 'question', 'negative']

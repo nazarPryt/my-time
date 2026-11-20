@@ -11,8 +11,8 @@
 		"test": "bun test src"
 	},
 	"dependencies": {
-		"@my-time/mfe-contracts": "workspace:*",
-		"contracts": "workspace:*",
+		"@my-time/contracts": "workspace:*",
+		"@my-time/micro-frontends": "workspace:*",
 		"date-fns": "4.4.0",
 		"vue": "3.5.45"
 	},

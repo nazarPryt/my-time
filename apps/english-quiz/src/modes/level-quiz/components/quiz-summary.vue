@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { QuizLevel } from '@my-time/mfe-contracts'
-import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/mfe-contracts'
+import type { QuizLevel } from '@my-time/micro-frontends'
+import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/micro-frontends'
 import { computed } from 'vue'
 
 const TEST_IDS = ENGLISH_QUIZ_REMOTE_TEST_IDS.levelQuiz

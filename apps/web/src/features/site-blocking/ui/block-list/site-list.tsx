@@ -1,4 +1,4 @@
-import type { BlockedSiteResponse } from 'contracts'
+import type { BlockedSiteResponse } from '@my-time/contracts'
 import { ShieldOff } from 'lucide-react'
 import { SITE_BLOCKING_TEST_IDS as SB } from '../../test-ids'
 import { BlockedSiteItem } from './blocked-site-item'

@@ -1,4 +1,4 @@
-import { API_PREFIX } from 'contracts'
+import { API_PREFIX } from '@my-time/contracts'
 
 /** GJS does not provide the browser URL API. Keep URL checks runtime-independent. */
 export function normalizeUrl(input: string): string {

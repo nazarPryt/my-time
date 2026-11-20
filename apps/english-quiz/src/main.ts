@@ -1,7 +1,7 @@
 // Standalone entry, used only by index.html when running the remote on its
 // own (`bun --filter english-quiz dev`). The host never loads this file — it
 // loads `./mount` through Module Federation instead.
-import type { EnglishQuizEvent } from '@my-time/mfe-contracts'
+import type { EnglishQuizEvent } from '@my-time/micro-frontends'
 import { devApiFetch } from './dev/dev-api-fetch'
 import { mount } from './mount'
 

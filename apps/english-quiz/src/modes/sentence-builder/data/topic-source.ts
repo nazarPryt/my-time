@@ -1,11 +1,11 @@
-import type { RemoteApiFetch } from '@my-time/mfe-contracts'
 import {
 	ENGLISH_QUIZ_ROUTES,
 	ROUND_SIZE,
 	RoundSchema,
 	TopicSchema,
 	TopicSummarySchema,
-} from 'contracts/english-quiz'
+} from '@my-time/contracts/english-quiz'
+import type { RemoteApiFetch } from '@my-time/micro-frontends'
 import { useApiFetch } from '../../../shared/api/api-fetch'
 import type { Round, Topic, TopicSummary } from '../model/types'
 

@@ -2,7 +2,7 @@ import {
 	ENGLISH_QUIZ_REMOTE_TEST_IDS,
 	type QuizLevel,
 	type QuizMode,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import type { Locator, Page } from '@playwright/test'
 import { ENGLISH_QUIZ_TEST_IDS } from '@/features/english-quiz/test-ids'
 import { BaseLocators } from '../base-locators'

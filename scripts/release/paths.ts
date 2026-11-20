@@ -4,7 +4,7 @@ export const ROOT = resolve(import.meta.dir, '../..')
 export const PACKAGE_JSON = resolve(ROOT, 'package.json')
 export const NOTES_FILE = resolve(
 	ROOT,
-	'contracts/src/features/releases/release-notes.data.ts',
+	'packages/contracts/src/features/releases/release-notes.data.ts',
 )
 
 export async function readProductVersion(): Promise<string> {

@@ -4,7 +4,7 @@ Vue 3 micro frontend loaded by `apps/web` through Module Federation. Read
 `docs/micro-frontends.md` before changing how it is built, served or loaded.
 
 - The only public surface is `src/mount.ts` (exposed as `./mount`). It must
-  satisfy `RemoteModule<EnglishQuizProps>` from `@my-time/mfe-contracts`.
+  satisfy `RemoteModule<EnglishQuizProps>` from `@my-time/micro-frontends`.
   Never import from `apps/web`, and never let the host import from here.
 - Render only inside the shadow root `mount.ts` creates. Styles are plain
   `.css` files next to the components they style, registered in
@@ -22,7 +22,7 @@ Vue 3 micro frontend loaded by `apps/web` through Module Federation. Read
   (`/remotes/english-quiz/`) identical.
 - Sentence-builder content comes from the API through the host's `apiFetch`
   prop (never `fetch` directly, never tokens); shapes and answer rules come
-  from `contracts/english-quiz`. Topic files live in
+  from `@my-time/contracts/english-quiz`. Topic files live in
   `apps/api/src/features/english-quiz/content/`.
 - Report unrecoverable errors through `onError` and user-facing outcomes
   through `onEvent`; never reach into the host's DOM, storage or globals.
@@ -31,10 +31,10 @@ Vue 3 micro frontend loaded by `apps/web` through Module Federation. Read
   write any other key.
 - Navigation belongs to the host: no router here. Render the `mode` prop
   (undefined = hub) and ask for changes with a `mode-changed` event. Mode ids
-  come only from `ENGLISH_QUIZ_MODES` in `@my-time/mfe-contracts`.
+  come only from `ENGLISH_QUIZ_MODES` in `@my-time/micro-frontends`.
 - Contract changes: see "Changing the contract" in `docs/micro-frontends.md`.
 - Every `data-testid` comes from `ENGLISH_QUIZ_REMOTE_TEST_IDS` in
-  `@my-time/mfe-contracts` (the host's e2e tests use only test ids). Never
+  `@my-time/micro-frontends` (the host's e2e tests use only test ids). Never
   write a test id as a string literal in a component.
 - Every screen that loads data or code gets its own `<screen>-skeleton.vue`
   (see "Skeletons" in `docs/architecture.md`), never a plain "Loading…".

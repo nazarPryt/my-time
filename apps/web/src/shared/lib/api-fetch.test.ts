@@ -1,5 +1,5 @@
 import { afterEach, expect, spyOn, test } from 'bun:test'
-import { API_PREFIX } from 'contracts'
+import { API_PREFIX } from '@my-time/contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { apiFetch } from './api-fetch'
 import { tokenStorage } from './token-storage'

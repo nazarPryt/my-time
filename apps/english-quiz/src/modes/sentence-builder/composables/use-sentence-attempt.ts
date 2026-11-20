@@ -1,9 +1,9 @@
-import type { RandomSource } from 'contracts/english-quiz'
+import type { RandomSource } from '@my-time/contracts/english-quiz'
 import {
 	acceptedAnswers,
 	answerWords,
 	formatAnswer,
-} from 'contracts/english-quiz'
+} from '@my-time/contracts/english-quiz'
 import {
 	computed,
 	type MaybeRefOrGetter,

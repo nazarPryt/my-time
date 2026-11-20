@@ -1,4 +1,4 @@
-import { ENGLISH_QUIZ_MODES, type QuizMode } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_MODES, type QuizMode } from '@my-time/micro-frontends'
 import { levelQuizMode } from '../modes/level-quiz'
 import { sentenceBuilderMode } from '../modes/sentence-builder'
 import type { PracticeModeDefinition } from '../shared/practice/practice-mode'

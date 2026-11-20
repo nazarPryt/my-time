@@ -1,4 +1,4 @@
-import type { QuizLevel, QuizMode } from '@my-time/mfe-contracts'
+import type { QuizLevel, QuizMode } from '@my-time/micro-frontends'
 import type { LinkProps } from '@tanstack/react-router'
 import { ENGLISH_QUIZ_MODE_PARAM } from '@/features/english-quiz/lib/english-quiz-search'
 import { EnglishQuizLocators } from './english-quiz.locators'

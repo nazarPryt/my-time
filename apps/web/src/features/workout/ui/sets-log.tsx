@@ -1,4 +1,4 @@
-import type { SetResponse } from 'contracts'
+import type { SetResponse } from '@my-time/contracts'
 import { Flame, RotateCcw } from 'lucide-react'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog'
 import { WORKOUT_TEST_IDS } from '../test-ids'

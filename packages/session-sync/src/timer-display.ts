@@ -1,5 +1,5 @@
 import { TZDate } from '@date-fns/tz'
-import type { TimerSnapshot } from 'contracts'
+import type { TimerSnapshot } from '@my-time/contracts'
 import { addMilliseconds, differenceInMilliseconds, startOfDay } from 'date-fns'
 
 /** Projects a server total for presentation; never aggregates client session history. */

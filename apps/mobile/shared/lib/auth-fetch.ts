@@ -1,4 +1,4 @@
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import { router } from 'expo-router'
 import { MOBILE_CONFIG } from '@/shared/config/mobile-config'
 import { tokenStorage } from './token-storage'

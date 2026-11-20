@@ -1,6 +1,6 @@
+import type { AuthResponse } from '@my-time/contracts'
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import type { AuthResponse } from 'contracts'
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
 import { API_ME, MOCK_USER } from '../../support/auth.mocks'
 
 export const LOGIN_API_PATH = `${API_PREFIX}${AUTH_ROUTES.prefix}${AUTH_ROUTES.login}`

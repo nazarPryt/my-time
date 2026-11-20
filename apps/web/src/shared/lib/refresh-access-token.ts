@@ -1,4 +1,8 @@
-import { API_PREFIX, AUTH_ROUTES, RefreshResponseSchema } from 'contracts'
+import {
+	API_PREFIX,
+	AUTH_ROUTES,
+	RefreshResponseSchema,
+} from '@my-time/contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { fetchJsonResponse } from './fetch-response'
 import { tokenStorage } from './token-storage'

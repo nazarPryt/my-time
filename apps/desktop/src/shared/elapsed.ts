@@ -1,4 +1,4 @@
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse } from '@my-time/contracts'
 import { differenceInSeconds } from 'date-fns'
 
 export function elapsedSeconds(

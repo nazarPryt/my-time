@@ -11,7 +11,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"paths": {
-			"contracts": ["../../contracts/src/index.ts"],
+			"@my-time/contracts": ["../../packages/contracts/src/index.ts"],
 			"@/*": ["./src/*"],
 			"@my-time/session-sync": ["../../packages/session-sync/src/index.ts"]
 		}

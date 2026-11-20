@@ -2,7 +2,7 @@ import {
 	DEFAULT_EXERCISE_TYPE,
 	DEFAULT_WORKOUT_GOAL_REPS,
 	type ExerciseType,
-} from 'contracts'
+} from '@my-time/contracts'
 import {
 	integer,
 	pgTable,

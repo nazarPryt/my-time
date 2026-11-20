@@ -2,7 +2,7 @@ import {
 	type DesktopPairingStart,
 	type LoginRequest,
 	LoginRequestSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import type { TokenStore } from '@/dal/api-client'
 import type { ConnectionSettings, SettingsStore } from '@/dal/settings-store'
 import { errorMessage } from '@/shared/errors'

@@ -1,4 +1,4 @@
-import { ENGLISH_QUIZ_MODES } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_MODES } from '@my-time/micro-frontends'
 import { Skeleton, SkeletonStatus } from '@/shared/ui/skeleton'
 import { ENGLISH_QUIZ_TEST_IDS } from '../test-ids'
 

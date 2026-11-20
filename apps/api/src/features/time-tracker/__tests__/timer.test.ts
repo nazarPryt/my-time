@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, expect, test } from 'bun:test'
-import { TimerStateSchema } from 'contracts'
+import { TimerStateSchema } from '@my-time/contracts'
 import { addDays, addMinutes, startOfDay, subDays, subMinutes } from 'date-fns'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'

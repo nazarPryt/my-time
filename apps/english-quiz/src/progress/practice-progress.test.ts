@@ -3,7 +3,7 @@ import {
 	ENGLISH_QUIZ_MODES,
 	QUIZ_LEVELS,
 	type QuizResult,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import {
 	EMPTY_PROGRESS,
 	parseProgress,

@@ -2,7 +2,7 @@ import type {
 	MountedRemote,
 	RemoteBaseProps,
 	RemoteModule,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 type RemoteStatus =

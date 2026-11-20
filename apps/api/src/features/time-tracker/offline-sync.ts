@@ -1,6 +1,9 @@
 import { timeSessions } from '@db/schema'
+import type {
+	OfflineSession,
+	SyncOfflineSessionsRequest,
+} from '@my-time/contracts'
 import { logger } from '@shared/logger'
-import type { OfflineSession, SyncOfflineSessionsRequest } from 'contracts'
 import { addMinutes, isAfter, isBefore, isEqual, min } from 'date-fns'
 import { and, eq, isNull, lte } from 'drizzle-orm'
 import { mutateSessions } from './session-notifications'

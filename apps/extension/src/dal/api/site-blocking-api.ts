@@ -1,6 +1,6 @@
 // DAL — site-blocking HTTP calls.
 
-import type { BlockedSiteResponse } from 'contracts'
+import type { BlockedSiteResponse } from '@my-time/contracts'
 import { apiFetch } from './client'
 
 export async function fetchBlockedSitesRequest(): Promise<{

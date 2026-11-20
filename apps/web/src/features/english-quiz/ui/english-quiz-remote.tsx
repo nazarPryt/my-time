@@ -1,4 +1,4 @@
-import type { EnglishQuizProps } from '@my-time/mfe-contracts'
+import type { EnglishQuizProps } from '@my-time/micro-frontends'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { RemoteApp } from '@/shared/lib/micro-frontends'
 import { Button } from '@/shared/ui/button'

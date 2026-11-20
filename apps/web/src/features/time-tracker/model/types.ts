@@ -2,7 +2,7 @@ import type {
 	SessionResponse,
 	TimerSnapshot,
 	TodaySummaryResponse,
-} from 'contracts'
+} from '@my-time/contracts'
 
 export type TimeChartEntry = {
 	date: string

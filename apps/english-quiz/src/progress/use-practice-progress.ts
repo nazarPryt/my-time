@@ -1,4 +1,4 @@
-import type { QuizMode } from '@my-time/mfe-contracts'
+import type { QuizMode } from '@my-time/micro-frontends'
 import { readonly, shallowRef } from 'vue'
 import {
 	type ModeScore,

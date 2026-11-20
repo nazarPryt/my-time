@@ -4,7 +4,7 @@ import {
 	BlockedSiteListResponseSchema,
 	BlockedSiteResponseSchema,
 	SITE_BLOCKING_ERRORS,
-} from 'contracts'
+} from '@my-time/contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import {

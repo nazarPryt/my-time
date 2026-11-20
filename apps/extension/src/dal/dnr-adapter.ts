@@ -2,7 +2,7 @@
 // Converts a list of domains into DNR rules and applies them atomically.
 // Uses the `browser` global provided by WXT (cross-browser compatible).
 
-import type { BlockedSiteResponse } from 'contracts'
+import type { BlockedSiteResponse } from '@my-time/contracts'
 import type { Browser } from 'wxt/browser'
 
 type Rule = Browser.declarativeNetRequest.Rule

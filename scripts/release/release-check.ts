@@ -3,7 +3,7 @@
 import {
 	compareVersions,
 	RELEASE_NOTES,
-} from '../../contracts/src/features/releases'
+} from '../../packages/contracts/src/features/releases'
 import { git } from './git'
 import { readProductVersion } from './paths'
 

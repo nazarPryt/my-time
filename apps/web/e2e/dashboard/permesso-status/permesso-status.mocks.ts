@@ -1,11 +1,11 @@
-import type { Page } from '@playwright/test'
 import {
 	API_PREFIX,
 	type CheckResultResponse,
 	PERMESSO_ROUTES,
 	type PermessoCheckHistoryResponse,
 	type PermessoStatusResponse,
-} from 'contracts'
+} from '@my-time/contracts'
+import type { Page } from '@playwright/test'
 
 const base = `${API_PREFIX}${PERMESSO_ROUTES.prefix}`
 export const API_PERMESSO = `**${base}{,/}`

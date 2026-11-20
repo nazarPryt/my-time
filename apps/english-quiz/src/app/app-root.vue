@@ -3,7 +3,7 @@ import type {
 	EnglishQuizEvent,
 	QuizLevel,
 	QuizMode,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { computed } from 'vue'
 import { getPracticeMode } from '../catalog'
 import { PracticeHub } from '../hub'

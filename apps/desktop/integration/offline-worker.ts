@@ -1,4 +1,4 @@
-import { API_PREFIX } from 'contracts'
+import { API_PREFIX } from '@my-time/contracts'
 import { parseISO } from 'date-fns'
 import { INTEGRATION_API_URL } from '../../../scripts/e2e-integration-config'
 import { OfflineTracker } from '../src/bll/offline-tracker'

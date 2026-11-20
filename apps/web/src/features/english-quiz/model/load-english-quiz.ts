@@ -1,7 +1,7 @@
 import {
 	ENGLISH_QUIZ_REMOTE,
 	type EnglishQuizProps,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import { loadRemoteModule } from '@/shared/lib/micro-frontends'
 

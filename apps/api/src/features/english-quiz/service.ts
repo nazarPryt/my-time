@@ -1,4 +1,4 @@
-import type { RandomSource, Round } from 'contracts'
+import type { RandomSource, Round } from '@my-time/contracts'
 import { pickRound } from './pick-round'
 import { englishQuizRepository } from './repository'
 

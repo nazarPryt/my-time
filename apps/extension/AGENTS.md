@@ -119,7 +119,7 @@ script is open (e.g. from another device) arrives at the next one of those.
 ## Versioning & releases
 
 The version is **not** in `package.json`. It comes from `EXTENSION_VERSION` in
-`contracts/src/features/site-blocking/extension-version.ts`, which `wxt.config.ts` imports
+`packages/contracts/src/features/site-blocking/extension-version.ts`, which `wxt.config.ts` imports
 by file path (not the `contracts` barrel, to keep zod out of the config). The web app
 compares the installed version against the same constant and shows an update prompt
 (sidebar dot + update card) when the user's copy is older.
@@ -145,7 +145,7 @@ CI's **Extension** job (`ci.yml`) typechecks and builds it on every PR and push 
 
 ## Monorepo context
 
-- `contracts/` — shared Zod schemas/types and `EXTENSION_VERSION`. Import from `'contracts'`
+- `packages/contracts/` — shared Zod schemas/types and `EXTENSION_VERSION`. Import from `'@my-time/contracts'`
   (resolved via `tsconfig.json` paths). Prefer `import type` — a runtime import of a schema
   pulls zod into the extension bundle.
 - `apps/api/` — API the extension calls with plain `fetch` (not Eden Treaty).

@@ -3,7 +3,7 @@ import type {
 	SessionResponse,
 	TimerSnapshot,
 	TimerState,
-} from 'contracts'
+} from '@my-time/contracts'
 import { isEqual, max } from 'date-fns'
 import type { OfflineJournal, OfflineStore } from '@/dal/offline-store'
 

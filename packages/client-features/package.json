@@ -1,5 +1,5 @@
 {
-	"name": "features",
+	"name": "@my-time/client-features",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -11,8 +11,8 @@
 	},
 	"dependencies": {
 		"@elysiajs/eden": "1.4.9",
-		"api": "workspace:*",
-		"contracts": "workspace:*"
+		"@my-time/contracts": "workspace:*",
+		"api": "workspace:*"
 	},
 	"peerDependencies": {
 		"date-fns": "^4.1.0",

@@ -1,4 +1,9 @@
-import type { RuleSection, Sentence, Topic, TopicLevel } from 'contracts'
+import type {
+	RuleSection,
+	Sentence,
+	Topic,
+	TopicLevel,
+} from '@my-time/contracts'
 
 /** How many sentences illustrate a one-line rule. */
 export const SHORTHAND_RULE_EXAMPLES = 3

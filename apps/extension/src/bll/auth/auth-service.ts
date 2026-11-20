@@ -1,7 +1,7 @@
 // BLL — auth business logic.
 // Only calls DAL functions; never touches fetch() or chrome.storage directly.
 
-import type { LoginRequest } from 'contracts'
+import type { LoginRequest } from '@my-time/contracts'
 import { exchangeExtensionTokenRequest, loginRequest } from '@/dal/api/auth-api'
 import {
 	clearTokens,

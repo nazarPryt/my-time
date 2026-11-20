@@ -6,7 +6,7 @@ import {
 	SENTENCE_FORMS,
 	type Sentence,
 	TOPIC_LEVELS,
-} from 'contracts'
+} from '@my-time/contracts'
 import type { TopicRecord } from './define-topic'
 
 function duplicates(ids: readonly string[]): string[] {

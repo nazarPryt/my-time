@@ -1,5 +1,9 @@
+import type {
+	DailySummary,
+	SessionResponse,
+	TimerSnapshot,
+} from '@my-time/contracts'
 import { SessionSyncState } from '@my-time/session-sync'
-import type { DailySummary, SessionResponse, TimerSnapshot } from 'contracts'
 import { format } from 'date-fns'
 import { create } from 'zustand'
 import { fetchWeeklyProgress } from '../api/api'

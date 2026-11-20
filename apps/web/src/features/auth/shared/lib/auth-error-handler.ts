@@ -1,4 +1,4 @@
-import { AUTH_ERRORS, AuthErrorSchema } from 'contracts'
+import { AUTH_ERRORS, AuthErrorSchema } from '@my-time/contracts'
 
 export function getAuthErrorMessage(error: unknown) {
 	const result = AuthErrorSchema.safeParse(error)

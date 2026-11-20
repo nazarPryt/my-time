@@ -1,4 +1,4 @@
-import type { SessionResponse, TodaySummaryResponse } from 'contracts'
+import type { SessionResponse, TodaySummaryResponse } from '@my-time/contracts'
 import { computeTodayStats } from './helpers'
 import { mergedWorkMilliseconds } from './helpers/merged-work'
 import { buildTimerSnapshot, serverDay } from './timer-snapshot'

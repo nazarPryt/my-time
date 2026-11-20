@@ -1,5 +1,5 @@
+import type { SessionResponse, TimerSnapshot } from '@my-time/contracts'
 import { SessionStreamParser } from '@my-time/session-sync'
-import type { SessionResponse, TimerSnapshot } from 'contracts'
 
 export interface StreamConnection {
 	status: number

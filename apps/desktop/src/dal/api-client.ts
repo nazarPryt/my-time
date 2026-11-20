@@ -12,7 +12,7 @@ import {
 	type TimerSnapshot,
 	type TimerState,
 	TimerStateSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import {
 	readSessionSnapshots,
 	type SessionStreamTransport,

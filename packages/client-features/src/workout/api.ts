@@ -1,6 +1,6 @@
 import type { treaty } from '@elysiajs/eden'
+import type { ExerciseType } from '@my-time/contracts'
 import type { App } from 'api'
-import type { ExerciseType } from 'contracts'
 
 type ApiClient = ReturnType<typeof treaty<App>>['api']['v1']
 

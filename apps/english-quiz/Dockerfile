@@ -6,13 +6,13 @@ WORKDIR /app
 # Only the manifests this app needs, so the install layer stays cached until
 # they change.
 COPY package.json bun.lock* ./
-COPY contracts/package.json ./contracts/
+COPY packages/contracts/package.json ./packages/contracts/
 COPY apps/english-quiz/package.json ./apps/english-quiz/
-COPY packages/mfe-contracts/package.json ./packages/mfe-contracts/
+COPY packages/micro-frontends/package.json ./packages/micro-frontends/
 RUN bun install --filter english-quiz
 
-COPY contracts ./contracts
-COPY packages/mfe-contracts ./packages/mfe-contracts
+COPY packages/contracts ./packages/contracts
+COPY packages/micro-frontends ./packages/micro-frontends
 COPY apps/english-quiz ./apps/english-quiz
 
 RUN bun --filter english-quiz build

@@ -1,4 +1,4 @@
-import { ENGLISH_QUIZ_MODES, QUIZ_LEVELS } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_MODES, QUIZ_LEVELS } from '@my-time/micro-frontends'
 import { expect, test } from './english-quiz.fixtures'
 import { mockRemoteOutage, restoreRemote } from './english-quiz.mocks'
 import { urlOpensMode } from './english-quiz-page'

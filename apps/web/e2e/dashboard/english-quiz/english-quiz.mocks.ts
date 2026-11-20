@@ -1,4 +1,3 @@
-import type { Page } from '@playwright/test'
 import {
 	API_PREFIX,
 	ENGLISH_QUIZ_ERRORS,
@@ -6,7 +5,8 @@ import {
 	type Round,
 	type Topic,
 	type TopicSummary,
-} from 'contracts'
+} from '@my-time/contracts'
+import type { Page } from '@playwright/test'
 
 /** Every request the browser makes for the remote's files. */
 export const REMOTE_ASSETS = '**/remotes/english-quiz/**'

@@ -1,4 +1,4 @@
-import type { QuizMode } from '@my-time/mfe-contracts'
+import type { QuizMode } from '@my-time/micro-frontends'
 import { getRouteApi } from '@tanstack/react-router'
 import { useCallback } from 'react'
 

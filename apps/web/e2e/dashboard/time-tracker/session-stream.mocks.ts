@@ -1,5 +1,4 @@
 import { createServer, type ServerResponse } from 'node:http'
-import type { Page } from '@playwright/test'
 import {
 	API_PREFIX,
 	DESKTOP_PRESENCE_EVENT,
@@ -7,7 +6,8 @@ import {
 	type SessionResponse,
 	TIME_TRACKER_ROUTES,
 	type TimerSnapshot,
-} from 'contracts'
+} from '@my-time/contracts'
+import type { Page } from '@playwright/test'
 
 export const API_TIME_EVENTS = `**${API_PREFIX}${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.events}`
 

@@ -1,5 +1,5 @@
-import type { QuizLevel, QuizResult } from '@my-time/mfe-contracts'
-import { type RandomSource, shuffle } from 'contracts/english-quiz'
+import { type RandomSource, shuffle } from '@my-time/contracts/english-quiz'
+import type { QuizLevel, QuizResult } from '@my-time/micro-frontends'
 import { formatISO } from 'date-fns'
 import type { Question } from './types'
 

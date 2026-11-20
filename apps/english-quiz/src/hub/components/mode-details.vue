@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/mfe-contracts'
+import { ENGLISH_QUIZ_REMOTE_TEST_IDS } from '@my-time/micro-frontends'
 import type { ModeDetail, ModeDetailKind } from '../model/mode-details'
 
 defineProps<{ details: readonly ModeDetail[] }>()

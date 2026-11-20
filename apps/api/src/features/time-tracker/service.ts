@@ -4,8 +4,8 @@ import type {
 	TimerState,
 	TodaySummaryResponse,
 	WeeklySummaryResponse,
-} from 'contracts'
-import { SessionResponseSchema } from 'contracts'
+} from '@my-time/contracts'
+import { SessionResponseSchema } from '@my-time/contracts'
 import { addDays, startOfDay, subDays } from 'date-fns'
 import {
 	buildDayRange,

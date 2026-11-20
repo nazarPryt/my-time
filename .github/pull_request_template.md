@@ -23,7 +23,7 @@
 - [ ] `bun run lint:check` passes
 - [ ] Typecheck passes: `bun run --filter api typecheck`, `bun run --filter web typecheck`, `bun --filter extension compile`
 - [ ] Tests for the touched areas pass (`bun run test:api`, `bun --filter web test`, `bun --filter web test:e2e`)
-- [ ] Shared API shapes live in `contracts/`, not duplicated in api or web
+- [ ] Shared API shapes live in `packages/contracts/`, not duplicated in api or web
 - [ ] DB schema changed → migration generated (`bun --filter api db:generate`) and committed
 - [ ] `apps/extension/` changed → `EXTENSION_VERSION` bumped (or not needed: no behaviour change for users)
 - [ ] New env var → added to `.env.example` and the production secrets

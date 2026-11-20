@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { type Sentence, type SentenceForm, seededRandom } from 'contracts'
+import {
+	type Sentence,
+	type SentenceForm,
+	seededRandom,
+} from '@my-time/contracts'
 import { pickRound } from '../pick-round'
 
 function bank(counts: Record<SentenceForm, number>): Sentence[] {

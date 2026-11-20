@@ -3,7 +3,7 @@ import {
 	ENGLISH_QUIZ_REMOTE_TEST_IDS,
 	QUIZ_LEVELS,
 	type QuizLevel,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { ref } from 'vue'
 import { QUESTIONS_PER_QUIZ } from '../model/quiz-engine'
 

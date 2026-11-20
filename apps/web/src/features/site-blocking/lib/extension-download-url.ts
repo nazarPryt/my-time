@@ -1,4 +1,7 @@
-import { EXTENSION_DOWNLOAD_FILENAME, EXTENSION_VERSION } from 'contracts'
+import {
+	EXTENSION_DOWNLOAD_FILENAME,
+	EXTENSION_VERSION,
+} from '@my-time/contracts'
 
 // The zip keeps the same filename across releases, so a cached copy could
 // hand users the old version. Adding the version to the URL makes each

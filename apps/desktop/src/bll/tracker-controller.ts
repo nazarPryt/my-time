@@ -1,9 +1,13 @@
+import type {
+	SessionResponse,
+	TimerSnapshot,
+	TimerState,
+} from '@my-time/contracts'
 import {
 	reconnectSessions,
 	SessionSyncState,
 	TimerDisplay,
 } from '@my-time/session-sync'
-import type { SessionResponse, TimerSnapshot, TimerState } from 'contracts'
 import { AuthenticationError, ConnectionError } from '@/dal/api-client'
 import { elapsedSeconds } from '@/shared/elapsed'
 import { errorMessage } from '@/shared/errors'

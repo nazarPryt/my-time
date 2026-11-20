@@ -1,5 +1,8 @@
+import {
+	StartSessionRequestSchema,
+	TIME_TRACKER_ROUTES,
+} from '@my-time/contracts'
 import { authMacro } from '@shared/auth-macro'
-import { StartSessionRequestSchema, TIME_TRACKER_ROUTES } from 'contracts'
 import { Elysia } from 'elysia'
 import { offlineSessionsPlugin } from './offline-routes'
 import { timeTrackerService } from './service'

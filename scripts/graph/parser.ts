@@ -13,8 +13,8 @@ function getAppConfigs(root: string): AppConfig[] {
 		{ tsconfig: path.join(root, 'apps/api/tsconfig.json') },
 		{ tsconfig: path.join(root, 'apps/extension/tsconfig.json') },
 		{ tsconfig: path.join(root, 'apps/mobile/tsconfig.json') },
-		{ tsconfig: path.join(root, 'contracts/tsconfig.json') },
-		{ tsconfig: path.join(root, 'packages/features/tsconfig.json') },
+		{ tsconfig: path.join(root, 'packages/contracts/tsconfig.json') },
+		{ tsconfig: path.join(root, 'packages/client-features/tsconfig.json') },
 	]
 }
 

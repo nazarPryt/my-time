@@ -1,4 +1,4 @@
-import { isQuizMode, type QuizMode } from '@my-time/mfe-contracts'
+import { isQuizMode, type QuizMode } from '@my-time/micro-frontends'
 
 export interface EnglishQuizSearch {
 	mode?: QuizMode

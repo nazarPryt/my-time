@@ -2,7 +2,7 @@ import type {
 	EnglishQuizEvent,
 	EnglishQuizProps,
 	QuizResult,
-} from '@my-time/mfe-contracts'
+} from '@my-time/micro-frontends'
 import { useCallback, useMemo, useState } from 'react'
 import { apiFetch } from '@/shared/lib/api-fetch'
 import { useEnglishQuizMode } from './use-english-quiz-mode'
