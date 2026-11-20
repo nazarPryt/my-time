@@ -1,4 +1,4 @@
-import type { RuleSection, Sentence, Topic, TopicLevel } from '../model/types'
+import type { RuleSection, Sentence, Topic, TopicLevel } from 'contracts'
 
 /** How many sentences illustrate a one-line rule. */
 export const SHORTHAND_RULE_EXAMPLES = 3
@@ -22,7 +22,7 @@ export interface TopicRecord extends Topic {
 }
 
 /**
- * Authoring helper for the hard-coded topics (later the database seed):
+ * Authoring helper for the topic files (the database seed):
  * expands the rule shorthand so everything else sees the API's shape.
  */
 export function defineTopic({ rule, ...topic }: TopicInput): TopicRecord {

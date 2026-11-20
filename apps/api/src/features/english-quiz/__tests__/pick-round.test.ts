@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { seededRandom } from '../../../shared/lib/random'
-import { pickRound } from './pick-round'
-import type { Sentence, SentenceForm } from './types'
+import { type Sentence, type SentenceForm, seededRandom } from 'contracts'
+import { pickRound } from '../pick-round'
 
 function bank(counts: Record<SentenceForm, number>): Sentence[] {
 	return Object.entries(counts).flatMap(([form, count]) =>

@@ -1,6 +1,6 @@
+import type { Sentence } from '../schemas'
 import { contractionVariants } from './contractions'
 import { type AnswerToken, answerWords, parseAnswer } from './parse-answer'
-import type { Sentence } from './types'
 
 /** Guards against a pattern whose groups multiply into a huge list. */
 export const MAX_VARIANTS = 64

@@ -1,5 +1,6 @@
 import cors from '@elysiajs/cors'
 import { authPlugin } from '@features/auth/routes'
+import { englishQuizPlugin } from '@features/english-quiz/routes'
 import { permessoPlugin } from '@features/permesso/routes'
 import { releasesPlugin } from '@features/releases/routes'
 import { siteBlockingPlugin } from '@features/site-blocking/routes'
@@ -19,6 +20,7 @@ export const app = new Elysia({ prefix: API_PREFIX })
 	.use(siteBlockingPlugin)
 	.use(permessoPlugin)
 	.use(releasesPlugin)
+	.use(englishQuizPlugin)
 	.get('/', () => '✅ my-time api — up and running')
 	.get('/health', () => ({ status: 'ok' }))
 

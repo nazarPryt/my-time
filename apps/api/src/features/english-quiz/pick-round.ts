@@ -1,8 +1,9 @@
-import { type RandomSource, shuffle } from '../../../shared/lib/random'
-import { SENTENCE_FORMS, type Sentence } from './types'
-
-/** Sentences per attempt; a topic's bank is usually much larger. */
-export const ROUND_SIZE = 10
+import {
+	type RandomSource,
+	SENTENCE_FORMS,
+	type Sentence,
+	shuffle,
+} from 'contracts'
 
 /**
  * Picks `size` random sentences from a topic's bank, taking the forms

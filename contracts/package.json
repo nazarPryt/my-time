@@ -9,7 +9,8 @@
 		"test": "bun test src"
 	},
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./english-quiz": "./src/features/english-quiz/index.ts"
 	},
 	"dependencies": {
 		"date-fns": "4.4.0",
