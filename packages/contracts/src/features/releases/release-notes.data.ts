@@ -4,6 +4,18 @@ import type { ReleaseNote } from './release-note'
 
 export const RELEASE_NOTES: ReleaseNote[] = [
 	{
+		version: '0.5.0',
+		date: '2026-11-20',
+		features: [
+			'Practise English in the new English quiz tab on the dashboard',
+			'Check your level with a multiple-choice quiz for A2, B1 and B2',
+			'Translate Ukrainian sentences into English in 66 grammar topics, beginner to advanced',
+			"Read each topic's grammar rule with examples, then practise it in short rounds",
+			'Get credit for correct alternative translations and contractions in the sentence builder',
+		],
+		fixes: [],
+	},
+	{
 		version: '0.4.0',
 		date: '2026-11-19',
 		features: [
