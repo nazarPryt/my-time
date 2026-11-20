@@ -4,14 +4,14 @@ FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 
 # Only the manifests this app needs, so the install layer stays cached until
-# they change. contracts/ is listed by name in the root workspaces, so bun
-# requires its manifest even though the quiz doesn't use it.
+# they change.
 COPY package.json bun.lock* ./
 COPY contracts/package.json ./contracts/
 COPY apps/english-quiz/package.json ./apps/english-quiz/
 COPY packages/mfe-contracts/package.json ./packages/mfe-contracts/
 RUN bun install --filter english-quiz
 
+COPY contracts ./contracts
 COPY packages/mfe-contracts ./packages/mfe-contracts
 COPY apps/english-quiz ./apps/english-quiz
 

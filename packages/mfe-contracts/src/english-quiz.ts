@@ -1,4 +1,8 @@
-import type { RemoteBaseProps, RemoteDescriptor } from './remote-module'
+import type {
+	RemoteApiFetch,
+	RemoteBaseProps,
+	RemoteDescriptor,
+} from './remote-module'
 
 /**
  * Contract between the host (apps/web) and the English quiz remote
@@ -7,8 +11,9 @@ import type { RemoteBaseProps, RemoteDescriptor } from './remote-module'
  * and host together, or keep the remote backwards compatible.
  *
  * v2: the host owns navigation (`mode` prop + `mode-changed` event).
+ * v3: content comes from the host's API through the required `apiFetch`.
  */
-export const ENGLISH_QUIZ_CONTRACT_VERSION = 2
+export const ENGLISH_QUIZ_CONTRACT_VERSION = 3
 
 export const ENGLISH_QUIZ_REMOTE = {
 	name: 'englishQuiz',
@@ -48,6 +53,8 @@ export type EnglishQuizEvent =
 export interface EnglishQuizProps extends RemoteBaseProps {
 	/** `undefined` shows the hub. */
 	mode?: QuizMode
+	/** Loads the sentence builder's topics and rounds from the host's API. */
+	apiFetch: RemoteApiFetch
 	/** Level preselected on the level quiz start screen. */
 	initialLevel?: QuizLevel
 	onEvent?: (event: EnglishQuizEvent) => void

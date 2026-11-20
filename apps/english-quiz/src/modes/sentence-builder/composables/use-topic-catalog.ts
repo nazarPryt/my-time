@@ -1,10 +1,11 @@
 import { computed } from 'vue'
 import { useAsyncData } from '../../../shared/composables/use-async-data'
-import { topicSource } from '../data/topic-source'
+import { useTopicSource } from '../data/topic-source'
 import { groupTopicsByLevel } from '../model/group-topics'
 
 /** All topics, grouped by level, for the topic list. */
 export function useTopicCatalog() {
+	const topicSource = useTopicSource()
 	const { data, pending, error, reload } = useAsyncData(null, () =>
 		topicSource.listTopics(),
 	)

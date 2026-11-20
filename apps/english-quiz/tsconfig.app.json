@@ -19,7 +19,10 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
 		"paths": {
-			"@my-time/mfe-contracts": ["../../packages/mfe-contracts/src/index.ts"]
+			"@my-time/mfe-contracts": ["../../packages/mfe-contracts/src/index.ts"],
+			"contracts/english-quiz": [
+				"../../contracts/src/features/english-quiz/index.ts"
+			]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.vue"]

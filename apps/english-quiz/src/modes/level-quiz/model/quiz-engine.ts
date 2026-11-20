@@ -1,6 +1,6 @@
 import type { QuizLevel, QuizResult } from '@my-time/mfe-contracts'
+import { type RandomSource, shuffle } from 'contracts/english-quiz'
 import { formatISO } from 'date-fns'
-import { type RandomSource, shuffle } from '../../../shared/lib/random'
 import type { Question } from './types'
 
 export const QUESTIONS_PER_QUIZ = 8

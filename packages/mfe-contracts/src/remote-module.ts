@@ -18,6 +18,16 @@ export interface RemoteBaseProps {
 	onError?: (error: Error) => void
 }
 
+/**
+ * The host's authenticated fetch for its own API. `path` is relative to the
+ * API prefix (e.g. `/english-quiz/topics`); the host adds the API origin, the
+ * access token and refreshes an expired one. The remote never sees tokens.
+ */
+export type RemoteApiFetch = (
+	path: string,
+	init?: RequestInit,
+) => Promise<Response>
+
 export interface MountedRemote<Props> {
 	/** Push new props without remounting (keeps the remote's internal state). */
 	update(props: Props): void

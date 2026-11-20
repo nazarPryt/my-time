@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { parseAnswer } from './parse-answer'
+import { parseAnswer } from 'contracts/english-quiz'
 import {
 	type AttemptState,
 	checkWords,

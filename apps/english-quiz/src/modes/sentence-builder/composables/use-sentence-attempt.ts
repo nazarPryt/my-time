@@ -1,3 +1,9 @@
+import type { RandomSource } from 'contracts/english-quiz'
+import {
+	acceptedAnswers,
+	answerWords,
+	formatAnswer,
+} from 'contracts/english-quiz'
 import {
 	computed,
 	type MaybeRefOrGetter,
@@ -5,10 +11,7 @@ import {
 	toValue,
 	watch,
 } from 'vue'
-import type { RandomSource } from '../../../shared/lib/random'
 import { WORD_POOL } from '../data/word-pool'
-import { acceptedAnswers } from '../model/answer-variants'
-import { answerWords, formatAnswer } from '../model/parse-answer'
 import {
 	type AttemptState,
 	checkWords,

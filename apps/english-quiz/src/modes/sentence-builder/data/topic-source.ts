@@ -1,20 +1,17 @@
-import type { RandomSource } from '../../../shared/lib/random'
-import { pickRound, ROUND_SIZE } from '../model/pick-round'
+import type { RemoteApiFetch } from '@my-time/mfe-contracts'
+import {
+	ENGLISH_QUIZ_ROUTES,
+	ROUND_SIZE,
+	RoundSchema,
+	TopicSchema,
+	TopicSummarySchema,
+} from 'contracts/english-quiz'
+import { useApiFetch } from '../../../shared/api/api-fetch'
 import type { Round, Topic, TopicSummary } from '../model/types'
-import type { TopicRecord } from './define-topic'
-import { ADVANCED_TOPICS } from './topics/advanced'
-import { BEGINNER_TOPICS } from './topics/beginner'
-import { INTERMEDIATE_TOPICS } from './topics/intermediate'
 
 /**
- * Where topics come from. Each method maps to one future API endpoint, so
- * swapping this for fetch calls changes nothing above the data layer:
- *
- *   listTopics()        GET /topics
- *   getTopic(id)        GET /topics/:id
- *   getRound(id, size)  GET /topics/:id/round?size=10
- *
- * The bank of sentences never leaves the source: the server picks the round.
+ * Where topics come from. One method per API endpoint; the server picks the
+ * round, so a topic's sentence bank never reaches the browser.
  */
 export interface TopicSource {
 	listTopics(): Promise<readonly TopicSummary[]>
@@ -31,42 +28,41 @@ export class TopicNotFoundError extends Error {
 	}
 }
 
-export function createLocalTopicSource(
-	topics: readonly TopicRecord[],
-	random: RandomSource = Math.random,
-): TopicSource {
-	function find(id: string): TopicRecord {
-		const topic = topics.find((candidate) => candidate.id === id)
-		if (!topic) throw new TopicNotFoundError(id)
-		return topic
+const topicPath = (id: string) =>
+	`${ENGLISH_QUIZ_ROUTES.prefix}${ENGLISH_QUIZ_ROUTES.topicById.replace(':id', encodeURIComponent(id))}`
+
+const roundPath = (id: string, size: number) =>
+	`${ENGLISH_QUIZ_ROUTES.prefix}${ENGLISH_QUIZ_ROUTES.round.replace(':id', encodeURIComponent(id))}?size=${size}`
+
+export function createHttpTopicSource(apiFetch: RemoteApiFetch): TopicSource {
+	async function get<T>(
+		path: string,
+		schema: { parse(value: unknown): T },
+		topicId?: string,
+	): Promise<T> {
+		const response = await apiFetch(path)
+		if (response.status === 404 && topicId) {
+			throw new TopicNotFoundError(topicId)
+		}
+		if (!response.ok) {
+			throw new Error(`Request failed (${response.status}): ${path}`)
+		}
+		return schema.parse(await response.json())
 	}
 
 	return {
-		async listTopics() {
-			return topics.map(({ id, level, title, subtitle }) => ({
-				id,
-				level,
-				title,
-				subtitle,
-			}))
-		},
-		async getTopic(id) {
-			const { sentences: _bank, ...topic } = find(id)
-			return topic
-		},
-		async getRound(topicId, size = ROUND_SIZE) {
-			return {
-				topicId,
-				sentences: pickRound(find(topicId).sentences, size, random),
-			}
-		},
+		listTopics: () =>
+			get(
+				`${ENGLISH_QUIZ_ROUTES.prefix}${ENGLISH_QUIZ_ROUTES.topics}`,
+				TopicSummarySchema.array(),
+			),
+		getTopic: (id) => get(topicPath(id), TopicSchema, id),
+		getRound: (topicId, size = ROUND_SIZE) =>
+			get(roundPath(topicId, size), RoundSchema, topicId),
 	}
 }
 
-export const ALL_TOPICS: readonly TopicRecord[] = [
-	...BEGINNER_TOPICS,
-	...INTERMEDIATE_TOPICS,
-	...ADVANCED_TOPICS,
-]
-
-export const topicSource: TopicSource = createLocalTopicSource(ALL_TOPICS)
+/** The topic source backed by the host's API; call from setup(). */
+export function useTopicSource(): TopicSource {
+	return createHttpTopicSource(useApiFetch())
+}

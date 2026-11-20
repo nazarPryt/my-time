@@ -1,4 +1,4 @@
-import type { AnswerToken } from './parse-answer'
+import type { AnswerToken } from 'contracts/english-quiz'
 
 /**
  * State machine for assembling one sentence. Picks are not checked one by

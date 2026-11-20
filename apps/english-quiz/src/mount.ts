@@ -7,6 +7,7 @@ import {
 } from '@my-time/mfe-contracts'
 import { createApp, h, reactive } from 'vue'
 import AppRoot from './app/app-root.vue'
+import { API_FETCH_KEY } from './shared/api/api-fetch'
 import { styles } from './styles'
 
 /**
@@ -42,6 +43,8 @@ export const mount: RemoteMount<EnglishQuizProps> = (
 				report: (event) => props.onEvent?.(event),
 			}),
 	})
+	// Reads the latest prop on each call, so update() can swap the fetch.
+	app.provide(API_FETCH_KEY, (path, init) => props.apiFetch(path, init))
 	app.config.errorHandler = (error) => {
 		props.onError?.(error instanceof Error ? error : new Error(String(error)))
 	}

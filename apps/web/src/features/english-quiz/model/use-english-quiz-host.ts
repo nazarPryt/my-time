@@ -4,6 +4,7 @@ import type {
 	QuizResult,
 } from '@my-time/mfe-contracts'
 import { useCallback, useMemo, useState } from 'react'
+import { apiFetch } from '@/shared/lib/api-fetch'
 import { useEnglishQuizMode } from './use-english-quiz-mode'
 
 /** Maps the URL to remote props, and remote events to host state. */
@@ -29,7 +30,7 @@ export function useEnglishQuizHost() {
 
 	// Stable props object so the remote is updated only when something changes.
 	const remoteProps = useMemo<EnglishQuizProps>(
-		() => ({ mode, onEvent }),
+		() => ({ mode, onEvent, apiFetch }),
 		[mode, onEvent],
 	)
 

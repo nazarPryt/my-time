@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { seededRandom } from '../../../shared/lib/random'
+import { seededRandom } from 'contracts/english-quiz'
 import { buildWordTiles, TILES_PER_STEP } from './word-tiles'
 
 const WORDS = ['How', 'do', 'you', 'play']

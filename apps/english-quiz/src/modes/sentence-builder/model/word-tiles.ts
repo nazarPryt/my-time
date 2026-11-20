@@ -1,4 +1,4 @@
-import { type RandomSource, shuffle } from '../../../shared/lib/random'
+import { type RandomSource, shuffle } from 'contracts/english-quiz'
 import type { Sentence } from './types'
 
 export const TILES_PER_STEP = 6
