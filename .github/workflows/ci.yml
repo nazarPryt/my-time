@@ -33,6 +33,28 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run lint:check
 
+  # Every PR into main is a release: the version must be bumped and have
+  # release notes (see "Releasing" in AGENTS.md).
+  release-check:
+    name: Release version
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - name: Cache bun install
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - run: bun run release:check origin/${{ github.base_ref }}
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
@@ -135,6 +157,8 @@ jobs:
       - run: bun --filter web test
       - run: bun --filter @my-time/session-sync test
       - run: bun --filter english-quiz test
+      - run: bun --filter contracts test
+      - run: bun run test:scripts
 
   test-desktop:
     name: Desktop unit tests

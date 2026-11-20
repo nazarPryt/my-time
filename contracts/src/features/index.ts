@@ -1,5 +1,6 @@
 export * from './auth'
 export * from './permesso'
+export * from './releases'
 export * from './site-blocking'
 export * from './time-tracker'
 export * from './workout'

@@ -120,6 +120,13 @@
 			"when": 1791823012839,
 			"tag": "0016_volatile_whizzer",
 			"breakpoints": true
+		},
+		{
+			"idx": 17,
+			"version": "7",
+			"when": 1795090130019,
+			"tag": "0017_rare_khan",
+			"breakpoints": true
 		}
 	]
 }

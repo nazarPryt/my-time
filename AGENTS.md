@@ -84,6 +84,35 @@ is resolved or the user explicitly authorizes an exception. Never claim unrun
 checks passed. Re-run after code changes; documentation-only changes may reuse
 results when they do not affect executable checks.
 
+## Releasing
+
+One product version lives in the root `package.json` (SemVer, tags `vX.Y.Z`).
+The browser extension (`EXTENSION_VERSION`) and GNOME extension keep their own
+versions for their update prompts.
+
+- Feature branches are merged into `dev` locally by the maintainer
+  (`git merge`, never squash; `--no-ff` keeps each feature grouped). Write
+  commits as Conventional Commits (`feat: …`, `fix: …`); they drive the
+  version bump and draft notes. Do not bump the version on feature branches.
+  The only PR is the release PR `dev → main`.
+- To release, on `dev` run `bun run release` (or `bun run release minor`,
+  `--dry-run` to preview). It reads commits since `v<current version>`,
+  picks the bump (`feat!`/`BREAKING CHANGE` → major, `feat` → minor,
+  `fix`/`perf` → patch), updates `package.json`, and drafts an entry in
+  `contracts/src/features/releases/release-notes.data.ts`. Reword that entry
+  for users, commit `chore(release): vX.Y.Z`, then open the PR `dev → main`.
+  Agents follow the `release` skill (`.agents/skills/release/SKILL.md`) for
+  the whole release, notes and the `dev → main` PR included.
+- CI's `Release version` job (`bun run release:check`) fails a PR into main
+  whose version isn't newer than main's or lacks a newest notes entry.
+- After the merge passes CI on main, `.github/workflows/release.yml` creates
+  the tag and GitHub Release, then fast-forwards `dev` to `main` so it gets
+  the PR's merge commit. Pull `dev` locally afterwards. If `dev` gained
+  commits meanwhile, the job only warns; merge `main` into `dev` by hand.
+- The web app shows the version (Vite `__APP_VERSION__`) in the sidebar; a
+  "What's new" dot appears until the user opens the notes, tracked per user in
+  `users.last_seen_release_version` via `/releases/seen`.
+
 ## Code style
 
 One style guide for the whole monorepo (api, web, extension, mobile, desktop,
