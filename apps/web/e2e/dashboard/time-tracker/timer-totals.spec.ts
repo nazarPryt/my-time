@@ -1,4 +1,4 @@
-import type { TimerSnapshot } from 'contracts'
+import type { TimerSnapshot } from '@my-time/contracts'
 import { mockTimeEvents, pushTimeSession } from './session-stream.mocks'
 import { expect, test } from './time-tracker.fixtures'
 import {

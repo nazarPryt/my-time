@@ -15,6 +15,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardEnglishQuizRouteImport } from './routes/dashboard/english-quiz'
 import { Route as DashboardPermessoStatusRouteImport } from './routes/dashboard/permesso-status'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardSiteBlockingRouteImport } from './routes/dashboard/site-blocking'
@@ -51,6 +52,11 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEnglishQuizRoute = DashboardEnglishQuizRouteImport.update({
+  id: '/english-quiz',
+  path: '/english-quiz',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPermessoStatusRoute = DashboardPermessoStatusRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/english-quiz': typeof DashboardEnglishQuizRoute
   '/dashboard/permesso-status': typeof DashboardPermessoStatusRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/english-quiz': typeof DashboardEnglishQuizRoute
   '/dashboard/permesso-status': typeof DashboardPermessoStatusRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/english-quiz': typeof DashboardEnglishQuizRoute
   '/dashboard/permesso-status': typeof DashboardPermessoStatusRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/site-blocking': typeof DashboardSiteBlockingRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/english-quiz'
     | '/dashboard/permesso-status'
     | '/dashboard/settings'
     | '/dashboard/site-blocking'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/english-quiz'
     | '/dashboard/permesso-status'
     | '/dashboard/settings'
     | '/dashboard/site-blocking'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/english-quiz'
     | '/dashboard/permesso-status'
     | '/dashboard/settings'
     | '/dashboard/site-blocking'
@@ -231,6 +243,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/english-quiz': {
+      id: '/dashboard/english-quiz'
+      path: '/english-quiz'
+      fullPath: '/dashboard/english-quiz'
+      preLoaderRoute: typeof DashboardEnglishQuizRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/permesso-status': {
@@ -298,6 +317,7 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
+  DashboardEnglishQuizRoute: typeof DashboardEnglishQuizRoute
   DashboardPermessoStatusRoute: typeof DashboardPermessoStatusRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardSiteBlockingRoute: typeof DashboardSiteBlockingRoute
@@ -308,6 +328,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardEnglishQuizRoute: DashboardEnglishQuizRoute,
   DashboardPermessoStatusRoute: DashboardPermessoStatusRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardSiteBlockingRoute: DashboardSiteBlockingRoute,

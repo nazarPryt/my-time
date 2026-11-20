@@ -3,7 +3,7 @@ import {
 	RELEASE_NOTES,
 	type SeenReleaseResponse,
 	type Version,
-} from 'contracts'
+} from '@my-time/contracts'
 import { releasesRepository } from './repository'
 
 export const releasesService = {

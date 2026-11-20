@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { db } from '@db'
 import { workoutSets } from '@db/schema'
-import type { ExerciseType } from 'contracts'
+import type { ExerciseType } from '@my-time/contracts'
 import {
 	addDays,
 	addMonths,

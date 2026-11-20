@@ -1,4 +1,4 @@
-import type { SessionResponse } from 'contracts'
+import type { SessionResponse } from '@my-time/contracts'
 import { differenceInSeconds, format } from 'date-fns'
 import { Badge } from '@/shared/ui/badge'
 import { formatDuration } from '../lib/format-duration'

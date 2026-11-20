@@ -19,11 +19,11 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Copy workspace manifests first — bun install layer is cached until these change
 COPY package.json bun.lock* ./
 COPY apps/api/package.json ./apps/api/
-COPY contracts/package.json ./contracts/
+COPY packages/contracts/package.json ./packages/contracts/
 RUN bun install
 
 # Copy source
-COPY contracts ./contracts
+COPY packages/contracts ./packages/contracts
 COPY apps/api ./apps/api
 
 EXPOSE 3000

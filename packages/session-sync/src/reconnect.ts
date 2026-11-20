@@ -1,4 +1,4 @@
-import type { SessionResponse, TimerSnapshot } from 'contracts'
+import type { SessionResponse, TimerSnapshot } from '@my-time/contracts'
 import { reconnectDelay } from './retry'
 
 export interface SessionReconnectOptions {

@@ -1,6 +1,9 @@
 import { createHash, randomBytes } from 'node:crypto'
+import type {
+	DesktopPairingPoll,
+	DesktopPairingStart,
+} from '@my-time/contracts'
 import { logger } from '@shared/logger'
-import type { DesktopPairingPoll, DesktopPairingStart } from 'contracts'
 import { addMinutes, addSeconds } from 'date-fns'
 import { desktopPairingRepository } from './desktop-pairing-repository'
 import { type JwtHandle, signTokenPair } from './token'

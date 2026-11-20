@@ -1,9 +1,9 @@
+import { EXTENSION_VERSION } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import { EXTENSION_VERSION } from 'contracts'
 
 /**
  * Stand-in for the browser extension's content script
- * (`apps/extension/src/entrypoints/content/index.ts`). The web app only ever
+ * (`apps/extensions/browser/src/entrypoints/content/index.ts`). The web app only ever
  * talks to the extension through `window.postMessage`, so speaking the same
  * protocol from an init script exercises every extension state without
  * loading a real extension into Chromium:

@@ -1,0 +1,275 @@
+.practice-screen {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.practice-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.practice-header .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+.practice-topic {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--muted-foreground, #6b7280);
+}
+
+.topic-practice {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	padding: 2rem 1.5rem 1.5rem;
+	background: var(--card, #fff);
+	border: 1px solid var(--border, #e5e7eb);
+	border-radius: var(--quiz-radius);
+}
+
+/* ── Exercise ─────────────────────────────────────────────────────────── */
+
+.sentence-exercise {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.5rem;
+	min-height: 20rem;
+	text-align: center;
+}
+
+.sentence-prompt {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 500;
+}
+
+.answer-line {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: 2.75rem;
+}
+
+.answer-line-text {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 500;
+}
+
+.answer-line-placeholder {
+	font-size: 0.9rem;
+	font-weight: 400;
+	color: var(--muted-foreground, #6b7280);
+}
+
+.word-tile-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	width: 100%;
+	max-width: 36rem;
+	overflow: hidden;
+	background: var(--border, #e5e7eb);
+	border: 1px solid var(--border, #e5e7eb);
+	border-radius: var(--quiz-radius);
+	gap: 1px;
+}
+
+.word-tile {
+	padding: 1.25rem 0.5rem;
+	font: inherit;
+	font-size: 1.25rem;
+	color: inherit;
+	cursor: pointer;
+	background: var(--card, #fff);
+	border: 0;
+}
+
+.word-tile:hover {
+	background: var(--accent, #f3f4f6);
+}
+
+.word-tile:focus-visible {
+	outline: 2px solid var(--ring, #9ca3af);
+	outline-offset: -2px;
+}
+
+@media (max-width: 480px) {
+	.word-tile-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* ── Wrong answer ─────────────────────────────────────────────────────── */
+
+.wrong-answer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.5rem;
+}
+
+.wrong-answer-sentence {
+	display: flex;
+	flex-wrap: wrap;
+	/* Words share the bottom line, so a fix above a slot never shifts it. */
+	align-items: flex-end;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 500;
+}
+
+.wrong-answer-item {
+	display: inline-flex;
+	align-items: flex-end;
+}
+
+.wrong-answer-slot {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.wrong-answer-word {
+	color: var(--muted-foreground, #6b7280);
+	text-decoration: line-through;
+	text-decoration-color: var(--quiz-danger);
+	text-decoration-thickness: 2px;
+}
+
+.wrong-answer-fix {
+	font-size: 1rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: var(--quiz-success);
+}
+
+/* ── Correct answer ───────────────────────────────────────────────────── */
+
+.correct-answer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.5rem;
+}
+
+.correct-answer-sentence {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 500;
+}
+
+.correct-answer-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 5rem;
+	height: 5rem;
+	color: #fff;
+	background: var(--quiz-success);
+	border-radius: 999px;
+	animation: correct-pop 0.25s ease-out;
+}
+
+.correct-answer-next {
+	min-width: 10rem;
+}
+
+@keyframes correct-pop {
+	from {
+		transform: scale(0.6);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.correct-answer-badge {
+		animation: none;
+	}
+}
+
+.show-rule {
+	margin-top: auto;
+	font-size: 0.75rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--muted-foreground, #6b7280);
+}
+
+/* ── Progress & completion ────────────────────────────────────────────── */
+
+.progress-dots {
+	display: flex;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.progress-dot {
+	width: 0.625rem;
+	height: 0.625rem;
+	background: var(--muted, #f3f4f6);
+	border: 1px solid var(--border, #e5e7eb);
+	border-radius: 999px;
+}
+
+.progress-dot[data-state="current"] {
+	background: var(--primary, #4f46e5);
+	border-color: var(--primary, #4f46e5);
+}
+
+.progress-dot[data-state="first-try"] {
+	background: var(--quiz-success);
+	border-color: var(--quiz-success);
+}
+
+.progress-dot[data-state="after-mistakes"] {
+	background: var(--quiz-danger);
+	border-color: var(--quiz-danger);
+}
+
+.topic-complete {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 20rem;
+	justify-content: center;
+	text-align: center;
+}
+
+.topic-complete-score {
+	margin: 0;
+	font-size: 2.5rem;
+	font-weight: 700;
+}
+
+.topic-complete .row {
+	margin-top: 1rem;
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────────── */
+
+.practice-skeleton-tiles {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1px;
+	width: 100%;
+	max-width: 36rem;
+}
+
+@media (max-width: 480px) {
+	.practice-skeleton-tiles {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}

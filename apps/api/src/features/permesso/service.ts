@@ -1,7 +1,7 @@
 import type {
 	PermessoCheckHistoryResponse,
 	PermessoStatusResponse,
-} from 'contracts'
+} from '@my-time/contracts'
 import {
 	PERMESSO_FAILURE_REASONS,
 	TELEGRAM_LINK_HEARTBEAT_MS,

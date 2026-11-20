@@ -1,5 +1,5 @@
 // window.postMessage protocol between this page and the extension's content
-// script (apps/extension/src/entrypoints/content/index.ts). Keep both sides
+// script (apps/extensions/browser/src/entrypoints/content/index.ts). Keep both sides
 // in sync when changing a message.
 export const EXTENSION_MESSAGE = {
 	/** page → extension: are you there? */

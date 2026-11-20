@@ -43,4 +43,4 @@ client.workout.sets.delete({}, { query: { exerciseType: 'pushups' }, headers })
 client.workout.sets({ id: setId }).delete(undefined, { headers })
 ```
 
-Confirmed this exact shape by reading the real frontend client at `packages/features/src/workout/api.ts` (`createWorkoutApi`) rather than guessing — worth doing whenever a route mixes a bulk endpoint and a `:id` endpoint under the same prefix, since Eden's DELETE-with-body-as-first-arg (`{}`) vs DELETE-with-no-body (`undefined`) signature differs between the two forms.
+Confirmed this exact shape by reading the real frontend client at `packages/client-features/src/workout/api.ts` (`createWorkoutApi`) rather than guessing — worth doing whenever a route mixes a bulk endpoint and a `:id` endpoint under the same prefix, since Eden's DELETE-with-body-as-first-arg (`{}`) vs DELETE-with-no-body (`undefined`) signature differs between the two forms.

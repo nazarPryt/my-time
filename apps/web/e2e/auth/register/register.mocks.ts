@@ -1,5 +1,5 @@
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
 
 export const API_REGISTER = `**${API_PREFIX}${AUTH_ROUTES.prefix}${AUTH_ROUTES.register}`
 

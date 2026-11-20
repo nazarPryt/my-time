@@ -1,4 +1,4 @@
-import type { SessionResponse, TimerSnapshot } from 'contracts'
+import type { SessionResponse, TimerSnapshot } from '@my-time/contracts'
 import { addDays, differenceInMilliseconds, startOfDay } from 'date-fns'
 
 export function serverDay(now: Date) {

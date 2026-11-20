@@ -74,9 +74,9 @@ Where to use contracts types:
 **How to find what contracts exports:**
 ```bash
 # List all exported types for a feature
-cat contracts/src/features/<feature>/index.ts
+cat packages/contracts/src/features/<feature>/index.ts
 # or search
-grep -r "export" contracts/src/features/
+grep -r "export" packages/contracts/src/features/
 ```
 
 ## Layer File Structure Per Feature
@@ -105,7 +105,7 @@ import { api } from '@/shared/lib/api'   // ← wrong, BLL shouldn't import this
 **GOOD — Proper separation:**
 ```ts
 // features/workout/api/api.ts  ← DAL
-import type { ExerciseType } from 'contracts'
+import type { ExerciseType } from '@my-time/contracts'
 import { api } from '@/shared/lib/api'
 
 export async function fetchTodayWorkout(exerciseType: ExerciseType, signal?: AbortSignal) {
@@ -131,7 +131,7 @@ export async function updateWorkoutGoal(exerciseType: ExerciseType, targetReps: 
 
 ```ts
 // features/workout/model/store.ts  ← BLL: Zustand store (imports DAL, not api)
-import type { ExerciseType, SetResponse, TodayResponse } from 'contracts'
+import type { ExerciseType, SetResponse, TodayResponse } from '@my-time/contracts'
 import { create } from 'zustand'
 import {
   createSet,

@@ -1,4 +1,4 @@
-import { API_PREFIX, TIME_TRACKER_ROUTES } from 'contracts'
+import { API_PREFIX, TIME_TRACKER_ROUTES } from '@my-time/contracts'
 import {
 	API_URL,
 	connectDesktop,

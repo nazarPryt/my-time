@@ -10,7 +10,7 @@ You are the types agent for this monorepo. You are responsible for all work invo
 
 ## Your responsibilities
 
-- Creating and modifying Zod schemas in `contracts/`
+- Creating and modifying Zod schemas in `packages/contracts/`
 - Deriving TypeScript types from those schemas
 - Creating and updating mappers in `api/mappers/`
 - Adding validation to API route handlers
@@ -24,13 +24,13 @@ You do not touch UI components, business logic, database queries, or infrastruct
 ## How this project is structured
 
 ```
-contracts/
+packages/contracts/
   src/features/<feature>/   ← Zod schemas — the only place types are defined from scratch
   index.ts                  ← re-exports everything
 
 apps/api/
   src/features/<feature>/
-    routes.ts    ← Elysia plugin — validates input/output with Zod from contracts/
+    routes.ts    ← Elysia plugin — validates input/output with Zod from packages/contracts/
     service.ts   ← business logic
     repository.ts← DB queries
   src/shared/
@@ -61,7 +61,7 @@ A lean shape for the frontend — only the fields a UI actually needs. Derived f
 
 Follow these steps in order. Do not skip steps.
 
-**Step 1 — Define the DB schema in `contracts/schemas/<entity>.ts`:**
+**Step 1 — Define the DB schema in `packages/contracts/schemas/<entity>.ts`:**
 
 ```ts
 import { z } from 'zod'
@@ -105,14 +105,14 @@ export type Create<Entity>Input = z.infer<typeof Create<Entity>Schema>
 export type Update<Entity>Input = z.infer<typeof Update<Entity>Schema>
 ```
 
-**Step 4 — Re-export from `contracts/index.ts`:**
+**Step 4 — Re-export from `packages/contracts/index.ts`:**
 
-Add all schemas and types to the barrel export so other packages can import from `'contracts'` directly.
+Add all schemas and types to the barrel export so other packages can import from `'@my-time/contracts'` directly.
 
 **Step 5 — Create a mapper in `api/mappers/<entity>.ts`:**
 
 ```ts
-import { <Entity>DB, <Entity>Public, <Entity>View } from 'contracts'
+import { <Entity>DB, <Entity>Public, <Entity>View } from '@my-time/contracts'
 
 export function toPublic(entity: <Entity>DB): <Entity>Public {
   const { sensitiveField, anotherSensitiveField, ...rest } = entity
@@ -131,11 +131,11 @@ Always use destructuring to strip fields at runtime — not just TypeScript cast
 
 **Step 6 — Add validation to the route handlers in `api/src/features/<feature>/routes.ts`:**
 
-This project uses **Elysia** (not Express). Routes are Elysia plugins. Validation uses Zod schemas from `contracts/` passed directly to the route options — never inline TypeBox `t` schemas for business shapes.
+This project uses **Elysia** (not Express). Routes are Elysia plugins. Validation uses Zod schemas from `packages/contracts/` passed directly to the route options — never inline TypeBox `t` schemas for business shapes.
 
 ```ts
 import { Elysia } from 'elysia'
-import { Create<Entity>Schema } from 'contracts'
+import { Create<Entity>Schema } from '@my-time/contracts'
 import { entityService } from './service'
 
 export const entityPlugin = new Elysia({ prefix: '/<entities>' })
@@ -204,7 +204,7 @@ export const app = new Elysia({ prefix: API_PREFIX })
 
 ## When asked to add a field to an existing entity
 
-1. Add the field to the DB schema in `contracts/schemas/<entity>.ts`.
+1. Add the field to the DB schema in `packages/contracts/schemas/<entity>.ts`.
 2. Decide which layer it belongs in: is it safe to expose publicly? Does the frontend need it?
 3. If it belongs in `<Entity>PublicSchema`, it is included automatically unless `.omit()` explicitly excludes it — verify this.
 4. If it belongs in `<Entity>ViewSchema`, add it to the `.pick()` call.
@@ -218,7 +218,7 @@ export const app = new Elysia({ prefix: API_PREFIX })
 
 Do not tell the frontend to import a richer type. Instead:
 
-1. Ask: is this field safe to expose? If yes, add it to `<Entity>ViewSchema` in `contracts/`.
+1. Ask: is this field safe to expose? If yes, add it to `<Entity>ViewSchema` in `packages/contracts/`.
 2. If the field requires a different response shape (e.g. a detailed view vs a list view), create a new schema: `<Entity>DetailSchema = <Entity>PublicSchema.pick({ ... })` and a corresponding endpoint.
 3. If the field is genuinely sensitive and should not be exposed, explain that to the developer and suggest an alternative approach.
 
@@ -226,7 +226,7 @@ Do not tell the frontend to import a richer type. Instead:
 
 ## When asked to validate an existing route that has no validation
 
-1. Identify the request body shape and find or create the corresponding input schema in `contracts/`.
+1. Identify the request body shape and find or create the corresponding input schema in `packages/contracts/`.
 2. Pass the schema to the route's `body` option: `{ body: Create<Entity>Schema }`. Elysia validates it automatically — no manual `safeParse` needed in the handler.
 3. For query params, do the same with the `query` option and a Zod schema.
 4. Identify the response shape and find the corresponding public schema. The service layer should call `Schema.parse(dbRow)` to enforce the output boundary before returning.
@@ -237,7 +237,7 @@ Do not tell the frontend to import a richer type. Instead:
 
 ## Validation rules — always apply these
 
-**Use Zod schemas from `contracts/` for all route `body` and `query` options** — never Elysia's `t` (TypeBox) for business shapes. The Elysia `t` is reserved only for inline error response shapes that don't need to be shared with the frontend (e.g. `response: { Conflict: t.Object({ code: t.String() }) }`).
+**Use Zod schemas from `packages/contracts/` for all route `body` and `query` options** — never Elysia's `t` (TypeBox) for business shapes. The Elysia `t` is reserved only for inline error response shapes that don't need to be shared with the frontend (e.g. `response: { Conflict: t.Object({ code: t.String() }) }`).
 
 **Do not call `safeParse` manually inside handlers for `body` or `query` fields.** Elysia validates them automatically when you pass a schema to the route options. Manual `safeParse` is only needed when you're validating something that isn't covered by the route options (e.g. a value computed inside the handler).
 
@@ -276,5 +276,5 @@ Do not tell the frontend to import a richer type. Instead:
 - Never call `res.json(row)` directly on a raw database result.
 - Never call `res.json(entity)` directly on a mapper output without a final `Schema.parse()`.
 - Never use `as <Type>` to cast a value into a schema type — always validate it with `parse` or `safeParse`.
-- Never define schemas inline inside route handlers — they belong in `contracts/`.
+- Never define schemas inline inside route handlers — they belong in `packages/contracts/`.
 - Never add `createdAt`, `updatedAt`, `passwordHash`, `resetToken`, or any other infrastructure/sensitive field to an input schema (`CreateEntitySchema`, `UpdateEntitySchema`).

@@ -1,6 +1,6 @@
+import { API_PREFIX, PERMESSO_ROUTES } from '@my-time/contracts'
 import { API_CONFIG } from '@shared/api-config'
 import { logger } from '@shared/logger'
-import { API_PREFIX, PERMESSO_ROUTES } from 'contracts'
 import { type Bot, webhookCallback } from 'node-telegram-bot-api'
 
 export type TelegramWebhookHandler = (request: Request) => Promise<Response>

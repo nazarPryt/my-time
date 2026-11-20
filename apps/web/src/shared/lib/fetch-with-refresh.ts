@@ -1,4 +1,4 @@
-import { API_PREFIX, AUTH_ROUTES } from 'contracts'
+import { API_PREFIX, AUTH_ROUTES } from '@my-time/contracts'
 import { WEB_CONFIG } from '@/shared/config/web-config'
 import {
 	type FetchResponse,

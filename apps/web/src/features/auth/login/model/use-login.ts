@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { type LoginRequest, LoginRequestSchema } from '@my-time/contracts'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { type LoginRequest, LoginRequestSchema } from 'contracts'
 import { useForm } from 'react-hook-form'
 import { tokenStorage } from '@/shared/lib/token-storage'
 import { getAuthErrorMessage } from '../../shared/lib/auth-error-handler'

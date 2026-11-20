@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { treaty } from '@elysiajs/eden'
-import { AUTH_ERRORS, type RegisterRequest } from 'contracts'
+import { AUTH_ERRORS, type RegisterRequest } from '@my-time/contracts'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'
 import { REFRESH_TOKEN } from './constants'

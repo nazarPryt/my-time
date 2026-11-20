@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.player-controls" path="/org/gnome/shell/extensions/player-controls/">
+    <key name="selected-player" type="s">
+      <default>''</default>
+      <summary>Stable MPRIS id of the controlled player, without the instance suffix; empty until chosen</summary>
+    </key>
+    <key name="selected-player-name" type="s">
+      <default>''</default>
+      <summary>Display name of the controlled player, shown while it is not running</summary>
+    </key>
+  </schema>
+</schemalist>

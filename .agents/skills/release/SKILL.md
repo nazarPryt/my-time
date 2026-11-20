@@ -19,7 +19,7 @@ self-contained; don't use a generic PR skill for the release PR.
    and drafted items. Ask before continuing if the bump looks wrong (e.g. a
    `feat` that is really internal, or a breaking change that isn't marked).
 3. `bun run release [override]`. It updates `package.json` and adds a draft
-   entry to `contracts/src/features/releases/release-notes.data.ts`.
+   entry to `packages/contracts/src/features/releases/release-notes.data.ts`.
 
 ## 2. Research what actually changed
 
@@ -84,4 +84,5 @@ Only when the user asks for it.
 
 5. Share the PR link. Tell the user to merge with **Create a merge commit**
    (never squash). After the merge passes CI, `release.yml` creates the tag
-   and GitHub Release; then update `dev` from `main`. Never merge yourself.
+   and GitHub Release and fast-forwards `dev` to `main`; the user then pulls
+   `dev` locally. Never merge yourself.

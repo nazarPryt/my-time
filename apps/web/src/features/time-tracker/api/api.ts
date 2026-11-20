@@ -1,4 +1,4 @@
-import type { SessionType } from 'contracts'
+import type { SessionType } from '@my-time/contracts'
 import { api } from '@/shared/lib/api'
 
 export async function fetchTodaySummary(signal?: AbortSignal) {

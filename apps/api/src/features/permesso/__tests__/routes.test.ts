@@ -7,7 +7,7 @@ import {
 	PermessoCheckHistoryResponseSchema,
 	PermessoStatusResponseSchema,
 	TelegramLinkResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { addSeconds, parseISO } from 'date-fns'
 import { eq } from 'drizzle-orm'
 import { app } from '@/app'

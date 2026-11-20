@@ -30,7 +30,7 @@ function makeSvg(size) {
 }
 
 const sizes = [16, 32, 48, 96, 128]
-const outDir = 'apps/extension/public/icon'
+const outDir = 'apps/extensions/browser/public/icon'
 
 for (const size of sizes) {
 	await sharp(Buffer.from(makeSvg(size)))

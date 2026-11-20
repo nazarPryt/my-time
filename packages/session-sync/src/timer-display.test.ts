@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { TimerSnapshot } from 'contracts'
+import type { TimerSnapshot } from '@my-time/contracts'
 import { TimerDisplay } from './timer-display'
 
 const snapshot: TimerSnapshot = {

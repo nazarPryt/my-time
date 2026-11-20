@@ -1,6 +1,6 @@
 import { treaty } from '@elysiajs/eden'
-import type { RegisterRequest } from 'contracts'
-import { AuthResponseSchema } from 'contracts'
+import type { RegisterRequest } from '@my-time/contracts'
+import { AuthResponseSchema } from '@my-time/contracts'
 import { app } from '@/app'
 
 // ---------------------------------------------------------------------------

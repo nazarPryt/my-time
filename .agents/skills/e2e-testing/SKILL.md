@@ -103,8 +103,8 @@ about locators:
 
 ```typescript
 import type { Page } from '@playwright/test'
-import type { TodayResponse } from 'contracts'
-import { API_PREFIX, WORKOUT_ROUTES } from 'contracts'
+import type { TodayResponse } from '@my-time/contracts'
+import { API_PREFIX, WORKOUT_ROUTES } from '@my-time/contracts'
 
 export const API_WORKOUT_TODAY = `**${API_PREFIX}${WORKOUT_ROUTES.prefix}${WORKOUT_ROUTES.today}*`
 

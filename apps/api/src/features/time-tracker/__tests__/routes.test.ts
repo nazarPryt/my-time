@@ -6,7 +6,7 @@ import {
 	SessionResponseSchema,
 	TodaySummaryResponseSchema,
 	WeeklySummaryResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
 import { subDays, subHours, subMinutes } from 'date-fns'
 import { app } from '@/app'
 import { cleanDatabase, runMigrations } from '@/test/setup'

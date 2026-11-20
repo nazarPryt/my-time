@@ -14,19 +14,26 @@ Companion to `docs/secrets-sops-age-coolify.md` (the *why*). This is
 - `.gitignore`: `!*.env.*.enc` exempts those files from the blanket
   `.env*` ignore.
 - Encrypted files: `apps/api/.env.production.enc`,
-  `apps/web/.env.production.enc`, `apps/api/.env.development.enc`.
-- `apps/api/.env.development.enc` holds **dev-safe** values only — shared
-  team defaults (local DB creds, a throwaway JWT secret), never real prod
-  secrets. `TELEGRAM_BOT_TOKEN` is a placeholder; the bot just fails to
-  authenticate on startup and logs an error, it doesn't crash the API.
-  `apps/web` has no dev file — `VITE_API_URL` already defaults to
-  `http://localhost:3000` in code, nothing to fill in locally.
+  `apps/api/.env.development.enc`, `apps/web/.env.production.enc`,
+  `apps/web/.env.development.enc`.
+- The `.env.development.enc` files hold **dev-safe** values only — shared
+  team defaults (local DB creds, a throwaway JWT secret, local URLs), never
+  real prod secrets. `TELEGRAM_BOT_TOKEN` is a placeholder; the bot just
+  fails to authenticate on startup and logs an error, it doesn't crash the
+  API.
+- `scripts/ensure-env.sh` (run by `bun run dev`) decrypts each missing
+  `apps/<app>/.env` from its `.env.development.enc`, so a fresh clone or a
+  new git worktree gets both files automatically. Existing files are never
+  overwritten.
+- **Web values are never secret at runtime.** Vite inlines every `VITE_*`
+  variable into the public JavaScript bundle, so anyone can read them in the
+  browser. Encryption only keeps them out of the repo in plain text. Real
+  secrets belong in the API, never in a `VITE_*` variable.
 
 ## Onboarding a new dev
 
 ```bash
-bun --filter api secrets:decrypt:dev > apps/api/.env
-bun run dev
+bun run dev   # decrypts apps/api/.env and apps/web/.env if they're missing
 ```
 
 That's the whole setup, once your age key is a recipient in `.sops.yaml`
@@ -35,9 +42,8 @@ That's the whole setup, once your age key is a recipient in `.sops.yaml`
 ## Commands
 
 Each app's `secrets:*` scripts (in its own `package.json`) have the
-filename baked in — no path argument needed. `api` has two env files, so
-its scripts are explicitly suffixed `:prod` / `:dev`. `web` only has a
-prod file, so its scripts stay unsuffixed — nothing to disambiguate:
+filename baked in — no path argument needed. Both apps have two env files,
+so their scripts are suffixed `:prod` / `:dev`:
 
 ```bash
 bun --filter api secrets:edit:prod       # decrypt → open in $EDITOR → re-encrypt on save
@@ -48,9 +54,13 @@ bun --filter api secrets:edit:dev        # same, but for .env.development.enc
 bun --filter api secrets:decrypt:dev
 bun --filter api secrets:updatekeys:dev
 
-bun --filter web secrets:edit
-bun --filter web secrets:decrypt
-bun --filter web secrets:updatekeys
+bun --filter web secrets:edit:prod
+bun --filter web secrets:decrypt:prod
+bun --filter web secrets:updatekeys:prod
+
+bun --filter web secrets:edit:dev
+bun --filter web secrets:decrypt:dev
+bun --filter web secrets:updatekeys:dev
 ```
 
 Decrypt to a real local `.env` (writes plaintext to disk):
@@ -76,8 +86,8 @@ Then copy the three `secrets:*` script lines into that app's
 ## Team
 
 **Add someone:** they run `age-keygen`, send you their public key →
-add it to `.sops.yaml` → run `secrets:updatekeys` (or `:prod`/`:dev` for
-`api`, since it has two files) for each affected file → commit.
+add it to `.sops.yaml` → run `secrets:updatekeys:prod` and `secrets:updatekeys:dev`
+in each app (`api`, `web`) → commit.
 
 **Scope someone to one app only** (e.g. `web`-only, no `api` access):
 split the one general rule into a specific rule first, general rule
@@ -89,7 +99,7 @@ creation_rules:
   - path_regex: \.env\.[^/]+\.enc$
     age: age1jkgzke64v5y5v33ggfm2fyksgdp40nh74evvykgcv46xw6zl75vqtvnjnt
 ```
-Then only `bun --filter web secrets:updatekeys` — `api`'s file and
+Then only `bun --filter web secrets:updatekeys:prod` (and `:dev`) — `api`'s file and
 recipients are untouched.
 
 **Remove someone:** drop their key from `.sops.yaml` →

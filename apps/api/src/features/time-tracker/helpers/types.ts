@@ -1,4 +1,4 @@
-import type { DailySummary, SessionResponse } from 'contracts'
+import type { DailySummary, SessionResponse } from '@my-time/contracts'
 
 // contracts' SessionResponse minus `id` — these aggregation helpers only
 // group/compute over session fields and never need the id.

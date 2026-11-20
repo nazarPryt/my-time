@@ -4,7 +4,7 @@ import {
 	RELEASE_NOTES,
 	type ReleaseNote,
 	VersionSchema,
-} from '../../contracts/src/features/releases'
+} from '../../packages/contracts/src/features/releases'
 import { commitsInRange, commitsMergedBy, git, tagExists } from './git'
 import { NOTES_FILE, PACKAGE_JSON, ROOT, readProductVersion } from './paths'
 import {
@@ -89,7 +89,7 @@ Bun.spawnSync(['bunx', 'biome', 'format', '--write', NOTES_FILE], { cwd: ROOT })
 
 console.info(`
 Next steps:
-  1. Reword the draft notes for users: contracts/src/features/releases/release-notes.data.ts
+  1. Reword the draft notes for users: packages/contracts/src/features/releases/release-notes.data.ts
   2. git commit -am "chore(release): v${next}"
   3. bun run ci:local, push, then open the PR dev → main.
      CI tags v${next} and publishes the GitHub Release after the merge.`)

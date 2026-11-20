@@ -1,4 +1,4 @@
-import type { ProgressDay } from 'contracts'
+import type { ProgressDay } from '@my-time/contracts'
 import { format, getDaysInMonth } from 'date-fns'
 import type { WorkoutProgressSet } from '../types'
 

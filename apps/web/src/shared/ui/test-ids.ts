@@ -22,6 +22,7 @@ export type NavKey =
 	| 'time-tracker'
 	| 'site-blocking'
 	| 'permesso-status'
+	| 'english-quiz'
 	| 'settings'
 
 export const DASHBOARD_TEST_IDS = {

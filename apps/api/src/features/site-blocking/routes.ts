@@ -1,10 +1,10 @@
-import { authMacro } from '@shared/auth-macro'
 import {
 	CreateBlockedSiteRequestSchema,
 	SITE_BLOCKING_ERRORS,
 	SITE_BLOCKING_ROUTES,
 	SiteBlockingErrorSchema,
-} from 'contracts'
+} from '@my-time/contracts'
+import { authMacro } from '@shared/auth-macro'
 import { Elysia } from 'elysia'
 import { blockedSitesService } from './service'
 

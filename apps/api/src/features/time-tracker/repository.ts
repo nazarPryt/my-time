@@ -1,6 +1,6 @@
 import { db } from '@db'
 import { timeSessions } from '@db/schema'
-import type { SessionType } from 'contracts'
+import type { SessionType } from '@my-time/contracts'
 import { and, asc, eq, gt, isNull, lt, lte, or } from 'drizzle-orm'
 import { mergedWorkMilliseconds } from './helpers/merged-work'
 import { mutateSessions } from './session-notifications'

@@ -1,11 +1,11 @@
-import { authMacro } from '@shared/auth-macro'
 import {
 	MarkReleaseSeenRequestSchema,
 	RELEASES_ERRORS,
 	RELEASES_ROUTES,
 	ReleasesErrorSchema,
 	SeenReleaseResponseSchema,
-} from 'contracts'
+} from '@my-time/contracts'
+import { authMacro } from '@shared/auth-macro'
 import { Elysia } from 'elysia'
 import { releasesService } from './service'
 

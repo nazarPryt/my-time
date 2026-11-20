@@ -1,6 +1,6 @@
 import { db } from '@db'
 import { workoutGoals, workoutSets } from '@db/schema'
-import type { ExerciseType } from 'contracts'
+import type { ExerciseType } from '@my-time/contracts'
 import { and, eq, gte, lt } from 'drizzle-orm'
 
 export const workoutSetsRepository = {

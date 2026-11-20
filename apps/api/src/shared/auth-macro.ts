@@ -1,6 +1,6 @@
 import { jwt } from '@elysiajs/jwt'
+import { AUTH_ERRORS } from '@my-time/contracts'
 import { API_CONFIG } from '@shared/api-config'
-import { AUTH_ERRORS } from 'contracts'
 import { Elysia } from 'elysia'
 
 const jwtPlugin = jwt({

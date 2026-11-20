@@ -1,6 +1,6 @@
+import type { WeeklySummaryResponse } from '@my-time/contracts'
+import { API_PREFIX, TIME_TRACKER_ROUTES } from '@my-time/contracts'
 import type { Page } from '@playwright/test'
-import type { WeeklySummaryResponse } from 'contracts'
-import { API_PREFIX, TIME_TRACKER_ROUTES } from 'contracts'
 
 export const API_TIME_TRACKER_WEEKLY = `**${API_PREFIX}${TIME_TRACKER_ROUTES.prefix}${TIME_TRACKER_ROUTES.weekly}*`
 

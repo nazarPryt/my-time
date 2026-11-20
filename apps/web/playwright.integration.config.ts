@@ -1,5 +1,5 @@
+import { API_PREFIX } from '@my-time/contracts'
 import { defineConfig, devices } from '@playwright/test'
-import { API_PREFIX } from 'contracts'
 
 import {
 	INTEGRATION_API_URL as API_URL,
@@ -40,7 +40,7 @@ export default defineConfig({
 		},
 		{
 			command: 'bun run integration/server.ts',
-			cwd: '../desktop',
+			cwd: '../extensions/gnome/time-tracker',
 			url: `${INTEGRATION_DESKTOP_URL}/health`,
 			reuseExistingServer: false,
 		},

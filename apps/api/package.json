@@ -21,7 +21,7 @@
 	"dependencies": {
 		"@elysiajs/cors": "1.4.2",
 		"@elysiajs/jwt": "1.4.2",
-		"contracts": "workspace:*",
+		"@my-time/contracts": "workspace:*",
 		"croner": "10.0.1",
 		"date-fns": "4.4.0",
 		"drizzle-orm": "0.45.2",

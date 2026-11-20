@@ -86,11 +86,11 @@ Only the access token is stored. The API's refresh token is an httpOnly cookie �
 - **New Architecture enabled** (`newArchEnabled: true`) — no Fabric/JSI workarounds needed.
 - **React Compiler enabled** (`reactCompiler: true`) — avoid manual `useMemo`/`useCallback` unless profiling shows a real need; the compiler handles it.
 - **Path alias:** `@/*` maps to the repo root of this package (e.g. `@/shared/lib/api-client`).
-- **Workspace deps:** `api` and `contracts` are imported by their package names (not `@my-time/api`). TypeScript resolves them via `tsconfig.json` paths; Metro resolves `contracts` normally and `api` via the shim.
+- **Workspace deps:** `api` (not `@my-time/api`), `@my-time/contracts` and `@my-time/client-features` are imported by their package names. TypeScript resolves them via `tsconfig.json` paths; Metro resolves `@my-time/contracts` normally, `@my-time/client-features` via `metro.config.js`, and `api` via the shim.
 
 ### Monorepo context
 
-- `contracts/` — shared Zod schemas and TypeScript types. Import from `'contracts'` (e.g. `import { type MeResponse } from 'contracts'`).
+- `packages/contracts/` — shared Zod schemas and TypeScript types. Import from `'@my-time/contracts'` (e.g. `import { type MeResponse } from '@my-time/contracts'`).
 - `apps/api/` — Elysia REST API. Import the `App` type from `'api'` (type-only, erased at runtime).
 
 ### Linting

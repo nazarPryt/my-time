@@ -1,4 +1,4 @@
-import type { BlockedSiteResponse } from 'contracts'
+import type { BlockedSiteResponse } from '@my-time/contracts'
 import { create } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import {

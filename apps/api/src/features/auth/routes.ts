@@ -1,6 +1,4 @@
 import { jwt } from '@elysiajs/jwt'
-import { API_CONFIG } from '@shared/api-config'
-import { authMacro } from '@shared/auth-macro'
 import {
 	AUTH_ERRORS,
 	AUTH_ROUTES,
@@ -16,7 +14,9 @@ import {
 	LoginRequestSchema,
 	MeResponseSchema,
 	RegisterRequestSchema,
-} from 'contracts'
+} from '@my-time/contracts'
+import { API_CONFIG } from '@shared/api-config'
+import { authMacro } from '@shared/auth-macro'
 import { type CookieOptions, Elysia, t } from 'elysia'
 import { REFRESH_TOKEN } from './constants'
 import { desktopPairingService } from './desktop-pairing'

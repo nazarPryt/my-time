@@ -1,6 +1,9 @@
+import type {
+	BlockedSiteListResponse,
+	BlockedSiteResponse,
+} from '@my-time/contracts'
 import { logger } from '@shared/logger'
 import { normalizeDomain } from '@shared/utils'
-import type { BlockedSiteListResponse, BlockedSiteResponse } from 'contracts'
 import { blockedSitesRepository } from './repository'
 
 function toResponse(site: {

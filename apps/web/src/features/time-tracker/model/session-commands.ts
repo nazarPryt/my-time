@@ -1,5 +1,5 @@
+import type { SessionResponse } from '@my-time/contracts'
 import type { SessionSyncState, SyncCheckpoint } from '@my-time/session-sync'
-import type { SessionResponse } from 'contracts'
 import {
 	deleteSession,
 	endSession,

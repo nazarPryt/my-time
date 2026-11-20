@@ -1,4 +1,4 @@
-import type { PermessoCheckHistoryResponse } from 'contracts'
+import type { PermessoCheckHistoryResponse } from '@my-time/contracts'
 import { format } from 'date-fns'
 import { CheckCircle2, History, XCircle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'

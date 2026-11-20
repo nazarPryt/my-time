@@ -1,5 +1,5 @@
+import { OfflineSessionSchema } from '@my-time/contracts'
 import type { APIRequestContext } from '@playwright/test'
-import { OfflineSessionSchema } from 'contracts'
 import { formatISO, subMinutes } from 'date-fns'
 import { INTEGRATION_DESKTOP_URL } from '../../../scripts/e2e-integration-config'
 import { test as base, type DesktopState } from './desktop-sync.fixtures'

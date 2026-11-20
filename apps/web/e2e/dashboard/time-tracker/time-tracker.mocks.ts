@@ -1,10 +1,10 @@
-import type { Page } from '@playwright/test'
 import type {
 	SessionResponse,
 	TodaySummaryResponse,
 	WeeklySummaryResponse,
-} from 'contracts'
-import { API_PREFIX, TIME_TRACKER_ROUTES } from 'contracts'
+} from '@my-time/contracts'
+import { API_PREFIX, TIME_TRACKER_ROUTES } from '@my-time/contracts'
+import type { Page } from '@playwright/test'
 import { mockTimeEvents, pushTimeSession } from './session-stream.mocks'
 
 /** Convert Elysia route params (`:id`) to Playwright glob wildcards (`*`). */

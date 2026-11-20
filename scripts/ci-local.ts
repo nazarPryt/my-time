@@ -25,20 +25,25 @@ const steps = [
 	['bun', '--filter', 'api', 'typecheck'],
 	['bun', '--filter', 'web', 'typecheck'],
 	['bun', '--filter', 'web', 'typecheck:e2e'],
-	['bun', '--filter', 'desktop', 'typecheck'],
-	['bun', '--filter', 'desktop', 'typecheck:integration'],
+	['bun', '--filter', 'english-quiz', 'typecheck'],
+	['bun', '--filter', 'gnome-time-tracker', 'typecheck'],
+	['bun', '--filter', 'gnome-time-tracker', 'typecheck:integration'],
+	['bun', '--filter', 'gnome-player', 'typecheck'],
 	['bun', '--filter', 'extension', 'compile'],
 	['bun', '--bun', 'wxt', 'build'],
 	['bun', '--filter', 'api', 'test'],
 	['bun', '--filter', 'web', 'test'],
 	['bun', '--filter', '@my-time/session-sync', 'test'],
-	['bun', '--filter', 'contracts', 'test'],
+	['bun', '--filter', 'english-quiz', 'test'],
+	['bun', '--filter', '@my-time/contracts', 'test'],
 	['bun', 'run', 'test:scripts'],
-	['bun', '--filter', 'desktop', 'test'],
+	['bun', '--filter', 'gnome-time-tracker', 'test'],
+	['bun', '--filter', 'gnome-player', 'test'],
 	['bun', '--filter', 'web', 'test:e2e'],
 	['bun', 'run', 'test:web:e2e:extension'],
 	['bun', 'run', 'test:web:e2e:integration'],
 	['bun', '--filter', 'web', 'build'],
+	['bun', '--filter', 'english-quiz', 'build'],
 ]
 
 if (process.argv.slice(2).length) {
@@ -49,7 +54,7 @@ if (process.argv.slice(2).length) {
 async function run(command: string[]) {
 	console.info(`\n> ${command.join(' ')}`)
 	return Bun.spawn(command, {
-		cwd: command[2] === 'wxt' ? resolve(root, 'apps/extension') : root,
+		cwd: command[2] === 'wxt' ? resolve(root, 'apps/extensions/browser') : root,
 		env,
 		stdin: 'inherit',
 		stdout: 'inherit',
