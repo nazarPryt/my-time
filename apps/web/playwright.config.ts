@@ -20,8 +20,11 @@ export default defineConfig({
 	],
 	webServer: [
 		{
-			// Micro frontend remotes; the host proxies /remotes/* to them.
-			command: 'bun --filter english-quiz dev',
+			// Micro frontend remotes; the host proxies /remotes/* to them. A built
+			// remote, not its dev server: parallel workers each pulling hundreds of
+			// unbundled modules through the proxy kept the remote loading past 5s.
+			command:
+				'bun --filter english-quiz build && bun --filter english-quiz preview',
 			url: 'http://localhost:5174/remotes/english-quiz/mf-manifest.json',
 			reuseExistingServer: !process.env.CI,
 		},
