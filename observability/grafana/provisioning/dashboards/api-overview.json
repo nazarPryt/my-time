@@ -1,0 +1,510 @@
+{
+	"uid": "my-time-api-overview",
+	"title": "API overview",
+	"description": "Traffic, errors, latency and sign-ups, computed from the API's pino request logs in Loki.",
+	"tags": ["my-time", "api"],
+	"timezone": "browser",
+	"schemaVersion": 39,
+	"version": 1,
+	"editable": true,
+	"graphTooltip": 1,
+	"refresh": "1m",
+	"time": {
+		"from": "now-24h",
+		"to": "now"
+	},
+	"templating": {
+		"list": [
+			{
+				"name": "datasource",
+				"label": "Data source",
+				"type": "datasource",
+				"query": "loki",
+				"current": {},
+				"hide": 0
+			}
+		]
+	},
+	"annotations": {
+		"list": []
+	},
+	"panels": [
+		{
+			"id": 1,
+			"type": "stat",
+			"title": "Requests",
+			"description": "API requests in the selected time range (health checks excluded).",
+			"gridPos": {
+				"x": 0,
+				"y": 0,
+				"w": 6,
+				"h": 4
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "instant",
+					"expr": "sum(count_over_time({service=\"api\"} |= \"durationMs\" [$__range]))"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "fixed",
+						"fixedColor": "blue"
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "value"
+			}
+		},
+		{
+			"id": 2,
+			"type": "stat",
+			"title": "Errors",
+			"description": "API log lines at level error or fatal in the selected time range.",
+			"gridPos": {
+				"x": 6,
+				"y": 0,
+				"w": 6,
+				"h": 4
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "instant",
+					"expr": "sum(count_over_time({service=\"api\", level=~\"50|60\"} [$__range])) or vector(0)"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "red",
+								"value": 1
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "value"
+			}
+		},
+		{
+			"id": 3,
+			"type": "stat",
+			"title": "Sign-ups",
+			"gridPos": {
+				"x": 12,
+				"y": 0,
+				"w": 6,
+				"h": 4
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "instant",
+					"expr": "sum(count_over_time({service=\"api\"} |= \"user registered\" [$__range])) or vector(0)"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "fixed",
+						"fixedColor": "purple"
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "value"
+			}
+		},
+		{
+			"id": 4,
+			"type": "stat",
+			"title": "Logins",
+			"gridPos": {
+				"x": 18,
+				"y": 0,
+				"w": 6,
+				"h": 4
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "instant",
+					"expr": "sum(count_over_time({service=\"api\"} |= \"user logged in\" [$__range])) or vector(0)"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "fixed",
+						"fixedColor": "purple"
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "value"
+			}
+		},
+		{
+			"id": 5,
+			"type": "timeseries",
+			"title": "Responses by status",
+			"description": "A rise in 5xx after a deploy is the first sign something broke.",
+			"gridPos": {
+				"x": 0,
+				"y": 4,
+				"w": 12,
+				"h": 8
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "range",
+					"legendFormat": "{{status}}",
+					"expr": "sum by (status) (count_over_time({service=\"api\"} |= \"durationMs\" | json | __error__=\"\" [$__auto]))"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "bars",
+						"fillOpacity": 80,
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						}
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			}
+		},
+		{
+			"id": 6,
+			"type": "timeseries",
+			"title": "Response time (p50 / p95)",
+			"description": "p95: 95% of requests finished faster than this.",
+			"gridPos": {
+				"x": 12,
+				"y": 4,
+				"w": 12,
+				"h": 8
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "range",
+					"legendFormat": "p95",
+					"expr": "quantile_over_time(0.95, {service=\"api\"} |= \"durationMs\" | json | unwrap durationMs | __error__=\"\" [$__auto]) by (service)"
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "range",
+					"legendFormat": "p50",
+					"expr": "quantile_over_time(0.5, {service=\"api\"} |= \"durationMs\" | json | unwrap durationMs | __error__=\"\" [$__auto]) by (service)"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "ms",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 10,
+						"lineWidth": 2
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			}
+		},
+		{
+			"id": 7,
+			"type": "bargauge",
+			"title": "Slowest endpoints (avg ms)",
+			"gridPos": {
+				"x": 0,
+				"y": 12,
+				"w": 12,
+				"h": 9
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "instant",
+					"legendFormat": "{{method}} {{path}}",
+					"expr": "topk(10, avg by (method, path) (avg_over_time({service=\"api\"} |= \"durationMs\" | json | unwrap durationMs | __error__=\"\" [$__range])))"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "ms",
+					"decimals": 0,
+					"color": {
+						"mode": "continuous-GrYlRd"
+					},
+					"displayName": "${__data.fields.method} ${__data.fields.path}"
+				},
+				"overrides": []
+			},
+			"options": {
+				"orientation": "horizontal",
+				"displayMode": "basic",
+				"showUnfilled": true,
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": true
+				}
+			},
+			"transformations": [
+				{
+					"id": "merge",
+					"options": {}
+				},
+				{
+					"id": "sortBy",
+					"options": {
+						"sort": [
+							{
+								"field": "Value #A",
+								"desc": true
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"id": 8,
+			"type": "bargauge",
+			"title": "Endpoints with most 5xx",
+			"gridPos": {
+				"x": 12,
+				"y": 12,
+				"w": 12,
+				"h": 9
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "instant",
+					"legendFormat": "{{method}} {{path}}",
+					"expr": "topk(10, sum by (method, path) (count_over_time({service=\"api\"} |= \"durationMs\" | json | __error__=\"\" | status >= 500 [$__range])))"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"decimals": 0,
+					"color": {
+						"mode": "fixed",
+						"fixedColor": "red"
+					},
+					"displayName": "${__data.fields.method} ${__data.fields.path}"
+				},
+				"overrides": []
+			},
+			"options": {
+				"orientation": "horizontal",
+				"displayMode": "basic",
+				"showUnfilled": true,
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": true
+				}
+			},
+			"transformations": [
+				{
+					"id": "merge",
+					"options": {}
+				},
+				{
+					"id": "sortBy",
+					"options": {
+						"sort": [
+							{
+								"field": "Value #A",
+								"desc": true
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"id": 9,
+			"type": "logs",
+			"title": "Recent warnings and errors",
+			"description": "Expand a line to see its requestId, then search for it in Explore.",
+			"gridPos": {
+				"x": 0,
+				"y": 21,
+				"w": 24,
+				"h": 12
+			},
+			"datasource": {
+				"type": "loki",
+				"uid": "${datasource}"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "${datasource}"
+					},
+					"queryType": "range",
+					"expr": "{service=\"api\", level=~\"40|50|60\"}"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"sortOrder": "Descending",
+				"dedupStrategy": "none"
+			}
+		}
+	]
+}
