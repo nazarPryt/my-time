@@ -260,3 +260,16 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun --filter web build
       - run: bun --filter english-quiz build
+
+  # Builds the production images the way Coolify does, so a broken Dockerfile
+  # fails the PR instead of the deploy.
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    env:
+      # Baked into the extension downloads; any valid URL works for a check.
+      FRONTEND_WEB_URL: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker compose -f docker-compose.prod.yml build
