@@ -9,6 +9,8 @@ COPY package.json bun.lock* ./
 COPY packages/contracts/package.json ./packages/contracts/
 COPY apps/english-quiz/package.json ./apps/english-quiz/
 COPY packages/micro-frontends/package.json ./packages/micro-frontends/
+# Root workspaces list this path exactly, so bun needs its manifest to exist.
+COPY apps/extensions/browser/package.json ./apps/extensions/browser/
 RUN bun install --filter english-quiz
 
 COPY packages/contracts ./packages/contracts

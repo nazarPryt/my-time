@@ -20,7 +20,9 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY package.json bun.lock* ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/contracts/package.json ./packages/contracts/
-RUN bun install
+# Root workspaces list this path exactly, so bun needs its manifest to exist.
+COPY apps/extensions/browser/package.json ./apps/extensions/browser/
+RUN bun install --filter api
 
 # Copy source
 COPY packages/contracts ./packages/contracts
