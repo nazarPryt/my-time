@@ -4,7 +4,7 @@ import { logger } from './logger'
 
 // Attaches a per-request id + start time, then logs one line per request on
 // completion (success or error) — method, path, status, duration. That single
-// line is what Promtail/Loki ends up indexing, so keep the fields flat.
+// line is what Alloy/Loki ends up indexing, so keep the fields flat.
 // Docker's healthcheck hits /health every 10s; logging it would only add noise.
 const HEALTH_PATH = `${API_PREFIX}/health`
 

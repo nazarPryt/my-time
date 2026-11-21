@@ -2,7 +2,7 @@ import { pino } from 'pino'
 import { API_CONFIG } from './api-config'
 
 // Pretty-printed logs are only readable locally; in production (and in Docker
-// on the VPS) we emit plain JSON lines to stdout so Promtail/Loki can parse them.
+// on the VPS) we emit plain JSON lines to stdout so Alloy/Loki can parse them.
 const transport =
 	API_CONFIG.NODE_ENV === 'development'
 		? { target: 'pino-pretty', options: { colorize: true } }
