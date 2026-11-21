@@ -1,7 +1,7 @@
 x-logging: &default-logging
   driver: json-file
   options:
-    # Docker's own on-disk log file is capped here; Promtail ships the full
+    # Docker's own on-disk log file is capped here; Alloy ships the full
     # history into Loki (see the loki service), which has its own retention.
     max-size: '10m'
     max-file: '3'
@@ -43,6 +43,13 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/v1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      # Startup runs migrations and syncs quiz content first.
+      start_period: 60s
     depends_on:
       db:
         condition: service_healthy
@@ -74,11 +81,11 @@ services:
     expose:
       - "80"
 
-  # --- Observability stack: Loki stores logs, Promtail ships them from every
+  # --- Observability stack: Loki stores logs, Alloy ships them from every
   # container's Docker logs, Grafana is where you actually read them. All
   # free/self-hosted — see observability/ for their configs. ---
 
-  # loki/promtail/grafana configs are COPYed in at build time (rather than
+  # loki/alloy/grafana configs are COPYed in at build time (rather than
   # bind-mounted from the host) — a bind-mount source that isn't present
   # exactly where the deploy tool expects gets silently auto-created by
   # Docker as an empty directory, which then fails to mount onto the file
@@ -96,16 +103,20 @@ services:
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
 
-  promtail:
+  alloy:
     build:
       context: ./observability
-      dockerfile: promtail.Dockerfile
+      dockerfile: alloy.Dockerfile
     restart: unless-stopped
     logging: *default-logging
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command: -config.file=/etc/promtail/config.yaml
+      # Read positions per container, so a restart doesn't resend old logs.
+      - alloy-data:/var/lib/alloy/data
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
     depends_on:
       - loki
 
@@ -130,3 +141,4 @@ volumes:
   db-data:
   loki-data:
   grafana-data:
+  alloy-data:
