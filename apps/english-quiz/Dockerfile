@@ -1,6 +1,7 @@
 # English quiz micro frontend. Built and deployed independently of the web
 # host: shipping a quiz change only rebuilds and restarts this container.
-FROM oven/bun:1-alpine AS builder
+# Pinned to CI's BUN_VERSION (.github/workflows/ci.yml); bump both together.
+FROM oven/bun:1.4.2-alpine AS builder
 WORKDIR /app
 
 # Only the manifests this app needs, so the install layer stays cached until
