@@ -1,9 +1,13 @@
+import { API_PREFIX } from '@my-time/contracts'
 import { Elysia } from 'elysia'
 import { logger } from './logger'
 
 // Attaches a per-request id + start time, then logs one line per request on
 // completion (success or error) — method, path, status, duration. That single
 // line is what Promtail/Loki ends up indexing, so keep the fields flat.
+// Docker's healthcheck hits /health every 10s; logging it would only add noise.
+const HEALTH_PATH = `${API_PREFIX}/health`
+
 export const httpLoggerPlugin = new Elysia({ name: 'http-logger' })
 	.derive({ as: 'global' }, () => ({
 		requestId: crypto.randomUUID(),
@@ -12,6 +16,7 @@ export const httpLoggerPlugin = new Elysia({ name: 'http-logger' })
 	.onAfterResponse(
 		{ as: 'global' },
 		({ request, path, set, requestId, requestStart }) => {
+			if (path === HEALTH_PATH) return
 			logger.info({
 				requestId,
 				method: request.method,
