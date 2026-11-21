@@ -1,0 +1,61 @@
+// Ships every container's Docker logs to Loki. Replaces Promtail (end of
+// life since March 2026); labels match what it produced, so existing
+// Grafana queries keep working.
+
+// Auto-discovers every container on this host via the Docker socket, so new
+// services are picked up without listing them here.
+discovery.docker "containers" {
+	host             = "unix:///var/run/docker.sock"
+	refresh_interval = "5s"
+}
+
+discovery.relabel "containers" {
+	targets = []
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		regex         = "/(.*)"
+		target_label  = "container"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_log_stream"]
+		target_label  = "stream"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+		target_label  = "service"
+	}
+}
+
+loki.source.docker "containers" {
+	host          = "unix:///var/run/docker.sock"
+	targets       = discovery.docker.containers.targets
+	relabel_rules = discovery.relabel.containers.rules
+	forward_to    = [loki.process.containers.receiver]
+}
+
+// The api logs JSON (pino); parse it so `level` becomes a filterable label.
+loki.process "containers" {
+	forward_to = [loki.write.default.receiver]
+
+	stage.json {
+		expressions = {
+			level = "level",
+			msg   = "msg",
+		}
+	}
+
+	stage.labels {
+		values = {
+			level = null,
+		}
+	}
+}
+
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}

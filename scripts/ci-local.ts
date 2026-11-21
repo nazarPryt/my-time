@@ -44,6 +44,15 @@ const steps = [
 	['bun', 'run', 'test:web:e2e:integration'],
 	['bun', '--filter', 'web', 'build'],
 	['bun', '--filter', 'english-quiz', 'build'],
+	[
+		'env',
+		'FRONTEND_WEB_URL=http://localhost:5173',
+		'docker',
+		'compose',
+		'-f',
+		'docker-compose.prod.yml',
+		'build',
+	],
 ]
 
 if (process.argv.slice(2).length) {

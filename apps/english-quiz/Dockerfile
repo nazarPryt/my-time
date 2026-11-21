@@ -1,6 +1,7 @@
 # English quiz micro frontend. Built and deployed independently of the web
 # host: shipping a quiz change only rebuilds and restarts this container.
-FROM oven/bun:1-alpine AS builder
+# Pinned to CI's BUN_VERSION (.github/workflows/ci.yml); bump both together.
+FROM oven/bun:1.4.2-alpine AS builder
 WORKDIR /app
 
 # Only the manifests this app needs, so the install layer stays cached until
@@ -9,6 +10,8 @@ COPY package.json bun.lock* ./
 COPY packages/contracts/package.json ./packages/contracts/
 COPY apps/english-quiz/package.json ./apps/english-quiz/
 COPY packages/micro-frontends/package.json ./packages/micro-frontends/
+# Root workspaces list this path exactly, so bun needs its manifest to exist.
+COPY apps/extensions/browser/package.json ./apps/extensions/browser/
 RUN bun install --filter english-quiz
 
 COPY packages/contracts ./packages/contracts

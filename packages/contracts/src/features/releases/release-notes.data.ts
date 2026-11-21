@@ -4,6 +4,16 @@ import type { ReleaseNote } from './release-note'
 
 export const RELEASE_NOTES: ReleaseNote[] = [
 	{
+		version: '0.5.1',
+		date: '2026-11-21',
+		features: [
+			'Pages load faster thanks to compressed files and smarter caching',
+		],
+		fixes: [
+			'A new version of the site now shows up right away, without a hard refresh',
+		],
+	},
+	{
 		version: '0.5.0',
 		date: '2026-11-20',
 		features: [

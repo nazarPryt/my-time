@@ -210,7 +210,7 @@ Always use **`date-fns`** (installed in both `apps/api` and `apps/web`) for any 
 
 ### Logging
 
-The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` ships every container's logs into **Loki** via **Promtail**, viewable/searchable in **Grafana** (`http://<host>:3001`) — all self-hosted and free. Configs live in `observability/`.
+The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` ships every container's logs into **Loki** via **Grafana Alloy**, viewable/searchable in **Grafana** (`http://<host>:3001`) — all self-hosted and free. Configs live in `observability/`.
 
 ### @my-time/contracts — the API contract layer
 
