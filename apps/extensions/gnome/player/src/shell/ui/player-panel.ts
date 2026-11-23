@@ -23,6 +23,7 @@ interface PanelControls {
 }
 
 const TOOLTIP_GAP = 6
+const CHANGE_PLAYER_HINT = 'Right-click to change player'
 
 /** Renders controller state; owns every actor it creates. */
 export class PlayerPanel {
@@ -60,6 +61,13 @@ export class PlayerPanel {
 		playPause.button.connect('clicked', () => actions.playPause())
 		next.connect('clicked', () => actions.next())
 		indicator.connect('notify::hover', () => this.syncTooltip())
+		// St.Button ignores secondary clicks, so they bubble up to the indicator.
+		indicator.connect('button-press-event', (_actor, event: Clutter.Event) => {
+			if (event.get_button() !== Clutter.BUTTON_SECONDARY)
+				return Clutter.EVENT_PROPAGATE
+			actions.openPreferences()
+			return Clutter.EVENT_STOP
+		})
 
 		this.controls = {
 			indicator,
@@ -118,11 +126,13 @@ export class PlayerPanel {
 	private syncTooltip(): void {
 		if (!this.controls) return
 		const { indicator, tooltip } = this.controls
-		if (!indicator.hover || !this.trackText || !indicator.container.visible) {
+		if (!indicator.hover || !indicator.container.visible) {
 			tooltip.hide()
 			return
 		}
 		tooltip.text = this.trackText
+			? `${this.trackText}\n${CHANGE_PLAYER_HINT}`
+			: CHANGE_PLAYER_HINT
 		const [x, y] = indicator.get_transformed_position()
 		const [width, height] = indicator.get_transformed_size()
 		const [, tooltipWidth] = tooltip.get_preferred_width(-1)
