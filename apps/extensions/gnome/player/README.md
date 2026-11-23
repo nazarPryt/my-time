@@ -14,11 +14,15 @@ bun install
 bun run gnome-player:install
 ```
 
-Log out and back in after the first installation (Wayland), then:
+Restart GNOME Shell so it finds the extension: log out and back in on Wayland,
+or press Alt+F2, type `r` and press Enter on X11. Then, after the first
+installation only:
 
 ```bash
 gnome-extensions enable player-controls@my-time.local
 ```
+
+To update, run `bun run gnome-player:install` again and restart GNOME Shell.
 
 ## Choose a player
 
@@ -26,6 +30,10 @@ Click the music icon in the top bar, or open the extension's settings in the
 Extensions app. Start your player first: only running players can be listed.
 The choice is remembered; the buttons appear whenever that player is running
 and disappear when it closes.
+
+To switch to another player later, start it, then right-click the buttons in
+the top bar. While the chosen player is closed the buttons are hidden, so use
+the Extensions app or `gnome-extensions prefs player-controls@my-time.local`.
 
 ## Resource use
 
