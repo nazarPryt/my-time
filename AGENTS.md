@@ -96,6 +96,11 @@ databases and the worktree, and exits non-zero. After the production image build
 it runs `docker image prune -f` (dangling images only); prune the build cache by
 hand with `bun run docker:prune` (cache older than 7 days).
 
+In a terminal it shows a live step list with durations and an ETA from the
+previous run (`~/.cache/my-time-ci/timings.json`); each step's output goes to
+`my-time-ci-logs` in the temp directory, and a failure prints the step's last
+60 lines. `--plain` (or a non-TTY) streams the raw output instead.
+
 Fix failures and rerun before creating or updating the PR. Do not substitute
 partial checks or remote CI for this local gate. If a prerequisite prevents the
 full run, report the exact blocker and leave PR creation/push pending until it
