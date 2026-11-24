@@ -1,5 +1,6 @@
 import { AUTH_ERRORS } from '@my-time/contracts'
 import { WORKOUT_TEST_IDS } from '@/features/workout/test-ids'
+import { mockRefreshResponse } from '../../auth/login/login.mocks'
 import { LOGIN_PATH } from '../../auth/login/login-page'
 import { API_ME } from '../../support/auth.mocks'
 import { expect, test } from './workout.fixtures'
@@ -120,7 +121,7 @@ test.describe('Workout page', () => {
 							body: JSON.stringify(newSet),
 						})
 					} else {
-						route.continue()
+						route.fallback()
 					}
 				})
 
@@ -203,7 +204,7 @@ test.describe('Workout page', () => {
 						body: '{}',
 					})
 				} else {
-					route.continue()
+					route.fallback()
 				}
 			})
 
@@ -256,16 +257,17 @@ test.describe('Workout page', () => {
 			page,
 			workoutPage,
 		}) => {
-			await page.route(API_WORKOUT_SETS, (route) => {
-				if (route.request().method() === 'DELETE') {
-					route.fulfill({
-						status: 200,
-						contentType: 'application/json',
-						body: '{}',
-					})
-				} else {
-					route.continue()
-				}
+			let clearedExercise: string | null = null
+			await page.route(`${API_WORKOUT_SETS}?*`, (route) => {
+				if (route.request().method() !== 'DELETE') return route.fallback()
+				clearedExercise = new URL(route.request().url()).searchParams.get(
+					'exerciseType',
+				)
+				return route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: '{}',
+				})
 			})
 
 			// After reset, the store re-fetches today — return empty state
@@ -277,6 +279,7 @@ test.describe('Workout page', () => {
 
 			await expect(workoutPage.setsLogEmpty).toBeVisible()
 			await expect(workoutPage.totalReps).toHaveText('0')
+			expect(clearedExercise).toBe('pushups')
 		})
 
 		test('confirm dialog shows the set count', async ({ workoutPage }) => {
@@ -373,7 +376,7 @@ test.describe('Workout page', () => {
 			let goalApiCalled = false
 			await page.route(API_WORKOUT_GOAL, (route) => {
 				goalApiCalled = true
-				route.continue()
+				route.fallback()
 			})
 
 			await workoutPage.goalDisplayBtn.click()
@@ -416,6 +419,7 @@ test.describe('Workout page', () => {
 					body: JSON.stringify(AUTH_ERRORS.UNAUTHORIZED),
 				}),
 			)
+			await mockRefreshResponse(page, 401)
 
 			await page.goto(WORKOUT_PATH)
 			await expect(page).toHaveURL(LOGIN_PATH)

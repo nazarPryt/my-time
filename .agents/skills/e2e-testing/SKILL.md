@@ -17,6 +17,7 @@ tab / auth flow, not one flat directory of specs:
 apps/web/e2e/
 ├── support/                        # cross-feature helpers, nothing page-specific
 │   ├── auth.mocks.ts                # API_ME, MOCK_USER, mockAuth()
+│   ├── base.fixtures.ts             # root fixture: fails the test on any unmocked API call
 │   └── dashboard.fixtures.ts        # base fixture: overrides `page` to auto-mock auth
 ├── dashboard/
 │   ├── base-locators.ts             # shell locators (sidebar nav, sign-out) shared by every tab
@@ -196,6 +197,20 @@ export const test = base.extend<{ workoutPage: WorkoutPage }>({
 
 export { expect } from '@playwright/test'
 ```
+
+### Hermetic mocks
+
+Every mocked spec builds on `support/base.fixtures.ts` (directly, or through
+`dashboard.fixtures.ts`). Its auto fixture answers any `/api/v1/**` request
+that no `page.route` handles with 501 and fails the test, listing the
+unmocked calls. Results must never depend on a locally running API.
+
+- Mock every request the screen makes, including background ones (release
+  notes, token refresh after a 401).
+- Pass a request on with `route.fallback()`, never `route.continue()`:
+  `continue` skips the guard and hits the real network.
+- Include the query in the pattern (`${API_X}?*`) when the request has one.
+- Real API behaviour belongs in `e2e-integration/`, not here.
 
 ## Test Structure
 

@@ -1,7 +1,8 @@
-import { test as base } from '@playwright/test'
 import { mockTimeTrackerWeekly } from '../../dashboard/home/home.mocks'
 import { HomePage } from '../../dashboard/home/home-page'
 import { mockWorkoutProgress } from '../../dashboard/workout/workout.mocks'
+import { test as base } from '../../support/base.fixtures'
+import { mockReleasesSeen } from '../../support/releases.mocks'
 import { mockLogoutResponse } from '../logout/logout.mocks'
 import {
 	MOCK_LOGIN_SUCCESS,
@@ -19,6 +20,7 @@ export const test = base.extend<{ loginPage: LoginPage; homePage: HomePage }>({
 		await mockLogoutResponse(page)
 		await mockTimeTrackerWeekly(page)
 		await mockWorkoutProgress(page)
+		await mockReleasesSeen(page)
 		await use(new LoginPage(page))
 	},
 	homePage: async ({ page }, use) => {
@@ -26,4 +28,4 @@ export const test = base.extend<{ loginPage: LoginPage; homePage: HomePage }>({
 	},
 })
 
-export { expect } from '@playwright/test'
+export { expect } from '../../support/base.fixtures'
