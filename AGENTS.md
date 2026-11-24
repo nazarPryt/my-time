@@ -100,6 +100,11 @@ In a terminal it shows a live step list with durations and an ETA from the
 previous run (`~/.cache/my-time-ci/timings.json`); each step's output goes to
 `my-time-ci-logs` in the temp directory, and a failure prints the step's last
 60 lines. `--plain` (or a non-TTY) streams the raw output instead.
+`--dry-run` skips preflight and replaces every step with a no-op, using its own
+worktree/log folders and leaving the timings untouched, to preview the
+runner's output; it checks nothing.
+`--allow-dirty` skips only the clean-tree check (to test the runner itself);
+steps still check committed `HEAD`, so it never replaces a clean run before a PR.
 
 Fix failures and rerun before creating or updating the PR. Do not substitute
 partial checks or remote CI for this local gate. If a prerequisite prevents the

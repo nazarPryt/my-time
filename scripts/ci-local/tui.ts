@@ -1,17 +1,18 @@
 import { renderLines, type View } from './progress'
 
-const HIDE_CURSOR = '\x1b[?25l'
-const SHOW_CURSOR = '\x1b[?25h'
+// The redraw moves up exactly as many rows as it printed, so a wrapped line would
+// leave a stale copy of the frame's top line behind. Wrapping stays off while drawing.
+const ENTER = '\x1b[?25l\x1b[?7l'
+const LEAVE = '\x1b[?25h\x1b[?7h'
 
-export function createTui(
-	getView: () => Omit<View, 'now' | 'columns' | 'rows'>,
-) {
+// The view's states and timings are mutated by the pipeline; each frame re-reads them.
+export function createTui(view: Omit<View, 'now' | 'columns' | 'rows'>) {
 	let drawn = 0
 	let timer: Timer | undefined
 
 	function draw() {
 		const lines = renderLines({
-			...getView(),
+			...view,
 			now: Date.now(),
 			columns: process.stdout.columns ?? 80,
 			rows: process.stdout.rows ?? 24,
@@ -21,10 +22,10 @@ export function createTui(
 		drawn = lines.length
 	}
 
-	process.on('exit', () => process.stdout.write(SHOW_CURSOR))
+	process.on('exit', () => process.stdout.write(LEAVE))
 	return {
 		start() {
-			process.stdout.write(HIDE_CURSOR)
+			process.stdout.write(ENTER)
 			draw()
 			timer = setInterval(draw, 100)
 		},
@@ -33,7 +34,7 @@ export function createTui(
 			clearInterval(timer)
 			timer = undefined
 			draw()
-			process.stdout.write(SHOW_CURSOR)
+			process.stdout.write(LEAVE)
 		},
 	}
 }

@@ -40,10 +40,12 @@ export function stripAnsi(text: string): string {
 	return text.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
 }
 
+// Tabs and other control characters are drawn wider than they count, so they become spaces.
 export function lastLine(chunk: string): string | undefined {
 	const lines = stripAnsi(chunk)
 		.split(/\r\n|\r|\n/)
-		.map((line) => line.trim())
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: replacing control characters is the point
+		.map((line) => line.replace(/[\x00-\x1f\x7f]+/g, ' ').trim())
 		.filter(Boolean)
 	return lines.at(-1)
 }
@@ -61,10 +63,18 @@ export function progressBar(ratio: number, width: number): string {
 	return '█'.repeat(filled) + '░'.repeat(width - filled)
 }
 
+// Measures terminal columns, not string length: wide characters take two.
 export function fit(text: string, width: number): string {
-	return text.length <= width
-		? text
-		: `${text.slice(0, Math.max(width - 1, 0))}…`
+	if (Bun.stringWidth(text) <= width) return text
+	let kept = ''
+	let used = 0
+	for (const char of text) {
+		const charWidth = Bun.stringWidth(char)
+		if (used + charWidth > width - 1) break
+		kept += char
+		used += charWidth
+	}
+	return `${kept}…`
 }
 
 // Undefined while any remaining step has never been timed.
@@ -152,9 +162,10 @@ export function renderLines(view: View): string[] {
 				)
 	const lines = [...header]
 	view.states.slice(first, first + room).forEach((state, offset) => {
-		const plainWidth = stripAnsi(stepLine(state, view, nameWidth)).length
 		const line = stepLine(state, view, nameWidth)
-		lines.push(plainWidth > width ? fit(stripAnsi(line), width) : line)
+		lines.push(
+			Bun.stringWidth(line) > width ? fit(stripAnsi(line), width) : line,
+		)
 		if (first + offset === current && detail) lines.push(detail)
 	})
 	return lines

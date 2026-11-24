@@ -2,12 +2,16 @@ import { existsSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { resolve } from 'node:path'
 import {
+	CI_COMPOSE_PROJECT,
+	E2E_COMPOSE_PROJECT,
 	findBusyPorts,
 	listUncommittedChanges,
 	type PreflightFailure,
 	REQUIRED_PORTS,
 	readBunVersion,
 } from './ci-local-lib'
+import type { ProcessRunner } from './process-runner'
+import { composeDown } from './resources'
 
 async function output(command: string[], cwd: string, timeout = 5000) {
 	const child = Bun.spawn(command, {
@@ -154,4 +158,25 @@ export async function checkCleanTree(
 			fix: 'Commit them, or set them aside with `git stash --include-untracked`',
 		},
 	]
+}
+
+// Runs every check and returns all problems at once, so one pass shows every fix.
+export async function runPreflight(
+	root: string,
+	runner: ProcessRunner,
+	{ allowDirty = false } = {},
+): Promise<PreflightFailure[]> {
+	const dockerFailures = await checkDocker(root)
+	// Leftovers from a crashed run would otherwise hold ports 5434/5435.
+	if (dockerFailures.length === 0) {
+		await composeDown(runner, root, CI_COMPOSE_PROJECT)
+		await composeDown(runner, root, E2E_COMPOSE_PROJECT)
+	}
+	const checks = await Promise.all([
+		checkBunVersion(root),
+		allowDirty ? [] : checkCleanTree(root),
+		checkPorts(),
+		...checkBrowsers(root),
+	])
+	return [...checks.flat(), ...dockerFailures, ...checkGlibTools()]
 }

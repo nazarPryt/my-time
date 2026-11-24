@@ -144,3 +144,8 @@ export function buildSteps({
 	}
 	return steps
 }
+
+// Same names, no work: lets the live list, report and cleanup output be checked quickly.
+export function toDryRun(steps: Step[], cwd: string): Step[] {
+	return steps.map(({ name }) => ({ name, command: ['true'], cwd }))
+}

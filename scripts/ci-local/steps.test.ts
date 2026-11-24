@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { buildSteps } from './steps'
+import { buildSteps, toDryRun } from './steps'
 
 const paths = { root: '/repo', worktree: '/tmp/wt' }
 
@@ -43,5 +43,16 @@ describe('buildSteps', () => {
 			({ name }) => name,
 		)
 		expect(new Set(names).size).toBe(names.length)
+	})
+})
+
+describe('toDryRun', () => {
+	test('keeps every step name but runs nothing and starts no database', () => {
+		const steps = buildSteps({ ...paths, branch: 'feature' })
+		const dry = toDryRun(steps, '/repo')
+		expect(dry.map(({ name }) => name)).toEqual(steps.map(({ name }) => name))
+		for (const step of dry) {
+			expect(step).toEqual({ name: step.name, command: ['true'], cwd: '/repo' })
+		}
 	})
 })

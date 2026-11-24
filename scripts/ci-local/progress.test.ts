@@ -28,10 +28,20 @@ test('fit truncates with an ellipsis', () => {
 	expect(fit('abc', 4)).toBe('abc')
 })
 
+test('fit counts terminal columns, not characters', () => {
+	expect(fit('日本語テキスト', 7)).toBe('日本語…')
+})
+
 test('lastLine returns the newest non-empty line without colours', () => {
 	expect(lastLine('one\n\x1b[32mtwo\x1b[0m\n\n')).toBe('two')
 	expect(lastLine('progress 10%\rprogress 20%')).toBe('progress 20%')
 	expect(lastLine('\n  \n')).toBeUndefined()
+})
+
+test('lastLine turns tabs into spaces so its width is predictable', () => {
+	expect(lastLine('RUN apk add \tchromium \tnss')).toBe(
+		'RUN apk add  chromium  nss',
+	)
 })
 
 describe('estimateRemaining', () => {
