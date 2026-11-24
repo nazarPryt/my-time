@@ -72,12 +72,29 @@ installation, repository lint, all CI typechecks, extension compilation/build,
 API/web/shared/desktop/GNOME-player tests, browser E2E, packaged extension E2E, real cross-client
 integration, and the web build. Keep the runner aligned when CI changes.
 
-Prerequisites: the CI Bun version, running Docker, Chromium installed for both
+The runner checks committed `HEAD`, not the working tree: it refuses to start
+while there are uncommitted or untracked changes, then creates a temporary
+`git worktree` in the system temp directory (`my-time-ci-worktree`), runs
+`bun install --frozen-lockfile` there and runs every step in it, so local `.env`
+files, ignored build output and stale `node_modules` cannot make it pass. The
+worktree is removed after a pass or an interrupt; after a failure it is kept for
+its Playwright reports and removed by the next run. Bun's install cache and the
+Playwright/Puppeteer browsers under `~/.cache` are shared, so the extra install
+costs seconds, but builds start cold.
+
+Preflight checks fail within about a second and list every problem with its fix:
+clean tree, local `bun --version` equal to `BUN_VERSION` in `ci.yml`, a reachable
+Docker daemon, free ports 3000, 3101, 3102, 5173, 5174, 5434 and 5435
+(`CI=true` stops Playwright from reusing a running dev server), Chromium for
 Playwright and Puppeteer, and `glib-compile-schemas`/`gsettings`. Use
 `bun apps/web/node_modules/@playwright/test/cli.js install --with-deps chromium` to prepare
 Playwright. The runner supplies the required test API URL and uses a disposable
-API-test database on port 5435; cross-client integration uses its own port 5434.
-It stops on failure and cleans up its API-test database on normal exit.
+API-test database (compose project `my-time-ci`, port 5435); cross-client
+integration uses `my-time-e2e` on port 5434. Leftovers of both projects are
+removed before a run, and Ctrl+C/SIGTERM stops the current step, removes the
+databases and the worktree, and exits non-zero. After the production image build
+it runs `docker image prune -f` (dangling images only); prune the build cache by
+hand with `bun run docker:prune` (cache older than 7 days).
 
 Fix failures and rerun before creating or updating the PR. Do not substitute
 partial checks or remote CI for this local gate. If a prerequisite prevents the
