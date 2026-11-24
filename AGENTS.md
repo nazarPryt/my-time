@@ -240,7 +240,7 @@ slices of the same layer. Boundaries are enforced by Biome (`noRestrictedImports
 overrides in `biome.jsonc`), so violations fail `lint`/CI.
 
 ```
-app       src/app/     routing, providers, layout wiring (e.g. app/ui/dashboard-shell.tsx)
+app       src/app/     routing, providers, layout wiring (e.g. app/ui/dashboard-shell/)
   ↓
 pages     src/pages/   one screen each; composes features + shared
   ↓
@@ -257,9 +257,9 @@ To share code between two slices, move it *down* a layer, don't import sideways.
   `src/app/routeTree.gen.ts` is **auto-generated** (do not edit; configured in
   `vite.config.ts` via `routesDirectory`/`generatedRouteTree`). A route file is thin:
   it renders a page — `createFileRoute(...)({ component: XPage })`.
-- **Dashboard layout:** `src/app/ui/dashboard-shell.tsx` (`DashboardShell`) holds the
+- **Dashboard layout:** `src/app/ui/dashboard-shell/` (`DashboardShell`, one component per file) holds the
   sidebar + mobile nav; the layout route `src/app/routes/dashboard.tsx` renders
-  `<DashboardShell><Outlet/></DashboardShell>`. Add nav items to `NAV_ITEMS` in the shell.
+  `<DashboardShell><Outlet/></DashboardShell>`. Add nav items to `NAV_ITEMS` in `dashboard-shell/nav-items.ts`.
 - **API client:** `src/shared/lib/api.ts` — Eden Treaty typed client (`treaty<App>`). The `App` type is imported from `@my-time/api` (the api package's public export). This gives end-to-end type safety with zero code generation.
 - **Time-tracker synchronization:** The feature receives session snapshots from
   `/time-tracker/events` through an authenticated fetch SSE stream. Reuse the
@@ -284,5 +284,5 @@ To share code between two slices, move it *down* a layer, don't import sideways.
 2. **API route:** Create `apps/api/src/features/<feature>/routes.ts` as an Elysia plugin, wire it into `apps/api/src/app.ts`.
 3. **DB (if needed):** Add Drizzle table to `apps/api/src/db/schema/`, run `db:generate` + `db:migrate`.
 4. **Web feature:** Create `apps/web/src/features/<feature>/` with `ui/`, `model/`, `api/` segments and an `index.ts` barrel (copy an existing slice like `time-tracker`).
-5. **Web page:** Create `apps/web/src/pages/<feature>/ui/<Feature>Page.tsx` + `index.ts`, composing the feature's barrel. Add a thin route in `apps/web/src/app/routes/dashboard/<feature>.tsx` that renders the page, and a nav item to `NAV_ITEMS` in `src/app/ui/dashboard-shell.tsx`. The route tree regenerates on next `dev` run.
+5. **Web page:** Create `apps/web/src/pages/<feature>/ui/<Feature>Page.tsx` + `index.ts`, composing the feature's barrel. Add a thin route in `apps/web/src/app/routes/dashboard/<feature>.tsx` that renders the page, and a nav item to `NAV_ITEMS` in `src/app/ui/dashboard-shell/nav-items.ts`. The route tree regenerates on next `dev` run.
 6. **API calls:** Use `api.<resource>.<method>()` from the Eden Treaty client (`@/shared/lib/api`) inside the feature's `api/` segment — types flow automatically from the `App` type.
