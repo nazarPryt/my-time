@@ -1,6 +1,8 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { PermessoStatusLocators } from './permesso-status.locators'
+
 export const PERMESSO_PATH: LinkProps['to'] = '/dashboard/permesso-status'
+
 export class PermessoStatusPage extends PermessoStatusLocators {
 	async goto() {
 		await this.page.goto(PERMESSO_PATH)

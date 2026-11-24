@@ -1,4 +1,3 @@
-import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
 import {
 	API_REFRESH,
 	MOCK_ACCESS_TOKEN,
@@ -10,6 +9,7 @@ import {
 	mockRefreshResponse,
 } from '../../auth/login/login.mocks'
 import { LoginPage } from '../../auth/login/login-page'
+import { readAccessToken } from '../../support/access-token'
 import { MOCK_USER } from '../../support/auth.mocks'
 import { mockTimeTrackerWeekly } from '../home/home.mocks'
 import { DASHBOARD_PATH } from '../home/home-page'
@@ -42,9 +42,7 @@ test.describe('Credentials during live session synchronization', () => {
 		await expect(timeTrackerPage.error).toBeHidden()
 		pushTimeSession(page, MOCK_SESSION_ACTIVE)
 		await expect(timeTrackerPage.statusBadge).toHaveText('Working')
-		expect(
-			await page.evaluate((key) => localStorage.getItem(key), ACCESS_TOKEN_KEY),
-		).toBe(MOCK_REFRESHED_ACCESS_TOKEN)
+		expect(await readAccessToken(page)).toBe(MOCK_REFRESHED_ACCESS_TOKEN)
 	})
 
 	test('shares one refresh between a summary request and stream reconnect', async ({
@@ -115,9 +113,7 @@ test.describe('Credentials during live session synchronization', () => {
 			'Please sign in again to receive session updates.',
 		)
 		await expect(timeTrackerPage.statusBadge).toHaveText('Working')
-		expect(
-			await page.evaluate((key) => localStorage.getItem(key), ACCESS_TOKEN_KEY),
-		).toBeNull()
+		expect(await readAccessToken(page)).toBeNull()
 		const attempts = timeStreamStats(page).requests
 		await page.clock.install()
 		await page.clock.runFor(30_000)
