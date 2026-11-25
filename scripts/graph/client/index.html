@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>my-time dependencies</title>
+		<link rel="stylesheet" href="/styles.css" />
+	</head>
+	<body>
+		<header class="topbar">
+			<a class="brand" href="#">my-time · dependencies</a>
+			<span id="status" class="status">connecting…</span>
+			<span id="stats" class="stats"></span>
+		</header>
+		<div class="layout">
+			<aside class="sidebar">
+				<input
+					id="search"
+					class="search"
+					type="search"
+					placeholder="Search apps, modules, files…"
+					autocomplete="off"
+				/>
+				<nav id="tree" class="tree" aria-label="Project structure"></nav>
+			</aside>
+			<main id="main" class="main"></main>
+		</div>
+		<script src="/app.js"></script>
+	</body>
+</html>

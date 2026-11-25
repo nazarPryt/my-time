@@ -1,126 +1,74 @@
 import { expect, test } from 'bun:test'
-import path from 'node:path'
 import { chainForFile } from './grouping'
 
-const ROOT = path.resolve(import.meta.dir, '../..')
+const WORKSPACES = ['apps/web', 'apps/mobile', 'apps/extensions/gnome/player']
 
-test('web feature file → web app + web/auth feature + file chain', () => {
-	const filePath = path.join(
-		ROOT,
-		'apps/web/src/features/auth/login/useLogin.ts',
+test('workspace file under src/features → workspace + feature + file chain', () => {
+	const chain = chainForFile(
+		'apps/web/src/features/auth/login/use-login.ts',
+		WORKSPACES,
 	)
-	const chain = chainForFile(filePath, ROOT)
-	expect(chain?.app).toEqual({
-		id: 'web',
-		label: 'web',
-		app: 'web',
+	expect(chain.app).toEqual({
+		id: 'apps/web',
+		label: 'apps/web',
+		app: 'apps/web',
 		type: 'app',
 	})
-	expect(chain?.feature).toEqual({
-		id: 'web/auth',
+	expect(chain.feature).toEqual({
+		id: 'apps/web::auth',
 		label: 'auth',
-		app: 'web',
+		app: 'apps/web',
 		type: 'feature',
-		parent: 'web',
+		parent: 'apps/web',
 	})
-	expect(chain?.file).toEqual({
-		id: 'web/auth/login/useLogin',
-		label: 'login/useLogin',
-		app: 'web',
+	expect(chain.file).toEqual({
+		id: 'apps/web::auth::login/use-login',
+		label: 'login/use-login',
+		app: 'apps/web',
 		type: 'file',
-		parent: 'web/auth',
+		parent: 'apps/web::auth',
 	})
 })
 
-test('web shared file → web/shared feature', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'apps/web/src/shared/lib/api.ts'),
-		ROOT,
+test('first folder under src/ is the module', () => {
+	const chain = chainForFile('apps/web/src/shared/lib/api.ts', WORKSPACES)
+	expect(chain.feature.id).toBe('apps/web::shared')
+	expect(chain.file.label).toBe('lib/api')
+})
+
+test('files directly in the workspace or src/ go to the (root) module', () => {
+	expect(chainForFile('apps/web/src/main.tsx', WORKSPACES).feature.id).toBe(
+		'apps/web::(root)',
 	)
-	expect(chain?.feature.id).toBe('web/shared')
-	expect(chain?.file.id).toBe('web/shared/lib/api')
-	expect(chain?.app.id).toBe('web')
-})
-
-test('web root file → web/(root) feature', () => {
-	const chain = chainForFile(path.join(ROOT, 'apps/web/src/main.tsx'), ROOT)
-	expect(chain?.feature.id).toBe('web/(root)')
-	expect(chain?.file.id).toBe('web/(root)/main')
-})
-
-test('api feature file → api/<name> feature', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'apps/api/src/features/auth/routes.ts'),
-		ROOT,
+	expect(chainForFile('apps/web/vite.config.ts', WORKSPACES).file.id).toBe(
+		'apps/web::(root)::vite.config',
 	)
-	expect(chain?.feature).toEqual({
-		id: 'api/auth',
-		label: 'auth',
-		app: 'api',
-		type: 'feature',
-		parent: 'api',
-	})
 })
 
-test('api db file → api/db feature', () => {
+test('singular feature/ folder is unwrapped too (mobile)', () => {
+	const chain = chainForFile('apps/mobile/feature/auth/login.tsx', WORKSPACES)
+	expect(chain.feature.id).toBe('apps/mobile::auth')
+})
+
+test('deepest workspace wins for nested packages', () => {
 	const chain = chainForFile(
-		path.join(ROOT, 'apps/api/src/db/schema/users.ts'),
-		ROOT,
+		'apps/extensions/gnome/player/src/extension.ts',
+		WORKSPACES,
 	)
-	expect(chain?.feature.id).toBe('api/db')
-	expect(chain?.file.id).toBe('api/db/schema/users')
+	expect(chain.app.id).toBe('apps/extensions/gnome/player')
+	expect(chain.feature.id).toBe('apps/extensions/gnome/player::(root)')
 })
 
-test('extension feature file → extension/<name> feature', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'apps/extensions/browser/src/features/auth/index.ts'),
-		ROOT,
-	)
-	expect(chain?.feature.id).toBe('extension/auth')
-	expect(chain?.app.id).toBe('extension')
+test('files outside workspaces are grouped by top-level folder', () => {
+	const chain = chainForFile('scripts/graph/parser.ts', WORKSPACES)
+	expect(chain.app.id).toBe('scripts')
+	expect(chain.feature.id).toBe('scripts::graph')
+	expect(chainForFile('vitest.config.ts', WORKSPACES).app.id).toBe('(root)')
 })
 
-test('mobile feature file (singular "feature") → mobile/<name> feature', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'apps/mobile/feature/workout/store.ts'),
-		ROOT,
-	)
-	expect(chain?.app.id).toBe('mobile')
-	expect(chain?.feature.id).toBe('mobile/workout')
-})
-
-test('contracts feature file → contracts/<name> feature', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'packages/contracts/src/features/auth/schema.ts'),
-		ROOT,
-	)
-	expect(chain?.app.id).toBe('contracts')
-	expect(chain?.feature.id).toBe('contracts/auth')
-})
-
-test('contracts root file → contracts/(root) feature', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'packages/contracts/src/index.ts'),
-		ROOT,
-	)
-	expect(chain?.feature.id).toBe('contracts/(root)')
-})
-
-test('packages file → each package is its own group', () => {
-	const chain = chainForFile(
-		path.join(ROOT, 'packages/client-features/src/workout/store.ts'),
-		ROOT,
-	)
-	expect(chain?.app).toEqual({
-		id: 'packages/client-features',
-		label: 'client-features',
-		app: 'packages/client-features',
-		type: 'app',
-	})
-	expect(chain?.feature.id).toBe('packages/client-features/workout')
-})
-
-test('unknown file → null', () => {
-	const chain = chainForFile(path.join(ROOT, 'some/random/file.ts'), ROOT)
-	expect(chain).toBeNull()
+test('a vue file keeps its name without the extension', () => {
+	const chain = chainForFile('apps/english-quiz/src/hub/practice-hub.vue', [
+		'apps/english-quiz',
+	])
+	expect(chain.file.id).toBe('apps/english-quiz::hub::practice-hub')
 })
