@@ -96,7 +96,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum(increase(auth_events_total{event=\"register\"}[$__range])) or vector(0)",
+					"expr": "sum(sum_over_time(((auth_events_total{event=\"register\"} - auth_events_total{event=\"register\"} offset 1m) >= 0 or auth_events_total{event=\"register\"} + 0)[$__range:1m])) or vector(0)",
 					"legendFormat": "__auto",
 					"editorMode": "code",
 					"range": false,
@@ -160,7 +160,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum(increase(auth_events_total{event=\"login\"}[$__range])) or vector(0)",
+					"expr": "sum(sum_over_time(((auth_events_total{event=\"login\"} - auth_events_total{event=\"login\"} offset 1m) >= 0 or auth_events_total{event=\"login\"} + 0)[$__range:1m])) or vector(0)",
 					"legendFormat": "__auto",
 					"editorMode": "code",
 					"range": false,
@@ -224,7 +224,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum(increase(auth_events_total{event=\"login_failed\"}[$__range])) or vector(0)",
+					"expr": "sum(sum_over_time(((auth_events_total{event=\"login_failed\"} - auth_events_total{event=\"login_failed\"} offset 1m) >= 0 or auth_events_total{event=\"login_failed\"} + 0)[$__range:1m])) or vector(0)",
 					"legendFormat": "__auto",
 					"editorMode": "code",
 					"range": false,
@@ -296,7 +296,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum(increase(auth_events_total{event=\"refresh_failed\"}[$__range])) or vector(0)",
+					"expr": "sum(sum_over_time(((auth_events_total{event=\"refresh_failed\"} - auth_events_total{event=\"refresh_failed\"} offset 1m) >= 0 or auth_events_total{event=\"refresh_failed\"} + 0)[$__range:1m])) or vector(0)",
 					"legendFormat": "__auto",
 					"editorMode": "code",
 					"range": false,
@@ -430,7 +430,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum(increase(client_errors_total[$__range])) or vector(0)",
+					"expr": "sum(sum_over_time(((client_errors_total - client_errors_total offset 1m) >= 0 or client_errors_total + 0)[$__range:1m])) or vector(0)",
 					"legendFormat": "__auto",
 					"editorMode": "code",
 					"range": false,
@@ -490,7 +490,7 @@
 		{
 			"type": "timeseries",
 			"title": "Auth events",
-			"description": "Sign-ups, logins, logouts, refreshes and their failures per hour (per bar on long ranges).",
+			"description": "Sign-ups, logins, logouts, refreshes and their failures in each time bucket (5 minutes on short ranges). The bucket in progress appears when it ends.",
 			"datasource": {
 				"type": "prometheus",
 				"uid": "prometheus"
@@ -502,7 +502,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (event) (increase(auth_events_total[$__interval]))",
+					"expr": "sum by (event) ((auth_events_total offset -$__interval - auth_events_total) >= 0 or auth_events_total offset -$__interval)",
 					"legendFormat": "{{event}}",
 					"editorMode": "code",
 					"range": true,
@@ -604,7 +604,7 @@
 					"sort": "desc"
 				}
 			},
-			"interval": "1h",
+			"interval": "5m",
 			"gridPos": {
 				"x": 0,
 				"y": 5,
@@ -632,7 +632,7 @@
 					"editorMode": "code",
 					"queryType": "range",
 					"legendFormat": "active users",
-					"step": "1h"
+					"step": "15m"
 				}
 			],
 			"fieldConfig": {
@@ -720,7 +720,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (feature) (label_replace(increase(http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz|site-blocking|permesso)(/.*)?\"}[$__interval]), \"feature\", \"$1\", \"route\", \"/api/v1/([^/]+).*\"))",
+					"expr": "sum by (feature) (label_replace((http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz|site-blocking|permesso)(/.*)?\"} offset -$__interval - http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz|site-blocking|permesso)(/.*)?\"}) >= 0 or http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz|site-blocking|permesso)(/.*)?\"} offset -$__interval, \"feature\", \"$1\", \"route\", \"/api/v1/([^/]+).*\"))",
 					"legendFormat": "{{feature}}",
 					"editorMode": "code",
 					"range": true,
@@ -776,7 +776,7 @@
 					"sort": "desc"
 				}
 			},
-			"interval": "1h",
+			"interval": "5m",
 			"gridPos": {
 				"x": 0,
 				"y": 14,
@@ -800,7 +800,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "topk(15, sum by (route) (increase(http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz)(/.*)?\"}[$__range])))",
+					"expr": "topk(15, sum by (route) (sum_over_time(((http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz)(/.*)?\"} - http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz)(/.*)?\"} offset 1m) >= 0 or http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz)(/.*)?\"} + 0)[$__range:1m])))",
 					"legendFormat": "{{route}}",
 					"editorMode": "code",
 					"range": false,
@@ -879,7 +879,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (source) (increase(client_errors_total[$__interval]))",
+					"expr": "sum by (source) ((client_errors_total offset -$__interval - client_errors_total) >= 0 or client_errors_total offset -$__interval)",
 					"legendFormat": "{{source}}",
 					"editorMode": "code",
 					"range": true,
@@ -935,7 +935,7 @@
 					"sort": "desc"
 				}
 			},
-			"interval": "10m",
+			"interval": "5m",
 			"gridPos": {
 				"x": 0,
 				"y": 24,

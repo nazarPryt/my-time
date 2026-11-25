@@ -1,6 +1,4 @@
 import type { StepState } from './progress'
-import type { RunStep } from './step-runner'
-import type { Step } from './steps'
 import type { Timings } from './timings'
 
 export type PipelineOutcome =
@@ -8,22 +6,22 @@ export type PipelineOutcome =
 	| { status: 'failed'; index: number }
 	| { status: 'interrupted' }
 
-export function createStates(steps: Step[]): StepState[] {
+export function createStates(steps: { name: string }[]): StepState[] {
 	return steps.map(({ name }) => ({ name, status: 'pending' }))
 }
 
 // Runs steps in order and stops at the first failure or interrupt.
-export async function runPipeline({
+export async function runPipeline<S extends { name: string }>({
 	steps,
 	states,
 	timings,
 	runStep,
 	isInterrupted,
 }: {
-	steps: Step[]
+	steps: S[]
 	states: StepState[]
 	timings: Timings
-	runStep: RunStep
+	runStep: (step: S, state: StepState, index: number) => Promise<number>
 	isInterrupted: () => boolean
 }): Promise<PipelineOutcome> {
 	for (const [index, step] of steps.entries()) {
@@ -48,10 +46,4 @@ export async function runPipeline({
 		timings[step.name] = state.endedAt - startedAt
 	}
 	return { status: 'passed' }
-}
-
-export function reachedDatabaseStep(steps: Step[], states: StepState[]) {
-	return steps.some(
-		(step, index) => step.startsDatabase && states[index].status !== 'pending',
-	)
 }

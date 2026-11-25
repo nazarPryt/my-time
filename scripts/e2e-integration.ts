@@ -1,10 +1,11 @@
 import { resolve } from 'node:path'
 import type { Subprocess } from 'bun'
-import { E2E_COMPOSE_PROJECT, signalExitCode } from './ci-local/ci-local-lib'
+import { E2E_COMPOSE_PROJECT } from './ci-local/ci-local-lib'
 import {
 	INTEGRATION_DATABASE_NAME,
 	INTEGRATION_DATABASE_PORT,
 } from './e2e-integration-config'
+import { signalExitCode } from './shared/step-runner'
 
 const root = resolve(import.meta.dir, '..')
 const compose = [

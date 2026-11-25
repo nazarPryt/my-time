@@ -76,13 +76,16 @@ export const telegramMessagesTotal = new client.Counter({
 	registers: [metricsRegistry],
 })
 
-export type AuthEvent =
-	| 'register'
-	| 'login'
-	| 'login_failed'
-	| 'refresh'
-	| 'refresh_failed'
-	| 'logout'
+const AUTH_EVENTS = [
+	'register',
+	'login',
+	'login_failed',
+	'refresh',
+	'refresh_failed',
+	'logout',
+] as const
+
+export type AuthEvent = (typeof AUTH_EVENTS)[number]
 
 export const authEventsTotal = new client.Counter({
 	name: 'auth_events_total',
@@ -98,7 +101,7 @@ export const clientErrorsTotal = new client.Counter({
 	registers: [metricsRegistry],
 })
 
-// Alerts use increase(), which can't see the first event after a restart
+// Alerts and dashboards use increase(), which can't see the first event after a restart
 // unless the series already exists at 0.
 for (const trigger of ['scheduled', 'manual'])
 	for (const result of ['success', 'failure'])
@@ -106,6 +109,7 @@ for (const trigger of ['scheduled', 'manual'])
 for (const result of ['sent', 'failed', 'blocked'])
 	telegramMessagesTotal.inc({ result }, 0)
 for (const source of CLIENT_ERROR_SOURCES) clientErrorsTotal.inc({ source }, 0)
+for (const event of AUTH_EVENTS) authEventsTotal.inc({ event }, 0)
 
 const appInfo = new client.Gauge({
 	name: 'app_info',

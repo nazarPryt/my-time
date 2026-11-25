@@ -1,6 +1,11 @@
-import { drawBox } from './box'
-import { formatDuration, paint, type StepState } from './progress'
-import { readLogTail } from './step-runner'
+import {
+	formatDuration,
+	paint,
+	printSummaryBox,
+	readLogTail,
+	type StepState,
+	summaryRow,
+} from '../shared/step-runner'
 import type { Step } from './steps'
 
 const FAILURE_TAIL_LINES = 60
@@ -20,10 +25,6 @@ export async function reportFailure(
 	const tail = await readLogTail(logFile, FAILURE_TAIL_LINES)
 	console.error(paint.dim(`── last ${tail.length} lines of ${logFile} ──`))
 	console.error(tail.join('\n'))
-}
-
-export function reportInterrupt(signal: NodeJS.Signals) {
-	console.error(paint.yellow(`\n${signal} received; cleaning up…`))
 }
 
 export interface Summary {
@@ -48,8 +49,7 @@ function headline({ exitCode, stepCount, failedStep, signal }: Summary) {
 
 export function reportSummary(summary: Summary) {
 	const passed = summary.exitCode === 0
-	const label = (name: string, value: string) =>
-		`${paint.dim(name.padEnd(8))}${value}`
+	const label = (name: string, value: string) => summaryRow(name, value)
 	const lines = [
 		headline(summary),
 		'',
@@ -69,15 +69,8 @@ export function reportSummary(summary: Summary) {
 			paint.yellow('⚠ Dry run: every step was skipped, nothing was checked.'),
 		)
 	}
-	const border = passed
-		? paint.green
-		: summary.signal
-			? paint.yellow
-			: paint.red
-	const box = drawBox(lines, {
-		maxWidth: Math.min((process.stdout.columns ?? 80) - 1, 100),
-		border,
+	printSummaryBox(lines, {
+		result: passed ? 'passed' : summary.signal ? 'interrupted' : 'failed',
+		exitCode: summary.exitCode,
 	})
-	console.info(`\n${box.join('\n')}`)
-	console.info(paint.dim(`  Exit code ${summary.exitCode}.`))
 }

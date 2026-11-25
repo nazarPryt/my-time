@@ -784,7 +784,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "topk(10, sum by (route) (increase(http_requests_total{job=\"api\"}[$__range])))",
+					"expr": "topk(10, sum by (route) (sum_over_time(((http_requests_total{job=\"api\"} - http_requests_total{job=\"api\"} offset 1m) >= 0 or http_requests_total{job=\"api\"} + 0)[$__range:1m])))",
 					"legendFormat": "{{route}}",
 					"editorMode": "code",
 					"range": false,
@@ -924,7 +924,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "topk(10, sum by (route) (increase(http_requests_total{job=\"api\",status=~\"5..\"}[$__range])) > 0)",
+					"expr": "topk(10, sum by (route) (sum_over_time(((http_requests_total{job=\"api\",status=~\"5..\"} - http_requests_total{job=\"api\",status=~\"5..\"} offset 1m) >= 0 or http_requests_total{job=\"api\",status=~\"5..\"} + 0)[$__range:1m])) > 0)",
 					"legendFormat": "{{route}}",
 					"editorMode": "code",
 					"range": false,

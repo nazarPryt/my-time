@@ -1,19 +1,7 @@
+import { cleanupTask, type ProcessRunner } from '../shared/step-runner'
 import { CI_COMPOSE_PROJECT } from './ci-local-lib'
 import type { CiConfig } from './config'
-import type { ProcessRunner } from './process-runner'
-import { formatDuration, paint } from './progress'
 import { composeDown, removeWorktree } from './resources'
-
-async function cleanupTask(label: string, task: () => Promise<boolean>) {
-	const started = Date.now()
-	process.stdout.write(`  ${label}…`)
-	const ok = await task()
-	const mark = ok ? paint.green('✓') : paint.red('✗')
-	const took = paint.dim(formatDuration(Date.now() - started))
-	const rewind = process.stdout.isTTY ? '\r\x1b[2K' : ' '
-	process.stdout.write(`${rewind}${mark} ${label}  ${took}\n`)
-	return ok
-}
 
 // Returns false when the database could not be stopped, which fails the run.
 export async function cleanUp({

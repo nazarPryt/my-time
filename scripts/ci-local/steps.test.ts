@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { buildSteps, toDryRun } from './steps'
+import { createStates } from '../shared/step-runner'
+import { buildSteps, reachedDatabaseStep, type Step, toDryRun } from './steps'
 
 const paths = { root: '/repo', worktree: '/tmp/wt' }
 
@@ -54,5 +55,28 @@ describe('toDryRun', () => {
 		for (const step of dry) {
 			expect(step).toEqual({ name: step.name, command: ['true'], cwd: '/repo' })
 		}
+	})
+})
+
+describe('reachedDatabaseStep', () => {
+	const step = (name: string, startsDatabase = false): Step => ({
+		name,
+		command: ['true'],
+		cwd: '/wt',
+		startsDatabase,
+	})
+	const steps = [step('Lint'), step('Start database', true), step('Tests')]
+
+	test('is false while the database step is still pending', () => {
+		const states = createStates(steps)
+		states[0].status = 'failed'
+		expect(reachedDatabaseStep(steps, states)).toBe(false)
+	})
+
+	test('is true once the database step has started', () => {
+		const states = createStates(steps)
+		states[0].status = 'passed'
+		states[1].status = 'failed'
+		expect(reachedDatabaseStep(steps, states)).toBe(true)
 	})
 })
