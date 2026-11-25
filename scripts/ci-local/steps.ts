@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import type { StepState } from '../shared/step-runner'
 import { CI_COMPOSE_PROJECT } from './ci-local-lib'
 
 export interface Step {
@@ -149,4 +150,11 @@ export function buildSteps({
 // Same names, no work: lets the live list, report and cleanup output be checked quickly.
 export function toDryRun(steps: Step[], cwd: string): Step[] {
 	return steps.map(({ name }) => ({ name, command: ['true'], cwd }))
+}
+
+// Whether the run got as far as starting the API-test database (cleanup stops it).
+export function reachedDatabaseStep(steps: Step[], states: StepState[]) {
+	return steps.some(
+		(step, index) => step.startsDatabase && states[index].status !== 'pending',
+	)
 }

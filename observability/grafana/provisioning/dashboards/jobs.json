@@ -197,7 +197,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (task) (label_replace(label_replace(increase(job_runs_total{result=\"failure\"}[$__range]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"expr": "sum by (task) (label_replace(label_replace(sum_over_time(((job_runs_total{result=\"failure\"} - job_runs_total{result=\"failure\"} offset 1m) >= 0 or job_runs_total{result=\"failure\"} + 0)[$__range:1m]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
 					"legendFormat": "{{task}}",
 					"editorMode": "code",
 					"range": false,
@@ -266,7 +266,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (task) (label_replace(label_replace(increase(job_runs_total[$__range]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"expr": "sum by (task) (label_replace(label_replace(sum_over_time(((job_runs_total - job_runs_total offset 1m) >= 0 or job_runs_total + 0)[$__range:1m]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
 					"legendFormat": "{{task}}",
 					"editorMode": "code",
 					"range": false,
@@ -331,7 +331,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (task, result) (label_replace(label_replace(increase(job_runs_total[$__interval]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"expr": "sum by (task, result) (label_replace(label_replace((job_runs_total offset -$__interval - job_runs_total) >= 0 or job_runs_total offset -$__interval, \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
 					"legendFormat": "{{task}} {{result}}",
 					"editorMode": "code",
 					"range": true,
@@ -403,7 +403,7 @@
 					"sort": "desc"
 				}
 			},
-			"interval": "1h",
+			"interval": "5m",
 			"gridPos": {
 				"x": 0,
 				"y": 6,
@@ -544,7 +544,7 @@
 		{
 			"type": "timeseries",
 			"title": "Permesso checks by trigger and result",
-			"description": "Permit-portal checks per hour. scheduled = the hourly job, manual = a user pressed 'check now'. Failures usually mean the portal is down or changed its HTML.",
+			"description": "Permit-portal checks in each time bucket. scheduled = the hourly job, manual = a user pressed 'check now'. Failures usually mean the portal is down or changed its HTML.",
 			"datasource": {
 				"type": "prometheus",
 				"uid": "prometheus"
@@ -556,7 +556,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (trigger, result) (increase(permesso_checks_total[$__interval]))",
+					"expr": "sum by (trigger, result) ((permesso_checks_total offset -$__interval - permesso_checks_total) >= 0 or permesso_checks_total offset -$__interval)",
 					"legendFormat": "{{trigger}} {{result}}",
 					"editorMode": "code",
 					"range": true,
@@ -643,7 +643,7 @@
 					"sort": "desc"
 				}
 			},
-			"interval": "1h",
+			"interval": "5m",
 			"gridPos": {
 				"x": 0,
 				"y": 15,
@@ -790,7 +790,7 @@
 						"type": "prometheus",
 						"uid": "prometheus"
 					},
-					"expr": "sum by (result) (increase(telegram_messages_total[$__interval]))",
+					"expr": "sum by (result) ((telegram_messages_total offset -$__interval - telegram_messages_total) >= 0 or telegram_messages_total offset -$__interval)",
 					"legendFormat": "{{result}}",
 					"editorMode": "code",
 					"range": true,
@@ -892,7 +892,7 @@
 					"sort": "desc"
 				}
 			},
-			"interval": "1h",
+			"interval": "5m",
 			"gridPos": {
 				"x": 0,
 				"y": 24,

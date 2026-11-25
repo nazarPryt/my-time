@@ -224,9 +224,27 @@ all three.
 (no errors, no traffic). A query that fails (datasource down) puts the rule in
 the error state, which Grafana also notifies as `DatasourceError`.
 
-`job_runs_total{result="failure"}` only shows up in `increase()` from its
-second sample, so the api should initialise both `result` values at 0 for
-each job at startup. Otherwise the first failure after a restart is missed.
+A counter series only shows up in `increase()` from its second sample, so the
+api initialises every known label value at 0 at startup (`job_runs_total` per
+job and result, `auth_events_total`, `client_errors_total`,
+`permesso_checks_total`, `telegram_messages_total`). Otherwise the first event
+after a restart is missed (a sign-up shows as 0). Add new label values to that
+list.
+
+Panels that count events are exact, not `increase()`: adjacent `increase()`
+windows skip the change between them and extrapolate, so one event can show
+as 0, 1.1 or (just after a deploy) 2.
+
+- Bar panels (5m minimum interval):
+  `(x offset -$__interval - x) >= 0 or x offset -$__interval`. The bar at
+  time t counts (t, t + interval], so the bucket in progress shows at once;
+  Grafana aligns the range end down to the step and would otherwise hide it.
+- Stat and top-N panels over the time range:
+  `sum_over_time(((x - x offset 1m) >= 0 or x + 0)[$__range:1m])`, the sum of
+  one-minute changes. `+ 0` drops the metric name so both branches are one
+  series.
+
+In both, the `or` fallback covers a series that is new or reset by a restart.
 
 ### Telegram
 
@@ -307,6 +325,35 @@ http://localhost:3001 (admin/admin). `bun run observability:down` stops it.
 `bun run check:observability` validates the Alloy, Loki, Prometheus and nginx
 configs plus every alert query with the same images (part of CI's Docker job
 and `bun run ci:local`).
+
+`bun run observability:test` checks what the dashboards show, end to end. It
+starts this stack with a disposable Postgres and the API as a container
+(`docker-compose.observability-test.yml`, Grafana on :3201, API on :3200, so
+`bun run dev` can keep running), sends known traffic (sign-ups, logins, failed
+logins, refreshes, feature use, client errors), then queries every panel
+through Grafana. Each panel must return data unless it is listed in
+`scripts/observability-test/panels/expectations.ts` (`ALLOWED_EMPTY`), and
+the activity panels must show exactly the traffic sent. Finally it opens every
+dashboard in Chromium, fails on a panel that renders an error, and saves
+screenshots to `observability-test-results/`. It takes about 2–4 minutes
+(image builds plus waiting for 30s scrapes). Run it after changing a
+dashboard, a metric, a label or a log message the dashboards use.
+
+It works like `bun run ci:local`; both are built on
+`scripts/shared/step-runner/`. A preflight (Docker, Playwright's Chromium,
+free ports) fails within seconds with a fix for each problem; a terminal gets a live step list with an ETA from the last
+run (`~/.cache/my-time-observability-test/timings.json`); each step logs to
+`my-time-observability-test-logs` in the temp directory, and a failed step
+prints its last lines (for the panel check, the list of wrong panels). The
+stack is always removed, also after Ctrl+C, and a boxed summary ends the run.
+`--plain` (or a non-TTY) streams the output instead; `--keep` leaves the
+stack running and prints the Grafana URL.
+
+Code in `scripts/observability-test/`: `run-observability-test.ts` (preflight
+→ steps → report → cleanup), `steps.ts` (the step list), `traffic/` (the
+API client and the traffic scenario), `grafana/` (dashboard files, the query
+client and the browser check) and `panels/` (expectations and comparing them
+with query results).
 
 ## Runbook
 

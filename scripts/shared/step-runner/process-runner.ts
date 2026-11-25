@@ -1,5 +1,6 @@
 import type { Subprocess } from 'bun'
-import type { Env } from './config'
+
+export type Env = Record<string, string | undefined>
 
 export type OutputStream = 'stdout' | 'stderr'
 export type OutputHandler = (chunk: Uint8Array, stream: OutputStream) => void

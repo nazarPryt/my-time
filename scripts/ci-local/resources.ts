@@ -1,6 +1,6 @@
 import { rm } from 'node:fs/promises'
+import type { ProcessRunner } from '../shared/step-runner'
 import type { CiConfig } from './config'
-import type { ProcessRunner } from './process-runner'
 import { testCompose } from './steps'
 
 export function git(root: string, ...args: string[]): string {

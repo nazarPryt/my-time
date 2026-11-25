@@ -1,14 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import { createStates, reachedDatabaseStep, runPipeline } from './pipeline'
-import type { Step } from './steps'
+import { signalExitCode } from './interrupts'
+import { createStates, runPipeline } from './pipeline'
 
-const step = (name: string, startsDatabase = false): Step => ({
-	name,
-	command: ['true'],
-	cwd: '/wt',
-	startsDatabase,
-})
-const steps = [step('Lint'), step('Start database', true), step('Tests')]
+const steps = [{ name: 'Lint' }, { name: 'Start database' }, { name: 'Tests' }]
 
 function run(codes: number[], isInterrupted = () => false) {
 	const states = createStates(steps)
@@ -70,14 +64,7 @@ describe('runPipeline', () => {
 	})
 })
 
-describe('reachedDatabaseStep', () => {
-	test('is true once the database step has started', async () => {
-		const early = run([1])
-		await early.outcome
-		expect(reachedDatabaseStep(steps, early.states)).toBe(false)
-
-		const later = run([0, 1])
-		await later.outcome
-		expect(reachedDatabaseStep(steps, later.states)).toBe(true)
-	})
+test('signalExitCode follows the 128 + signal convention', () => {
+	expect(signalExitCode('SIGINT')).toBe(130)
+	expect(signalExitCode('SIGTERM')).toBe(143)
 })

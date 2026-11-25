@@ -1,140 +1,55 @@
-import path from 'node:path'
 import type { GraphNode } from './types'
 
 export interface NodeChain {
-	app: GraphNode // top-level group (web, api, contracts, ...)
+	app: GraphNode // top-level group: a workspace package or a root folder
 	feature: GraphNode // module inside the group (auth, shared, db, ...)
 	file: GraphNode // the individual file
 }
 
-interface FileDescriptor {
-	groupId: string // top-level group id, e.g. "web" or "packages/client-features"
-	groupLabel: string // display label for the group
-	featureName: string // module name within the group
-	fileSubPath: string // path from the feature root, extension stripped
-}
+const ROOT_GROUP = '(root)'
+// Folders whose children are the real modules, e.g. src/features/<module>/.
+const MODULE_CONTAINERS = new Set(['features', 'feature'])
 
 function stripExt(p: string): string {
 	return p.replace(/\.[^./]+$/, '')
 }
 
-function grp(
-	groupId: string,
-	groupLabel: string,
-	featureName: string,
-	fileRel: string,
-): FileDescriptor {
-	return { groupId, groupLabel, featureName, fileSubPath: stripExt(fileRel) }
-}
-
-// Ordered matchers — first match wins. Feature dirs must precede the generic
-// "any dir" rule, and specific files (root) come last.
-const MATCHERS: Array<{
-	re: RegExp
-	build: (m: RegExpMatchArray) => FileDescriptor
-}> = [
-	// web (FSD: apps/web/src/features/<name>/...)
-	{
-		re: /^apps\/web\/src\/features\/([^/]+)\/(.+)$/,
-		build: (m) => grp('web', 'web', m[1], m[2]),
-	},
-	{
-		re: /^apps\/web\/src\/([^/]+)\/(.+)$/,
-		build: (m) => grp('web', 'web', m[1], m[2]),
-	},
-	{
-		re: /^apps\/web\/src\/(.+)$/,
-		build: (m) => grp('web', 'web', '(root)', m[1]),
-	},
-	// api
-	{
-		re: /^apps\/api\/src\/features\/([^/]+)\/(.+)$/,
-		build: (m) => grp('api', 'api', m[1], m[2]),
-	},
-	{
-		re: /^apps\/api\/src\/([^/]+)\/(.+)$/,
-		build: (m) => grp('api', 'api', m[1], m[2]),
-	},
-	{
-		re: /^apps\/api\/src\/(.+)$/,
-		build: (m) => grp('api', 'api', '(root)', m[1]),
-	},
-	// extension
-	{
-		re: /^apps\/extensions\/browser\/src\/features\/([^/]+)\/(.+)$/,
-		build: (m) => grp('extension', 'extension', m[1], m[2]),
-	},
-	{
-		re: /^apps\/extensions\/browser\/src\/([^/]+)\/(.+)$/,
-		build: (m) => grp('extension', 'extension', m[1], m[2]),
-	},
-	{
-		re: /^apps\/extensions\/browser\/src\/(.+)$/,
-		build: (m) => grp('extension', 'extension', '(root)', m[1]),
-	},
-	// mobile (no src/; uses singular "feature")
-	{
-		re: /^apps\/mobile\/feature\/([^/]+)\/(.+)$/,
-		build: (m) => grp('mobile', 'mobile', m[1], m[2]),
-	},
-	{
-		re: /^apps\/mobile\/([^/]+)\/(.+)$/,
-		build: (m) => grp('mobile', 'mobile', m[1], m[2]),
-	},
-	// packages/contracts (before the generic packages matchers)
-	{
-		re: /^packages\/contracts\/src\/features\/([^/]+)\/(.+)$/,
-		build: (m) => grp('contracts', 'contracts', m[1], m[2]),
-	},
-	{
-		re: /^packages\/contracts\/src\/([^/]+)\/(.+)$/,
-		build: (m) => grp('contracts', 'contracts', m[1], m[2]),
-	},
-	{
-		re: /^packages\/contracts\/src\/(.+)$/,
-		build: (m) => grp('contracts', 'contracts', '(root)', m[1]),
-	},
-	// packages/<pkg> — each package is its own top-level group
-	{
-		re: /^packages\/([^/]+)\/src\/([^/]+)\/(.+)$/,
-		build: (m) => grp(`packages/${m[1]}`, m[1], m[2], m[3]),
-	},
-	{
-		re: /^packages\/([^/]+)\/src\/(.+)$/,
-		build: (m) => grp(`packages/${m[1]}`, m[1], '(root)', m[2]),
-	},
-]
-
-function describe(rel: string): FileDescriptor | null {
-	for (const { re, build } of MATCHERS) {
-		const m = rel.match(re)
-		if (m) return build(m)
+// The group is the deepest workspace (folder with a package.json) holding the
+// file; files outside every workspace are grouped by their top-level folder.
+function findGroup(rel: string, workspaces: string[]): string {
+	let best = ''
+	for (const ws of workspaces) {
+		if (rel.startsWith(`${ws}/`) && ws.length > best.length) best = ws
 	}
-	return null
+	if (best) return best
+	const slash = rel.indexOf('/')
+	return slash === -1 ? ROOT_GROUP : rel.slice(0, slash)
 }
 
-// Returns the app → feature → file node chain for a file, or null if the file
-// falls outside any tracked workspace group.
-export function chainForFile(filePath: string, root: string): NodeChain | null {
-	const rel = path.relative(root, filePath).replace(/\\/g, '/')
-	const d = describe(rel)
-	if (!d) return null
+// Returns the group → module → file chain for a repo-relative file path.
+export function chainForFile(rel: string, workspaces: string[]): NodeChain {
+	const group = findGroup(rel, workspaces)
+	const inGroup = group === ROOT_GROUP ? rel : rel.slice(group.length + 1)
 
-	const featureId = `${d.groupId}/${d.featureName}`
+	const parts = inGroup.replace(/^src\//, '').split('/')
+	if (parts.length > 2 && MODULE_CONTAINERS.has(parts[0])) parts.shift()
+	const feature = parts.length > 1 ? (parts.shift() as string) : ROOT_GROUP
+	const fileSubPath = stripExt(parts.join('/'))
 
+	const featureId = `${group}::${feature}`
 	return {
-		app: { id: d.groupId, label: d.groupLabel, app: d.groupId, type: 'app' },
+		app: { id: group, label: group, app: group, type: 'app' },
 		feature: {
 			id: featureId,
-			label: d.featureName,
-			app: d.groupId,
+			label: feature,
+			app: group,
 			type: 'feature',
-			parent: d.groupId,
+			parent: group,
 		},
 		file: {
-			id: `${featureId}/${d.fileSubPath}`,
-			label: d.fileSubPath,
-			app: d.groupId,
+			id: `${featureId}::${fileSubPath}`,
+			label: fileSubPath,
+			app: group,
 			type: 'file',
 			parent: featureId,
 		},

@@ -46,3 +46,6 @@ apps/english-quiz/design
 
 # personal to-do list, kept local
 /TODO.md
+
+# dashboard screenshots from `bun run observability:test`
+/observability-test-results/
