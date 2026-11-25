@@ -74,7 +74,9 @@ integration, and the web build. Keep the runner aligned when CI changes.
 
 The runner checks committed `HEAD`, not the working tree: it refuses to start
 while there are uncommitted or untracked changes, then creates a temporary
-`git worktree` in the system temp directory (`my-time-ci-worktree`), runs
+`git worktree` in `~/.local/state/my-time-ci/my-time-ci-worktree` (not `/tmp`,
+which Docker Desktop cannot bind-mount, and not `~/.cache`, where Biome skips
+nested `.gitignore`/`package.json` files), runs
 `bun install --frozen-lockfile` there and runs every step in it, so local `.env`
 files, ignored build output and stale `node_modules` cannot make it pass. The
 worktree is removed after a pass or an interrupt; after a failure it is kept for
@@ -237,7 +239,7 @@ Always use **`date-fns`** (installed in both `apps/api` and `apps/web`) for any 
 
 ### Logging
 
-The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` ships every container's logs into **Loki** via **Grafana Alloy**, viewable/searchable in **Grafana** (`http://<host>:3001`) — all self-hosted and free. Configs live in `observability/`. Dashboards are provisioned from `observability/grafana/provisioning/dashboards/*.json` (read-only in the UI), so edit the JSON and keep its queries in sync with the http-logger fields and logged messages.
+The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` runs the observability stack: **Grafana Alloy** ships every container's logs to **Loki** and scrapes metrics (api `:9464`, host, containers, Postgres, public-URL probes) into **Prometheus**; **Grafana** shows dashboards and sends alerts to Telegram — all self-hosted and free. Configs live in `observability/` and are baked into the images (no config bind-mounts). Grafana is provisioned from files only (datasource uids `loki`/`prometheus`, dashboards, alert rules), so edit the repo, not the UI. `docs/observability.md` is the contract for log messages, fields, metric names and labels: change it together with the code, dashboards and alert rules that use them. Validate configs with `bun run check:observability`; run the stack locally with `bun run observability:up` (Grafana on http://localhost:3001).
 
 ### @my-time/contracts — the API contract layer
 

@@ -7,6 +7,7 @@ type Listener = Awaited<ReturnType<typeof client.listen>>
 export function createUserChangeListener(channel: string) {
 	const subscribers = new Map<string, Set<() => void>>()
 	let listening: Promise<Listener> | undefined
+	let connections = 0
 	function notifyUser(userId: string): void {
 		for (const notify of subscribers.get(userId) ?? []) notify()
 	}
@@ -15,7 +16,12 @@ export function createUserChangeListener(channel: string) {
 			listening ??= client
 				.listen(channel, notifyUser, () => {
 					for (const userId of subscribers.keys()) notifyUser(userId)
-					logger.info({ channel }, 'User notification listener connected')
+					const reconnect = connections++ > 0
+					// A reconnect means the DB connection dropped; changes may have been missed.
+					logger[reconnect ? 'warn' : 'info'](
+						{ channel, reconnect },
+						'User notification listener connected',
+					)
 				})
 				.catch((error) => {
 					listening = undefined

@@ -1,4 +1,5 @@
 export * from './auth'
+export * from './client-errors'
 export * from './english-quiz'
 export * from './permesso'
 export * from './releases'

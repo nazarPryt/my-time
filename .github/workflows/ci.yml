@@ -272,4 +272,10 @@ jobs:
       FRONTEND_WEB_URL: http://localhost:5173
     steps:
       - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      # Alloy/Loki/Prometheus/nginx configs and Grafana alert queries, checked
+      # by the same images that run them (scripts/check-observability.ts).
+      - run: bun run check:observability
       - run: docker compose -f docker-compose.prod.yml build

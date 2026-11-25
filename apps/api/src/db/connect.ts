@@ -38,3 +38,27 @@ export async function connectToDatabase() {
 		process.exit(1)
 	}
 }
+
+const HEALTH_TIMEOUT_MS = 2000
+
+/** Liveness of the DB for /health; a hung query counts as down. */
+export async function checkDatabaseHealth(): Promise<boolean> {
+	let timer: ReturnType<typeof setTimeout> | undefined
+	try {
+		await Promise.race([
+			db.execute(sql`select 1`),
+			new Promise((_, reject) => {
+				timer = setTimeout(
+					() => reject(new Error('database health check timed out')),
+					HEALTH_TIMEOUT_MS,
+				)
+			}),
+		])
+		return true
+	} catch (error) {
+		logger.error({ err: error }, 'health check failed')
+		return false
+	} finally {
+		clearTimeout(timer)
+	}
+}

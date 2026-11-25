@@ -109,6 +109,7 @@ export function buildSteps({
 		]),
 		inTree('Build web', ['bun', '--filter', 'web', 'build']),
 		inTree('Build english-quiz', ['bun', '--filter', 'english-quiz', 'build']),
+		inTree('Check observability config', ['bun', 'run', 'check:observability']),
 		inTree('Build Docker images', [
 			'env',
 			'FRONTEND_WEB_URL=http://localhost:5173',

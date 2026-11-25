@@ -1,0 +1,622 @@
+apiVersion: 1
+
+# Overview and runbooks: docs/observability.md (Alerts). noDataState is
+# Alerting only where a missing series itself means an outage.
+groups:
+  - orgId: 1
+    name: api
+    folder: my-time alerts
+    interval: 1m
+    rules:
+      - uid: my-time-api-down
+        title: 'API down'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'max(up{job="api"})'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: Alerting
+        execErrState: Error
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'The API metrics endpoint is not answering.'
+          description: 'Prometheus has not scraped api:9464 successfully for 2 minutes (or the target is gone).'
+          runbook: 'docker compose -f docker-compose.prod.yml ps api; check API logs for fatal / uncaught exception around the alert time.'
+        isPaused: false
+      - uid: my-time-api-5xx-ratio
+        title: 'API high 5xx ratio'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum(rate(http_requests_total{job="api",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="api"}[5m])) and on() sum(increase(http_requests_total{job="api",status=~"5.."}[5m])) >= 3 and on() sum(increase(http_requests_total{job="api"}[5m])) >= 20'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.05] }
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'More than 5% of API requests fail with 5xx.'
+          description: '5xx ratio over the last 5 minutes: {{ with $values.A }}{{ humanizePercentage .Value }}{{ end }} (needs at least 20 requests and 3 errors).'
+          runbook: 'Logs explorer: {service="api", level="error"} |= "request failed"; group by route.'
+        isPaused: false
+      - uid: my-time-api-slow
+        title: 'API slow (p95 > 1s)'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job="api"}[5m]))) and on() sum(increase(http_request_duration_seconds_count{job="api"}[5m])) >= 20'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [1] }
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'API p95 latency is above 1 second.'
+          description: 'p95 over the last 5 minutes: {{ with $values.A }}{{ humanize .Value }}{{ end }}s (SSE streams excluded).'
+          runbook: 'API overview dashboard, slow routes panel; check Postgres slow queries: {service="db"} |= "duration:".'
+        isPaused: false
+      - uid: my-time-api-crash-loop
+        title: 'API crash loop'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'changes(process_start_time_seconds{job="api"}[30m])'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [2] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'The API restarted more than twice in 30 minutes.'
+          description: 'Restarts in the last 30 minutes: {{ with $values.A }}{{ humanize .Value }}{{ end }}.'
+          runbook: 'Look for {service="api", level="fatal"} and the line before each "server is up and running".'
+        isPaused: false
+      - uid: my-time-api-fatal-log
+        title: 'API fatal log'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              expr: 'sum(count_over_time({service="api", level="fatal"}[5m]))'
+              queryType: instant
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'The API logged a fatal error.'
+          description: 'Fatal lines in the last 5 minutes: {{ with $values.A }}{{ humanize .Value }}{{ end }}.'
+          runbook: 'Logs explorer: {service="api", level="fatal"}.'
+        isPaused: false
+      - uid: my-time-api-error-burst
+        title: 'API error log burst'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              expr: 'sum(count_over_time({service="api", level="error"}[10m]))'
+              queryType: instant
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [10] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'The API logged more than 10 errors in 10 minutes.'
+          description: 'Error lines in the last 10 minutes: {{ with $values.A }}{{ humanize .Value }}{{ end }}.'
+          runbook: 'Logs explorer: {service="api", level="error"} | json; group by msg.'
+        isPaused: false
+      - uid: my-time-client-error-spike
+        title: 'Client error spike'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 900, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum(increase(client_errors_total[15m]))'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [20] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Browsers/extension reported more than 20 errors in 15 minutes.'
+          description: 'Client errors in the last 15 minutes: {{ with $values.A }}{{ humanize .Value }}{{ end }} — often a broken release.'
+          runbook: 'Logs explorer: {service="api"} |= "client error reported" | json; group by message and appVersion.'
+        isPaused: false
+  - orgId: 1
+    name: jobs
+    folder: my-time alerts
+    interval: 1m
+    rules:
+      - uid: my-time-job-failed
+        title: 'Scheduled job failed'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 3600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum by (job) (increase(job_runs_total{result="failure"}[1h]))'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Job {{ $labels.job }} failed in the last hour.'
+          description: 'Failed runs in the last hour: {{ with $values.A }}{{ humanize .Value }}{{ end }}.'
+          runbook: 'Logs explorer: {service="api"} |= "job failed" | json | job="{{ $labels.job }}".'
+        isPaused: false
+      - uid: my-time-job-stale-permesso
+        title: 'Permesso scheduled checks stale'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'time() - max(job_last_success_timestamp_seconds{job="permesso.scheduled-checks"})'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [7200] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'permesso.scheduled-checks has not succeeded for over 2 hours.'
+          description: 'Last success: {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} ago (runs hourly).'
+          runbook: 'Logs explorer: {service="api"} | json | job="permesso.scheduled-checks".'
+        isPaused: false
+      - uid: my-time-job-stale-token-purge
+        title: 'Refresh-token purge stale'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'time() - max(job_last_success_timestamp_seconds{job="auth.purge-expired-refresh-tokens"})'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [691200] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'auth.purge-expired-refresh-tokens has not succeeded for over 8 days.'
+          description: 'Last success: {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} ago (runs weekly, Sunday 03:00).'
+          runbook: 'Logs explorer: {service="api"} | json | job="auth.purge-expired-refresh-tokens".'
+        isPaused: false
+      - uid: my-time-permesso-checks-failing
+        title: 'Permesso checks failing'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 21600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum(increase(permesso_checks_total{result="failure"}[6h])) / sum(increase(permesso_checks_total[6h])) and on() sum(increase(permesso_checks_total[6h])) >= 4'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.5] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'More than half of permesso checks failed in the last 6 hours.'
+          description: 'Failure ratio: {{ with $values.A }}{{ humanizePercentage .Value }}{{ end }} (needs at least 4 checks).'
+          runbook: 'The portal probably changed its HTML: {service="api"} |= "permesso check failed" | json (error, screenshotPath in the permesso-screenshots volume).'
+        isPaused: false
+  - orgId: 1
+    name: infrastructure
+    folder: my-time alerts
+    interval: 1m
+    rules:
+      - uid: my-time-postgres-down
+        title: 'Postgres down'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'max(pg_up)'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: Alerting
+        execErrState: Error
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Postgres is not reachable.'
+          description: 'The postgres exporter cannot connect to db (or reports nothing) for 2 minutes.'
+          runbook: 'docker compose -f docker-compose.prod.yml ps db; logs: {service="db"}.'
+        isPaused: false
+      - uid: my-time-postgres-connections
+        title: 'Postgres connections high'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'sum(pg_stat_activity_count) / max(pg_settings_max_connections)'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.8] }
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Postgres uses more than 80% of max_connections.'
+          description: 'Connections in use: {{ with $values.A }}{{ humanizePercentage .Value }}{{ end }}.'
+          runbook: 'Look for connection leaks or a stuck job; SELECT * FROM pg_stat_activity.'
+        isPaused: false
+      - uid: my-time-host-disk
+        title: 'Host disk almost full'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'min(node_filesystem_avail_bytes{job="node",mountpoint="/"} / node_filesystem_size_bytes{job="node",mountpoint="/"})'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [0.15] }
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Less than 15% free on the VPS root filesystem.'
+          description: 'Free: {{ with $values.A }}{{ humanizePercentage .Value }}{{ end }}.'
+          runbook: 'docker system df; check loki-data / prometheus-data volume sizes; bun run docker:prune.'
+        isPaused: false
+      - uid: my-time-host-memory
+        title: 'Host memory low'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"}'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [0.1] }
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Less than 10% memory available on the VPS.'
+          description: 'Available: {{ with $values.A }}{{ humanizePercentage .Value }}{{ end }}.'
+          runbook: 'Infrastructure dashboard, container memory panel: find the container that grew.'
+        isPaused: false
+      - uid: my-time-host-cpu
+        title: 'Host CPU saturated'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: '1 - avg(rate(node_cpu_seconds_total{job="node",mode="idle"}[5m]))'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.9] }
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'VPS CPU above 90% for 15 minutes.'
+          description: 'CPU busy: {{ with $values.A }}{{ humanizePercentage .Value }}{{ end }}.'
+          runbook: 'Infrastructure dashboard, container CPU panel (permesso checks run Chromium).'
+        isPaused: false
+      - uid: my-time-endpoint-down
+        title: 'Public endpoint down'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'probe_success{job="blackbox"}'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: '{{ $labels.target }} is not reachable from the internet ({{ $labels.instance }}).'
+          description: 'The blackbox probe has failed for 3 minutes.'
+          runbook: 'Check the reverse proxy / Coolify, TLS and the container behind it.'
+        isPaused: false
+      - uid: my-time-tls-expiry
+        title: 'TLS certificate expires soon'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: '(min by (target, instance) (probe_ssl_earliest_cert_expiry{job="blackbox"}) - time()) / 86400'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [14] }
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: 'The TLS certificate of {{ $labels.target }} expires in less than 14 days.'
+          description: 'Days left: {{ with $values.A }}{{ humanize .Value }}{{ end }}.'
+          runbook: 'The reverse proxy renews certificates automatically; check its logs for ACME errors.'
+        isPaused: false
+  - orgId: 1
+    name: observability
+    folder: my-time alerts
+    interval: 1m
+    rules:
+      - uid: my-time-alloy-down
+        title: 'Log/metric pipeline: Alloy down'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 'max(up{job="alloy"})'
+              instant: true
+              range: false
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: Alerting
+        execErrState: Error
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Alloy is not shipping metrics (and probably logs).'
+          description: 'No fresh Alloy self-metrics for 5 minutes. Every other metric alert is blind until it is back.'
+          runbook: 'docker compose -f docker-compose.prod.yml ps alloy; docker compose logs alloy.'
+        isPaused: false
+      - uid: my-time-no-logs
+        title: 'Log pipeline: no logs received'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 900, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              expr: 'sum(count_over_time({service=~".+"}[15m]))'
+              queryType: instant
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        noDataState: Alerting
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Loki received no log lines for 15 minutes.'
+          description: 'Either Alloy cannot read the Docker socket or cannot push to Loki.'
+          runbook: 'docker compose logs alloy loki; check Loki disk space.'
+        isPaused: false

@@ -1,0 +1,1329 @@
+{
+	"uid": "my-time-jobs",
+	"title": "Jobs & integrations",
+	"description": "Did the cron jobs run? Permesso checks, Telegram notifications, SSE connections and Postgres LISTEN reconnects.",
+	"tags": ["my-time", "api", "jobs"],
+	"timezone": "browser",
+	"schemaVersion": 40,
+	"version": 1,
+	"editable": true,
+	"graphTooltip": 1,
+	"liveNow": false,
+	"refresh": "1m",
+	"time": {
+		"from": "now-24h",
+		"to": "now"
+	},
+	"timepicker": {},
+	"fiscalYearStartMonth": 0,
+	"links": [
+		{
+			"title": "my-time dashboards",
+			"type": "dashboards",
+			"tags": ["my-time"],
+			"asDropdown": true,
+			"includeVars": false,
+			"keepTime": true,
+			"targetBlank": false,
+			"icon": "external link",
+			"tooltip": "",
+			"url": ""
+		}
+	],
+	"templating": {
+		"list": []
+	},
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": {
+					"type": "grafana",
+					"uid": "-- Grafana --"
+				},
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"type": "dashboard"
+			},
+			{
+				"name": "Deploys",
+				"datasource": {
+					"type": "loki",
+					"uid": "loki"
+				},
+				"enable": true,
+				"iconColor": "purple",
+				"expr": "{service=\"api\"} |= \"server is up and running\" | json",
+				"target": {
+					"refId": "Anno",
+					"expr": "{service=\"api\"} |= \"server is up and running\" | json"
+				},
+				"titleFormat": "Deploy",
+				"textFormat": "API started, version {{version}}",
+				"tagKeys": "version",
+				"instant": false
+			}
+		]
+	},
+	"panels": [
+		{
+			"type": "row",
+			"title": "Scheduled jobs",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 1
+			},
+			"id": 1
+		},
+		{
+			"type": "stat",
+			"title": "Time since last success",
+			"description": "How long ago each background job last finished successfully. Right after an API restart this resets to the restart time, so it never looks stale only because of a deploy. permesso.scheduled-checks runs hourly: amber after 2 h, red after 3 h. auth.purge-expired-refresh-tokens runs weekly (Sunday 03:00): amber after 7.5 days, red after 8 days.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "time() - max by (task) (label_replace(label_replace(job_last_success_timestamp_seconds, \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"legendFormat": "{{task}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "dtdurations",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 7200
+							},
+							{
+								"color": "red",
+								"value": 10800
+							}
+						]
+					},
+					"mappings": [],
+					"noValue": "no data yet"
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "auth.purge-expired-refresh-tokens"
+						},
+						"properties": [
+							{
+								"id": "thresholds",
+								"value": {
+									"mode": "absolute",
+									"steps": [
+										{
+											"color": "green",
+											"value": null
+										},
+										{
+											"color": "#EAB839",
+											"value": 648000
+										},
+										{
+											"color": "red",
+											"value": 691200
+										}
+									]
+								}
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 1,
+				"w": 12,
+				"h": 5
+			},
+			"id": 2
+		},
+		{
+			"type": "stat",
+			"title": "Job failures",
+			"description": "Failed runs per job in the selected range. Good: 0. Find the reason in 'Job log' below (look for 'job failed').",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (task) (label_replace(label_replace(increase(job_runs_total{result=\"failure\"}[$__range]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"legendFormat": "{{task}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "red",
+								"value": 1
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0,
+					"noValue": "0"
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 1,
+				"w": 6,
+				"h": 5
+			},
+			"id": 3
+		},
+		{
+			"type": "stat",
+			"title": "Job runs",
+			"description": "Total runs (success + failure) per job in the selected range. In 24 h expect about 24 permesso.scheduled-checks runs; 0 means the scheduler is not running.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (task) (label_replace(label_replace(increase(job_runs_total[$__range]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"legendFormat": "{{task}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0,
+					"noValue": "0"
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 18,
+				"y": 1,
+				"w": 6,
+				"h": 5
+			},
+			"id": 4
+		},
+		{
+			"type": "timeseries",
+			"title": "Job runs by result",
+			"description": "Runs per job and result in each time bucket. Red bars are failures.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (task, result) (label_replace(label_replace(increase(job_runs_total[$__interval]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"legendFormat": "{{task}} {{result}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "bars",
+						"lineWidth": 1,
+						"fillOpacity": 70,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "linear",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byRegexp",
+							"options": ".*failure"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "red"
+								}
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"interval": "1h",
+			"gridPos": {
+				"x": 0,
+				"y": 6,
+				"w": 8,
+				"h": 8
+			},
+			"id": 5
+		},
+		{
+			"type": "timeseries",
+			"title": "Job duration (avg)",
+			"description": "Average run time per job over the last hour. A job that slowly gets longer usually means it processes more data or an external site (the permesso portal) is slow.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (task) (label_replace(label_replace(increase(job_duration_seconds_sum[1h]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\")) / sum by (task) (label_replace(label_replace(increase(job_duration_seconds_count[1h]), \"task\", \"$1\", \"job\", \"(.*)\"), \"task\", \"$1\", \"exported_job\", \"(.+)\"))",
+					"legendFormat": "{{task}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 6,
+				"w": 8,
+				"h": 8
+			},
+			"id": 6
+		},
+		{
+			"type": "logs",
+			"title": "Job log",
+			"description": "'job finished' (with the job's summary) and 'job failed' (with the error) lines, newest first.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\"} |~ \"job (finished|failed)\" | json | msg=~\"job (finished|failed)\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 16,
+				"y": 6,
+				"w": 8,
+				"h": 8
+			},
+			"id": 7
+		},
+		{
+			"type": "row",
+			"title": "Permesso checks",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 14,
+				"w": 24,
+				"h": 1
+			},
+			"id": 8
+		},
+		{
+			"type": "timeseries",
+			"title": "Permesso checks by trigger and result",
+			"description": "Permit-portal checks per hour. scheduled = the hourly job, manual = a user pressed 'check now'. Failures usually mean the portal is down or changed its HTML.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (trigger, result) (increase(permesso_checks_total[$__interval]))",
+					"legendFormat": "{{trigger}} {{result}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "bars",
+						"lineWidth": 1,
+						"fillOpacity": 70,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "linear",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byRegexp",
+							"options": ".*failure"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "red"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byRegexp",
+							"options": ".*success"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "green"
+								}
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"interval": "1h",
+			"gridPos": {
+				"x": 0,
+				"y": 15,
+				"w": 8,
+				"h": 8
+			},
+			"id": 9
+		},
+		{
+			"type": "stat",
+			"title": "Permesso failure ratio",
+			"description": "Share of permesso checks that failed in the selected range. Amber above 10%, red above 50% (the portal is probably down or changed).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "((sum(increase(permesso_checks_total{result=\"failure\"}[$__range])) or vector(0)) / (sum(increase(permesso_checks_total[$__range])) > 0)) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percentunit",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 0.1
+							},
+							{
+								"color": "red",
+								"value": 0.5
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 1
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 15,
+				"w": 4,
+				"h": 8
+			},
+			"id": 10
+		},
+		{
+			"type": "logs",
+			"title": "Permesso check failed",
+			"description": "Failed checks: trigger, user, the error and how long the check took. Expand a line for screenshotPath (saved in the api container's screenshots volume).",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\"} |= \"permesso check failed\" | json | line_format \"{{.trigger}} · user {{.userId}} · {{.error}} ({{.durationMs}} ms)\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 15,
+				"w": 12,
+				"h": 8
+			},
+			"id": 11
+		},
+		{
+			"type": "row",
+			"title": "Telegram",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 23,
+				"w": 24,
+				"h": 1
+			},
+			"id": 12
+		},
+		{
+			"type": "timeseries",
+			"title": "Telegram messages by result",
+			"description": "Notifications sent to users through the Telegram bot. sent = delivered, blocked = the user blocked the bot (we disconnect them, harmless), failed = Telegram API error (look at the log panel).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (result) (increase(telegram_messages_total[$__interval]))",
+					"legendFormat": "{{result}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "bars",
+						"lineWidth": 1,
+						"fillOpacity": 70,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "linear",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "sent"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "green"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "blocked"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "#EAB839"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "failed"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "red"
+								}
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"interval": "1h",
+			"gridPos": {
+				"x": 0,
+				"y": 24,
+				"w": 12,
+				"h": 8
+			},
+			"id": 13
+		},
+		{
+			"type": "logs",
+			"title": "Telegram errors and warnings",
+			"description": "Warnings and errors that mention Telegram: transport (webhook/polling) problems, failed sends and blocked chats.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\", level=~\"warn|error|fatal\"} |~ \"(?i)telegram\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 24,
+				"w": 12,
+				"h": 8
+			},
+			"id": 14
+		},
+		{
+			"type": "row",
+			"title": "Live connections (SSE) and LISTEN",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 32,
+				"w": 24,
+				"h": 1
+			},
+			"id": 15
+		},
+		{
+			"type": "timeseries",
+			"title": "Open SSE streams",
+			"description": "Server-sent-event streams open right now. session = a web/desktop client following the timer, telegram-link = someone linking Telegram. Roughly the number of open app tabs; a sudden drop to 0 for everyone means clients got disconnected.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (stream) (sse_connections{job=\"api\"})",
+					"legendFormat": "{{stream}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 33,
+				"w": 8,
+				"h": 8
+			},
+			"id": 16
+		},
+		{
+			"type": "timeseries",
+			"title": "SSE stream opens",
+			"description": "New SSE streams per minute. Clients reconnect after network blips; a steady high rate with a flat 'open' count means clients keep reconnecting (proxy timeouts or crashes).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (stream) (rate(sse_connections_opened_total{job=\"api\"}[$__rate_interval])) * 60",
+					"legendFormat": "{{stream}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "opm",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 33,
+				"w": 8,
+				"h": 8
+			},
+			"id": 17
+		},
+		{
+			"type": "stat",
+			"title": "LISTEN reconnects",
+			"description": "Times the API's Postgres LISTEN connection (used to push notifications to SSE clients) had to reconnect in the selected range. Good: 0. A few after DB restarts are fine; many mean the DB connection is unstable.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "sum(count_over_time({service=\"api\"} |= \"User notification listener connected\" | json | __error__=\"\" | reconnect=\"true\" [$__range])) or vector(0)",
+					"editorMode": "code",
+					"queryType": "instant"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 1
+							},
+							{
+								"color": "red",
+								"value": 5
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 16,
+				"y": 33,
+				"w": 4,
+				"h": 8
+			},
+			"id": 18
+		},
+		{
+			"type": "stat",
+			"title": "Session stream failures",
+			"description": "'Session stream failed' errors in the selected range: an SSE stream crashed on the server. Good: 0.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "sum(count_over_time({service=\"api\", level=~\"error|fatal\"} |= \"Session stream failed\" [$__range])) or vector(0)",
+					"editorMode": "code",
+					"queryType": "instant"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 1
+							},
+							{
+								"color": "red",
+								"value": 5
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 20,
+				"y": 33,
+				"w": 4,
+				"h": 8
+			},
+			"id": 19
+		},
+		{
+			"type": "logs",
+			"title": "LISTEN connection log",
+			"description": "Every time the notification listener (re)connects to Postgres. reconnect=true lines are logged at warn after a dropped connection.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\"} |= \"User notification listener connected\" | json | line_format \"{{if eq .reconnect \\\"true\\\"}}RECONNECT{{else}}connect{{end}} · channel {{.channel}}\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 41,
+				"w": 12,
+				"h": 8
+			},
+			"id": 20
+		},
+		{
+			"type": "logs",
+			"title": "SSE errors",
+			"description": "Errors from SSE streams ('Session stream failed') with the user id and error.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\", level=~\"error|fatal\"} |= \"Session stream failed\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 41,
+				"w": 12,
+				"h": 8
+			},
+			"id": 21
+		}
+	]
+}

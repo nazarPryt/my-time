@@ -46,13 +46,15 @@ export function createConfig(
 	processEnv: Env = process.env,
 ): CiConfig {
 	const cacheDir = processEnv.XDG_CACHE_HOME ?? resolve(homedir(), '.cache')
+	const stateDir =
+		processEnv.XDG_STATE_HOME ?? resolve(homedir(), '.local/state')
 	// A dry run gets its own folders so it never touches a real run's worktree or logs.
 	const prefix = options.dryRun ? 'my-time-ci-dry-run' : 'my-time-ci'
 	return {
 		...options,
 		root,
-		// Outside the repo so Biome, editors and `bun test` in the main tree never scan it.
-		worktree: resolve(tmpdir(), `${prefix}-worktree`),
+		// Not /tmp: Docker Desktop can't mount it. Not ~/.cache: Biome skips nested configs there.
+		worktree: resolve(stateDir, `my-time-ci/${prefix}-worktree`),
 		logDir: resolve(tmpdir(), `${prefix}-logs`),
 		timingsFile: resolve(cacheDir, 'my-time-ci/timings.json'),
 		env: {

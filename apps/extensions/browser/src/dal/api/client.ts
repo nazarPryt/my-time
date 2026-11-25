@@ -1,6 +1,7 @@
 // DAL — generic authenticated fetch with automatic 401/refresh retry.
 // Only this file is allowed to call fetch() directly.
 
+import type { ClientErrorReport } from '@my-time/contracts'
 import { getTokens, setTokens } from '@/dal/storage/token-repository'
 import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 
@@ -59,4 +60,25 @@ export async function publicPost<T>(
 	})
 	if (!res.ok) return { data: null, error: `HTTP ${res.status}` }
 	return { data: (await res.json()) as T, error: null }
+}
+
+/** Fire-and-forget error report; never refreshes tokens or throws. */
+export async function postClientError(
+	report: ClientErrorReport,
+): Promise<void> {
+	try {
+		const tokens = await getTokens()
+		await fetch(`${API_BASE}/client-errors/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				...(tokens?.accessToken
+					? { Authorization: `Bearer ${tokens.accessToken}` }
+					: {}),
+			},
+			body: JSON.stringify(report),
+		})
+	} catch {
+		// Reporting must never surface its own failure.
+	}
 }

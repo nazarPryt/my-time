@@ -4,6 +4,8 @@ import {
 	UpdateCheckHoursRequestSchema,
 } from '@my-time/contracts'
 import { authMacro } from '@shared/auth-macro'
+import { logger } from '@shared/logger'
+import { trackSseStream } from '@shared/metrics'
 import { Elysia, sse } from 'elysia'
 import { PERMESSO_ERROR_MESSAGES, PERMESSO_FAILURE_REASONS } from './constants'
 import { permessoService } from './service'
@@ -69,13 +71,28 @@ export const permessoPlugin = new Elysia({ prefix: PERMESSO_ROUTES.prefix })
 				return outcome.link
 			})
 			.get(PERMESSO_ROUTES.telegramLinkEvents, async function* ({ userId }) {
-				for await (const evt of permessoService.streamTelegramLinkEvents(
-					userId,
-				)) {
-					yield sse({
-						event: evt.event,
-						data: evt.event === 'ping' ? 'waiting' : 'ok',
-					})
+				const openedAt = performance.now()
+				const untrack = trackSseStream('telegram-link')
+				logger.info({ stream: 'telegram-link', userId }, 'sse stream opened')
+				try {
+					for await (const evt of permessoService.streamTelegramLinkEvents(
+						userId,
+					)) {
+						yield sse({
+							event: evt.event,
+							data: evt.event === 'ping' ? 'waiting' : 'ok',
+						})
+					}
+				} finally {
+					untrack()
+					logger.info(
+						{
+							stream: 'telegram-link',
+							userId,
+							durationMs: Math.round(performance.now() - openedAt),
+						},
+						'sse stream closed',
+					)
 				}
 			})
 			.post(PERMESSO_ROUTES.telegramDisconnect, async ({ userId }) => {
