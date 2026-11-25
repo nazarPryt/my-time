@@ -1,6 +1,8 @@
-// Ships every container's Docker logs to Loki. Replaces Promtail (end of
-// life since March 2026); labels match what it produced, so existing
-// Grafana queries keep working.
+// Alloy is the only collector: it ships every container's Docker logs to
+// Loki and scrapes/exports every metric into Prometheus. Field and label
+// names here are part of the contract in docs/observability.md.
+
+// ---------------------------------------------------------------- logs ---
 
 // Auto-discovers every container on this host via the Docker socket, so new
 // services are picked up without listing them here.
@@ -43,7 +45,6 @@ loki.process "containers" {
 	stage.json {
 		expressions = {
 			level = "level",
-			msg   = "msg",
 		}
 	}
 
@@ -57,5 +58,258 @@ loki.process "containers" {
 loki.write "default" {
 	endpoint {
 		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+// ------------------------------------------------------------- metrics ---
+
+// Every scrape below uses 30s: keeps 30 days small on the VPS; alerts use >= 5m windows.
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://prometheus:9090/api/v1/write"
+	}
+}
+
+// API: prom-client on a separate internal-only port (overridden by the local dev stack).
+prometheus.scrape "api" {
+	targets         = [{"__address__" = coalesce(sys.env("API_METRICS_TARGET"), "api:9464")}]
+	job_name        = "api"
+	scrape_interval = "30s"
+	// Keeps the app's own `job` label (cron job name) instead of exported_job.
+	honor_labels = true
+	forward_to   = [prometheus.remote_write.default.receiver]
+}
+
+// Host: /proc, /sys and / of the host are mounted read-only under /host.
+prometheus.exporter.unix "node" {
+	procfs_path = "/host/proc"
+	sysfs_path  = "/host/sys"
+	rootfs_path = "/host/root"
+
+	disable_collectors = ["arp", "bcache", "bonding", "btrfs", "edac", "fibrechannel", "hwmon", "infiniband", "ipvs", "mdadm", "nfs", "nfsd", "powersupplyclass", "rapl", "tapestats", "thermal_zone", "xfs", "zfs"]
+
+	filesystem {
+		mount_points_exclude = "^/(dev|proc|run|sys|var/lib/docker|var/lib/containerd|snap)($|/)"
+		fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|fuse\\..*|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tmpfs|tracefs)$"
+	}
+
+	netclass {
+		ignored_devices = "^(veth.*|br-.*|docker.*|lo)$"
+	}
+
+	netdev {
+		device_exclude = "^(veth.*|br-.*|docker.*|lo)$"
+	}
+}
+
+discovery.relabel "node" {
+	targets = prometheus.exporter.unix.node.targets
+
+	rule {
+		target_label = "job"
+		replacement  = "node"
+	}
+
+	// Fixed: the container hostname changes on every redeploy.
+	rule {
+		target_label = "instance"
+		replacement  = "vps"
+	}
+}
+
+prometheus.scrape "node" {
+	targets         = discovery.relabel.node.output
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+// Containers: cAdvisor built into Alloy (cgroups via `cgroup: host`, metadata via
+// the Docker and containerd sockets).
+prometheus.exporter.cadvisor "containers" {
+	docker_host                  = "unix:///var/run/docker.sock"
+	docker_only                  = true
+	store_container_labels       = false
+	allowlisted_container_labels = ["com.docker.compose.service"]
+	// Per-disk/per-process/per-cpu detail we never chart; the rest is filtered below.
+	disabled_metrics = ["advtcp", "cpuLoad", "cpuset", "cpu_topology", "disk", "diskIO", "hugetlb", "memory_numa", "percpu", "perf_event", "process", "referenced_memory", "resctrl", "sched", "tcp", "udp"]
+}
+
+discovery.relabel "cadvisor" {
+	targets = prometheus.exporter.cadvisor.containers.targets
+
+	rule {
+		target_label = "job"
+		replacement  = "cadvisor"
+	}
+
+	// Fixed: the container hostname changes on every redeploy.
+	rule {
+		target_label = "instance"
+		replacement  = "vps"
+	}
+}
+
+prometheus.scrape "cadvisor" {
+	targets         = discovery.relabel.cadvisor.output
+	scrape_interval = "30s"
+	forward_to      = [prometheus.relabel.cadvisor.receiver]
+}
+
+prometheus.relabel "cadvisor" {
+	forward_to = [prometheus.remote_write.default.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "up|container_(cpu_usage_seconds_total|cpu_cfs_throttled_seconds_total|memory_working_set_bytes|memory_rss|spec_memory_limit_bytes|oom_events_total|network_receive_bytes_total|network_transmit_bytes_total|network_receive_errors_total|network_transmit_errors_total|start_time_seconds|last_seen)"
+		action        = "keep"
+	}
+
+	rule {
+		source_labels = ["container_label_com_docker_compose_service"]
+		target_label  = "service"
+	}
+
+	// Kernel tunnel devices show up in every container's netns with zeros.
+	rule {
+		source_labels = ["__name__", "interface"]
+		regex         = "container_network_.*;(erspan|gre|gretap|ip6gre|ip6tnl|ip_vti|ip6_vti|sit|tunl).*"
+		action        = "drop"
+	}
+
+	// Non-compose cgroups (the root, system slices) have no service: drop them.
+	rule {
+		source_labels = ["__name__", "service"]
+		regex         = "container_.*;"
+		action        = "drop"
+	}
+
+	rule {
+		source_labels = ["name"]
+		target_label  = "container"
+	}
+
+	// id/image change on every deploy and would multiply series.
+	rule {
+		regex  = "container_label_com_docker_compose_service|name|id|image"
+		action = "labeldrop"
+	}
+}
+
+// Postgres: DSN is assembled in docker-compose.prod.yml from the db credentials.
+prometheus.exporter.postgres "db" {
+	data_source_names = [sys.env("POSTGRES_EXPORTER_DSN")]
+}
+
+discovery.relabel "postgres" {
+	targets = prometheus.exporter.postgres.db.targets
+
+	rule {
+		target_label = "job"
+		replacement  = "postgres"
+	}
+
+	rule {
+		target_label = "instance"
+		replacement  = "db"
+	}
+}
+
+prometheus.scrape "postgres" {
+	targets         = discovery.relabel.postgres.output
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+// Public endpoints, probed through the internet like a user would.
+prometheus.exporter.blackbox "public" {
+	config = "{ modules: { http_2xx: { prober: http, timeout: 10s, http: { preferred_ip_protocol: ip4, follow_redirects: true } } } }"
+
+	target {
+		name    = "web"
+		address = sys.env("FRONTEND_WEB_URL")
+		module  = "http_2xx"
+	}
+
+	target {
+		name    = "api"
+		address = string.trim_suffix(sys.env("API_URL"), "/") + "/api/v1/health"
+		module  = "http_2xx"
+	}
+}
+
+discovery.relabel "blackbox" {
+	targets = prometheus.exporter.blackbox.public.targets
+
+	// The exporter names jobs integrations/blackbox/<target name>.
+	rule {
+		source_labels = ["job"]
+		regex         = "integrations/blackbox/(.*)"
+		target_label  = "target"
+	}
+
+	rule {
+		target_label = "job"
+		replacement  = "blackbox"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "instance"
+	}
+}
+
+prometheus.scrape "blackbox" {
+	targets         = discovery.relabel.blackbox.output
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+// Observability stack self-metrics.
+prometheus.exporter.self "alloy" { }
+
+discovery.relabel "alloy" {
+	targets = prometheus.exporter.self.alloy.targets
+
+	rule {
+		target_label = "job"
+		replacement  = "alloy"
+	}
+
+	rule {
+		target_label = "instance"
+		replacement  = "alloy"
+	}
+}
+
+prometheus.scrape "alloy" {
+	targets         = discovery.relabel.alloy.output
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.scrape "loki" {
+	targets         = [{"__address__" = "loki:3100"}]
+	job_name        = "loki"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.scrape "prometheus" {
+	targets         = [{"__address__" = "prometheus:9090"}]
+	job_name        = "prometheus"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.scrape "grafana" {
+	targets         = [{"__address__" = "grafana:3000"}]
+	job_name        = "grafana"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+
+	// Grafana's /metrics is reachable through its public domain, so it may be password-protected.
+	basic_auth {
+		username = "metrics"
+		password = sys.env("GRAFANA_METRICS_PASSWORD")
 	}
 }

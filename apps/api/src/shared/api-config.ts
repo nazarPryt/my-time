@@ -10,6 +10,8 @@ const EnvSchema = z.object({
 	DATABASE_URL: z.string().min(1),
 	HOST: z.string().default('0.0.0.0'),
 	PORT: z.coerce.number().default(3000),
+	// 0 disables the metrics server (tests run many API processes in parallel).
+	METRICS_PORT: z.coerce.number().int().min(0).default(9464),
 	LOG_LEVEL: z
 		.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
 		.default('info'),
@@ -49,6 +51,7 @@ export const API_CONFIG = {
 	NODE_ENV: env.NODE_ENV,
 	API_HOST: env.HOST,
 	API_PORT: env.PORT,
+	METRICS_PORT: env.METRICS_PORT,
 	LOG_LEVEL: env.LOG_LEVEL,
 	API_URL: new URL(env.API_URL).toString(),
 	FRONTEND_WEB_URL: env.FRONTEND_WEB_URL,

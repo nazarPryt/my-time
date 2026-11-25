@@ -1,0 +1,1376 @@
+{
+	"uid": "my-time-api-overview",
+	"title": "API overview",
+	"description": "Is the API healthy? Traffic, errors and latency from Prometheus, process health, and recent errors from Loki.",
+	"tags": ["my-time", "api"],
+	"timezone": "browser",
+	"schemaVersion": 40,
+	"version": 1,
+	"editable": true,
+	"graphTooltip": 1,
+	"liveNow": false,
+	"refresh": "1m",
+	"time": {
+		"from": "now-24h",
+		"to": "now"
+	},
+	"timepicker": {},
+	"fiscalYearStartMonth": 0,
+	"links": [
+		{
+			"title": "my-time dashboards",
+			"type": "dashboards",
+			"tags": ["my-time"],
+			"asDropdown": true,
+			"includeVars": false,
+			"keepTime": true,
+			"targetBlank": false,
+			"icon": "external link",
+			"tooltip": "",
+			"url": ""
+		}
+	],
+	"templating": {
+		"list": []
+	},
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": {
+					"type": "grafana",
+					"uid": "-- Grafana --"
+				},
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"type": "dashboard"
+			},
+			{
+				"name": "Deploys",
+				"datasource": {
+					"type": "loki",
+					"uid": "loki"
+				},
+				"enable": true,
+				"iconColor": "purple",
+				"expr": "{service=\"api\"} |= \"server is up and running\" | json",
+				"target": {
+					"refId": "Anno",
+					"expr": "{service=\"api\"} |= \"server is up and running\" | json"
+				},
+				"titleFormat": "Deploy",
+				"textFormat": "API started, version {{version}}",
+				"tagKeys": "version",
+				"instant": false
+			}
+		]
+	},
+	"panels": [
+		{
+			"type": "row",
+			"title": "Health at a glance",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 1
+			},
+			"id": 1
+		},
+		{
+			"type": "stat",
+			"title": "Request rate",
+			"description": "Requests per second the API is handling right now (every route except /health, SSE streams included). A sudden drop to 0 while users are active means the API or the proxy in front of it is down.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum(rate(http_requests_total{job=\"api\"}[$__rate_interval])) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "reqps",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 2
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "area",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 2
+		},
+		{
+			"type": "stat",
+			"title": "5xx ratio",
+			"description": "Share of requests in the selected time range that ended with a 5xx (server) error. Good: 0%. Amber above 1%, red above 5% — open 'Request failed' below to see why.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "((sum(increase(http_requests_total{job=\"api\",status=~\"5..\"}[$__range])) or vector(0)) / (sum(increase(http_requests_total{job=\"api\"}[$__range])) > 0)) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percentunit",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 0.01
+							},
+							{
+								"color": "red",
+								"value": 0.05
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 2
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 4,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 3
+		},
+		{
+			"type": "stat",
+			"title": "p95 latency",
+			"description": "95% of requests in the selected range answered faster than this (SSE streams excluded). Good: under 300 ms. Amber above 300 ms, red above 1 s.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[$__range])))",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 0.3
+							},
+							{
+								"color": "red",
+								"value": 1
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 3,
+					"noValue": "no traffic"
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 4
+		},
+		{
+			"type": "stat",
+			"title": "Error logs",
+			"description": "API log lines with level error or fatal in the selected range. Good: 0. Any value means something failed — see 'Recent warnings and errors' below.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "sum(count_over_time({service=\"api\", level=~\"error|fatal\"}[$__range])) or vector(0)",
+					"editorMode": "code",
+					"queryType": "instant"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 1
+							},
+							{
+								"color": "red",
+								"value": 10
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 5
+		},
+		{
+			"type": "stat",
+			"title": "API up",
+			"description": "Whether Prometheus can scrape the API's /metrics endpoint right now. DOWN means the api container is stopped, crashing or unreachable on the internal network.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "max(up{job=\"api\"}) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "red",
+								"value": null
+							},
+							{
+								"color": "green",
+								"value": 1
+							}
+						]
+					},
+					"mappings": [
+						{
+							"type": "value",
+							"options": {
+								"0": {
+									"text": "DOWN",
+									"color": "red",
+									"index": 0
+								},
+								"1": {
+									"text": "UP",
+									"color": "green",
+									"index": 1
+								}
+							}
+						}
+					]
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 16,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 6
+		},
+		{
+			"type": "stat",
+			"title": "Running version",
+			"description": "Release version reported by the running API (from the app_info metric). After a deploy this should show the new version within a minute.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "max by (version) (app_info{job=\"api\"})",
+					"legendFormat": "{{version}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"mappings": [],
+					"noValue": "unknown"
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "none",
+				"graphMode": "none",
+				"textMode": "name",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 20,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 7
+		},
+		{
+			"type": "row",
+			"title": "Traffic, errors and latency (Prometheus)",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 5,
+				"w": 24,
+				"h": 1
+			},
+			"id": 8
+		},
+		{
+			"type": "timeseries",
+			"title": "Requests by status class",
+			"description": "Requests per second split by HTTP status class. 2xx = success, 3xx = redirect, 4xx = the client sent something wrong (normal in small amounts, e.g. expired tokens), 5xx = the API failed. Any red band is worth a look.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (status_class) (label_replace(rate(http_requests_total{job=\"api\"}[$__rate_interval]), \"status_class\", \"${1}xx\", \"status\", \"([0-9])..\"))",
+					"legendFormat": "{{status_class}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "reqps",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "2xx"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "green"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "3xx"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "blue"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "4xx"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "#EAB839"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "5xx"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "red"
+								}
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 6,
+				"w": 12,
+				"h": 8
+			},
+			"id": 9
+		},
+		{
+			"type": "timeseries",
+			"title": "Latency percentiles",
+			"description": "How long requests take (SSE streams excluded). p50 = typical request, p95/p99 = the slow tail. Good: p95 under 300 ms. A rising p99 with a flat p50 means a few slow routes — check 'Slowest routes'. The dashed lines mark 300 ms (amber) and 1 s (red).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "histogram_quantile(0.5, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[$__rate_interval])))",
+					"legendFormat": "p50",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[$__rate_interval])))",
+					"legendFormat": "p95",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				},
+				{
+					"refId": "C",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[$__rate_interval])))",
+					"legendFormat": "p99",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "dashed"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 0.3
+							},
+							{
+								"color": "red",
+								"value": 1
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 6,
+				"w": 12,
+				"h": 8
+			},
+			"id": 10
+		},
+		{
+			"type": "bargauge",
+			"title": "Top routes by traffic",
+			"description": "The 10 routes with the most requests in the selected range. 'unmatched' is requests to URLs no route handles (404s — often bots scanning).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "topk(10, sum by (route) (increase(http_requests_total{job=\"api\"}[$__range])))",
+					"legendFormat": "{{route}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"min": 0,
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"orientation": "horizontal",
+				"displayMode": "gradient",
+				"valueMode": "color",
+				"namePlacement": "top",
+				"showUnfilled": true,
+				"sizing": "auto",
+				"minVizHeight": 16,
+				"maxVizHeight": 300,
+				"minVizWidth": 8
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 14,
+				"w": 8,
+				"h": 9
+			},
+			"id": 11
+		},
+		{
+			"type": "bargauge",
+			"title": "Slowest routes (p95)",
+			"description": "The 10 routes with the highest 95th-percentile response time in the selected range. Amber above 300 ms, red above 1 s. Rarely used routes can look slow from a single request.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "topk(10, histogram_quantile(0.95, sum by (route, le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[$__range]))) > 0)",
+					"legendFormat": "{{route}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 0.3
+							},
+							{
+								"color": "red",
+								"value": 1
+							}
+						]
+					},
+					"min": 0,
+					"noValue": "no traffic"
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"orientation": "horizontal",
+				"displayMode": "gradient",
+				"valueMode": "color",
+				"namePlacement": "top",
+				"showUnfilled": true,
+				"sizing": "auto",
+				"minVizHeight": 16,
+				"maxVizHeight": 300,
+				"minVizWidth": 8
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 14,
+				"w": 8,
+				"h": 9
+			},
+			"id": 12
+		},
+		{
+			"type": "bargauge",
+			"title": "Routes with most 5xx",
+			"description": "Routes that returned server errors in the selected range, worst first. Good: empty. For details, see 'Request failed' below (same route, with the error).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "topk(10, sum by (route) (increase(http_requests_total{job=\"api\",status=~\"5..\"}[$__range])) > 0)",
+					"legendFormat": "{{route}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "red",
+								"value": null
+							}
+						]
+					},
+					"min": 0,
+					"decimals": 0,
+					"noValue": "No 5xx in range"
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"orientation": "horizontal",
+				"displayMode": "gradient",
+				"valueMode": "color",
+				"namePlacement": "top",
+				"showUnfilled": true,
+				"sizing": "auto",
+				"minVizHeight": 16,
+				"maxVizHeight": 300,
+				"minVizWidth": 8
+			},
+			"gridPos": {
+				"x": 16,
+				"y": 14,
+				"w": 8,
+				"h": 9
+			},
+			"id": 13
+		},
+		{
+			"type": "row",
+			"title": "API process",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 23,
+				"w": 24,
+				"h": 1
+			},
+			"id": 14
+		},
+		{
+			"type": "timeseries",
+			"title": "Memory",
+			"description": "Memory used by the API process. RSS = everything the OS gave the process; heap used = JavaScript objects. A line that only ever goes up over days (and drops at deploys) suggests a memory leak.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "process_resident_memory_bytes{job=\"api\"}",
+					"legendFormat": "RSS",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "nodejs_heap_size_used_bytes{job=\"api\"}",
+					"legendFormat": "heap used",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				},
+				{
+					"refId": "C",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "nodejs_heap_size_total_bytes{job=\"api\"}",
+					"legendFormat": "heap total",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "bytes",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 24,
+				"w": 8,
+				"h": 8
+			},
+			"id": 15
+		},
+		{
+			"type": "timeseries",
+			"title": "Event loop lag",
+			"description": "How long a ready callback waits before JavaScript can run it. The API is single-threaded, so high lag means every request is waiting. Good: a few ms. Amber above 100 ms, red above 500 ms.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "nodejs_eventloop_lag_seconds{job=\"api\"}",
+					"legendFormat": "lag",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "nodejs_eventloop_lag_p99_seconds{job=\"api\"}",
+					"legendFormat": "p99",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "dashed"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 0.1
+							},
+							{
+								"color": "red",
+								"value": 0.5
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 24,
+				"w": 8,
+				"h": 8
+			},
+			"id": 16
+		},
+		{
+			"type": "timeseries",
+			"title": "CPU",
+			"description": "CPU time used by the API process, as a share of one core (100% = one core fully busy). Sustained values near 100% mean the API is CPU-bound and latency will climb.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "rate(process_cpu_user_seconds_total{job=\"api\"}[$__rate_interval])",
+					"legendFormat": "user",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "rate(process_cpu_system_seconds_total{job=\"api\"}[$__rate_interval])",
+					"legendFormat": "system",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percentunit",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "dashed"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "red",
+								"value": 0.8
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 16,
+				"y": 24,
+				"w": 8,
+				"h": 8
+			},
+			"id": 17
+		},
+		{
+			"type": "row",
+			"title": "Recent errors (Loki)",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 32,
+				"w": 24,
+				"h": 1
+			},
+			"id": 18
+		},
+		{
+			"type": "logs",
+			"title": "Recent warnings and errors",
+			"description": "Every API log line with level warn, error or fatal, newest first. warn = handled but unusual (failed login, client error), error = a real failure, fatal = the process crashed. Expand a line to see all its fields.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\", level=~\"warn|error|fatal\"}",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 33,
+				"w": 12,
+				"h": 12
+			},
+			"id": 19
+		},
+		{
+			"type": "logs",
+			"title": "Request failed",
+			"description": "Requests that ended in a 5xx, formatted as method, route, error code and message. Copy the requestId into the Logs explorer dashboard to see every line of that request.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\", level=~\"error|fatal\"} |= \"request failed\" | json | msg=\"request failed\" | line_format \"{{.method}} {{.route}} → {{.code}} · {{.err_message}} · requestId={{.requestId}}\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 33,
+				"w": 12,
+				"h": 12
+			},
+			"id": 20
+		}
+	]
+}

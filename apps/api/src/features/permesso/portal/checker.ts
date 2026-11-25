@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { API_CONFIG } from '@shared/api-config'
+import { logger } from '@shared/logger'
 import { format } from 'date-fns'
 import puppeteer, { type Browser } from 'puppeteer'
 import { extractPermessoStatus } from '../lib/result-parser'
@@ -69,6 +70,7 @@ export async function checkPermessoStatus(
 						`error_${readableTimestamp()}.png`,
 					) as `${string}.png`
 					await page.screenshot({ path: screenshotPath })
+					logger.info({ screenshotPath }, 'permesso error screenshot saved')
 				}
 			} catch {
 				// best-effort debugging aid only — a failed screenshot must not mask the real error

@@ -22,6 +22,8 @@ that the user picks in preferences. Package `gnome-player`, UUID
 - Chosen but not running: the indicator is hidden.
 - Running: previous / play-pause / next, track title on hover. Buttons follow
   the player's `Can*` capabilities. No fallback to other players.
+- Right-click on the indicator opens preferences to change the player; the
+  tooltip says so. Left-click stays on the playback buttons.
 
 ## Structure
 

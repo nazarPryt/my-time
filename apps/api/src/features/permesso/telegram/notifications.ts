@@ -1,4 +1,5 @@
 import { logger } from '@shared/logger'
+import { telegramMessagesTotal } from '@shared/metrics'
 import { type Bot, TelegramApiError } from 'node-telegram-bot-api'
 import { isPermessoReady } from '../lib/status'
 import { permessoRepository } from '../repository'
@@ -19,11 +20,13 @@ export async function deliverTelegramCheckResult(
 			parse_mode: 'Markdown',
 			message_effect_id: isReady ? TELEGRAM_EFFECT_CONFETTI : undefined,
 		})
+		telegramMessagesTotal.inc({ result: 'sent' })
 	} catch (error) {
 		// 403 means the user blocked the bot (or deleted the chat) — this is
 		// permanent, so without this we'd keep silently failing to send every
 		// hour forever while the UI still reported "Connected".
 		if (error instanceof TelegramApiError && error.errorCode === 403) {
+			telegramMessagesTotal.inc({ result: 'blocked' })
 			logger.warn(
 				{ chatId, userId },
 				'Telegram chat blocked the bot — disconnecting user',
@@ -31,6 +34,7 @@ export async function deliverTelegramCheckResult(
 			await permessoRepository.disconnectTelegram(userId)
 			return
 		}
+		telegramMessagesTotal.inc({ result: 'failed' })
 		logger.error({ err: error, userId }, 'failed to send Telegram notification')
 	}
 }

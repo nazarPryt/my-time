@@ -1,111 +1,12 @@
 import { resolve } from 'node:path'
+import { createConfig, parseArgs, USAGE } from './ci-local/config'
+import { runLocalCi } from './ci-local/run-local-ci'
 
-const root = resolve(import.meta.dir, '..')
-const databasePort = '5435'
-const databaseName = 'my_time_ci'
-const compose = [
-	'docker',
-	'compose',
-	'-p',
-	`my-time-ci-${process.pid}`,
-	'-f',
-	'docker-compose.test.yml',
-]
-const env = {
-	...process.env,
-	CI: 'true',
-	VITE_API_URL: 'http://localhost:3000',
-	TEST_DB_PORT: databasePort,
-	TEST_DB_NAME: databaseName,
-	DATABASE_URL: `postgres://postgres:postgres@127.0.0.1:${databasePort}/${databaseName}`,
-}
-const steps = [
-	['bun', 'install', '--frozen-lockfile'],
-	['bun', 'run', 'lint:check'],
-	['bun', '--filter', 'api', 'typecheck'],
-	['bun', '--filter', 'web', 'typecheck'],
-	['bun', '--filter', 'web', 'typecheck:e2e'],
-	['bun', '--filter', 'english-quiz', 'typecheck'],
-	['bun', '--filter', 'gnome-time-tracker', 'typecheck'],
-	['bun', '--filter', 'gnome-time-tracker', 'typecheck:integration'],
-	['bun', '--filter', 'gnome-player', 'typecheck'],
-	['bun', '--filter', 'extension', 'compile'],
-	['bun', '--bun', 'wxt', 'build'],
-	['bun', '--filter', 'api', 'test'],
-	['bun', '--filter', 'web', 'test'],
-	['bun', '--filter', '@my-time/session-sync', 'test'],
-	['bun', '--filter', 'english-quiz', 'test'],
-	['bun', '--filter', '@my-time/contracts', 'test'],
-	['bun', 'run', 'test:scripts'],
-	['bun', '--filter', 'gnome-time-tracker', 'test'],
-	['bun', '--filter', 'gnome-player', 'test'],
-	['bun', '--filter', 'web', 'test:e2e'],
-	['bun', 'run', 'test:web:e2e:extension'],
-	['bun', 'run', 'test:web:e2e:integration'],
-	['bun', '--filter', 'web', 'build'],
-	['bun', '--filter', 'english-quiz', 'build'],
-	[
-		'env',
-		'FRONTEND_WEB_URL=http://localhost:5173',
-		'docker',
-		'compose',
-		'-f',
-		'docker-compose.prod.yml',
-		'build',
-	],
-]
-
-if (process.argv.slice(2).length) {
-	console.error('Usage: bun run ci:local')
+const options = parseArgs(process.argv.slice(2), Boolean(process.stdout.isTTY))
+if (!options) {
+	console.error(USAGE)
 	process.exit(1)
 }
 
-async function run(command: string[]) {
-	console.info(`\n> ${command.join(' ')}`)
-	return Bun.spawn(command, {
-		cwd: command[2] === 'wxt' ? resolve(root, 'apps/extensions/browser') : root,
-		env,
-		stdin: 'inherit',
-		stdout: 'inherit',
-		stderr: 'inherit',
-	}).exited
-}
-
-// dev is the branch PR'd into main, where CI also checks the release version.
-const branch = Bun.spawnSync(['git', 'branch', '--show-current'])
-	.stdout.toString()
-	.trim()
-if (branch === 'dev') {
-	steps.push(
-		['git', 'fetch', 'origin', 'main', '--tags', '--quiet'],
-		['bun', 'run', 'release:check', 'origin/main'],
-	)
-}
-
-let databaseStarted = false
-let exitCode = 1
-try {
-	for (const command of steps) {
-		if (command.join(' ') === 'bun --filter api test') {
-			// A separate project/database prevents API tests from clearing dev data.
-			databaseStarted = true
-			if ((await run([...compose, 'up', '-d', '--wait'])) !== 0) {
-				throw new Error(
-					'Local CI requires a running Docker daemon and free port 5435',
-				)
-			}
-		}
-		const code = await run(command)
-		if (code !== 0) throw new Error(`Failed (${code}): ${command.join(' ')}`)
-	}
-	console.info('\nAll local CI checks passed.')
-	exitCode = 0
-} catch (error) {
-	console.error(error instanceof Error ? error.message : error)
-} finally {
-	if (databaseStarted && (await run([...compose, 'down', '--volumes'])) !== 0) {
-		console.error('Failed to clean up the local CI database.')
-		exitCode = 1
-	}
-}
-process.exit(exitCode)
+const config = createConfig(resolve(import.meta.dir, '..'), options)
+process.exit(await runLocalCi(config))

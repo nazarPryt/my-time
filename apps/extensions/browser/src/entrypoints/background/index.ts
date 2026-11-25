@@ -1,8 +1,11 @@
+import { installGlobalErrorReporting } from '@/bll/error-reporting/error-reporting-service'
 import { syncBlockedSites } from '@/bll/site-blocking/site-blocking-service'
 import { EXTENSION_CONFIG } from '@/shared/config/extension-config'
 import { handleMessage } from './messaging'
 
 export default defineBackground(() => {
+	installGlobalErrorReporting()
+
 	// Sync blocked sites on service worker startup
 	void syncBlockedSites()
 

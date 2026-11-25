@@ -1,4 +1,7 @@
-import { mockLoginResponse } from '../../auth/login/login.mocks'
+import {
+	mockLoginResponse,
+	mockRefreshResponse,
+} from '../../auth/login/login.mocks'
 import { LoginPage } from '../../auth/login/login-page'
 import { API_ME, MOCK_USER } from '../../support/auth.mocks'
 import {
@@ -78,6 +81,7 @@ test('web login preserves the pending desktop request', async ({
 		user: MOCK_USER,
 		tokens: { accessToken: 'mock-access-token' },
 	})
+	await mockRefreshResponse(page, 401)
 	await page.goto(
 		`/dashboard/time-tracker?desktopRequest=${DESKTOP_REQUEST_ID}`,
 	)

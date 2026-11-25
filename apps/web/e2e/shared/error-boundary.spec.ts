@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test'
 import { SHARED_TEST_IDS } from '@/shared/ui/test-ids'
+import { expect, test } from '../support/base.fixtures'
 
 test.describe('Error boundary', () => {
 	test('shows error screen when a route component throws', async ({ page }) => {

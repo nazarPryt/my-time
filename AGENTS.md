@@ -72,12 +72,41 @@ installation, repository lint, all CI typechecks, extension compilation/build,
 API/web/shared/desktop/GNOME-player tests, browser E2E, packaged extension E2E, real cross-client
 integration, and the web build. Keep the runner aligned when CI changes.
 
-Prerequisites: the CI Bun version, running Docker, Chromium installed for both
+The runner checks committed `HEAD`, not the working tree: it refuses to start
+while there are uncommitted or untracked changes, then creates a temporary
+`git worktree` in `~/.local/state/my-time-ci/my-time-ci-worktree` (not `/tmp`,
+which Docker Desktop cannot bind-mount, and not `~/.cache`, where Biome skips
+nested `.gitignore`/`package.json` files), runs
+`bun install --frozen-lockfile` there and runs every step in it, so local `.env`
+files, ignored build output and stale `node_modules` cannot make it pass. The
+worktree is removed after a pass or an interrupt; after a failure it is kept for
+its Playwright reports and removed by the next run. Bun's install cache and the
+Playwright/Puppeteer browsers under `~/.cache` are shared, so the extra install
+costs seconds, but builds start cold.
+
+Preflight checks fail within about a second and list every problem with its fix:
+clean tree, local `bun --version` equal to `BUN_VERSION` in `ci.yml`, a reachable
+Docker daemon, free ports 3000, 3101, 3102, 5173, 5174, 5434 and 5435
+(`CI=true` stops Playwright from reusing a running dev server), Chromium for
 Playwright and Puppeteer, and `glib-compile-schemas`/`gsettings`. Use
 `bun apps/web/node_modules/@playwright/test/cli.js install --with-deps chromium` to prepare
 Playwright. The runner supplies the required test API URL and uses a disposable
-API-test database on port 5435; cross-client integration uses its own port 5434.
-It stops on failure and cleans up its API-test database on normal exit.
+API-test database (compose project `my-time-ci`, port 5435); cross-client
+integration uses `my-time-e2e` on port 5434. Leftovers of both projects are
+removed before a run, and Ctrl+C/SIGTERM stops the current step, removes the
+databases and the worktree, and exits non-zero. After the production image build
+it runs `docker image prune -f` (dangling images only); prune the build cache by
+hand with `bun run docker:prune` (cache older than 7 days).
+
+In a terminal it shows a live step list with durations and an ETA from the
+previous run (`~/.cache/my-time-ci/timings.json`); each step's output goes to
+`my-time-ci-logs` in the temp directory, and a failure prints the step's last
+60 lines. `--plain` (or a non-TTY) streams the raw output instead.
+`--dry-run` skips preflight and replaces every step with a no-op, using its own
+worktree/log folders and leaving the timings untouched, to preview the
+runner's output; it checks nothing.
+`--allow-dirty` skips only the clean-tree check (to test the runner itself);
+steps still check committed `HEAD`, so it never replaces a clean run before a PR.
 
 Fix failures and rerun before creating or updating the PR. Do not substitute
 partial checks or remote CI for this local gate. If a prerequisite prevents the
@@ -210,7 +239,7 @@ Always use **`date-fns`** (installed in both `apps/api` and `apps/web`) for any 
 
 ### Logging
 
-The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` ships every container's logs into **Loki** via **Grafana Alloy**, viewable/searchable in **Grafana** (`http://<host>:3001`) — all self-hosted and free. Configs live in `observability/`.
+The API uses **`pino`** (`apps/api/src/shared/logger.ts`) for all logging — never `console.log`/`console.error` outside `shared/api-config.ts` (which runs before the logger can be constructed). Logs are structured JSON in production, pretty-printed in development (`NODE_ENV`-driven). `httpLoggerPlugin` (`apps/api/src/shared/http-logger.ts`), mounted first in `app.ts`, logs one line per request (method, path, status, duration, request id) and logs uncaught errors; log business events (e.g. user registered) from the service layer, not routes. On the VPS, `docker-compose.prod.yml` runs the observability stack: **Grafana Alloy** ships every container's logs to **Loki** and scrapes metrics (api `:9464`, host, containers, Postgres, public-URL probes) into **Prometheus**; **Grafana** shows dashboards and sends alerts to Telegram — all self-hosted and free. Configs live in `observability/` and are baked into the images (no config bind-mounts). Grafana is provisioned from files only (datasource uids `loki`/`prometheus`, dashboards, alert rules), so edit the repo, not the UI. `docs/observability.md` is the contract for log messages, fields, metric names and labels: change it together with the code, dashboards and alert rules that use them. Validate configs with `bun run check:observability`; run the stack locally with `bun run observability:up` (Grafana on http://localhost:3001).
 
 ### @my-time/contracts — the API contract layer
 
@@ -240,7 +269,7 @@ slices of the same layer. Boundaries are enforced by Biome (`noRestrictedImports
 overrides in `biome.jsonc`), so violations fail `lint`/CI.
 
 ```
-app       src/app/     routing, providers, layout wiring (e.g. app/ui/dashboard-shell.tsx)
+app       src/app/     routing, providers, layout wiring (e.g. app/ui/dashboard-shell/)
   ↓
 pages     src/pages/   one screen each; composes features + shared
   ↓
@@ -257,9 +286,9 @@ To share code between two slices, move it *down* a layer, don't import sideways.
   `src/app/routeTree.gen.ts` is **auto-generated** (do not edit; configured in
   `vite.config.ts` via `routesDirectory`/`generatedRouteTree`). A route file is thin:
   it renders a page — `createFileRoute(...)({ component: XPage })`.
-- **Dashboard layout:** `src/app/ui/dashboard-shell.tsx` (`DashboardShell`) holds the
+- **Dashboard layout:** `src/app/ui/dashboard-shell/` (`DashboardShell`, one component per file) holds the
   sidebar + mobile nav; the layout route `src/app/routes/dashboard.tsx` renders
-  `<DashboardShell><Outlet/></DashboardShell>`. Add nav items to `NAV_ITEMS` in the shell.
+  `<DashboardShell><Outlet/></DashboardShell>`. Add nav items to `NAV_ITEMS` in `dashboard-shell/nav-items.ts`.
 - **API client:** `src/shared/lib/api.ts` — Eden Treaty typed client (`treaty<App>`). The `App` type is imported from `@my-time/api` (the api package's public export). This gives end-to-end type safety with zero code generation.
 - **Time-tracker synchronization:** The feature receives session snapshots from
   `/time-tracker/events` through an authenticated fetch SSE stream. Reuse the
@@ -284,5 +313,5 @@ To share code between two slices, move it *down* a layer, don't import sideways.
 2. **API route:** Create `apps/api/src/features/<feature>/routes.ts` as an Elysia plugin, wire it into `apps/api/src/app.ts`.
 3. **DB (if needed):** Add Drizzle table to `apps/api/src/db/schema/`, run `db:generate` + `db:migrate`.
 4. **Web feature:** Create `apps/web/src/features/<feature>/` with `ui/`, `model/`, `api/` segments and an `index.ts` barrel (copy an existing slice like `time-tracker`).
-5. **Web page:** Create `apps/web/src/pages/<feature>/ui/<Feature>Page.tsx` + `index.ts`, composing the feature's barrel. Add a thin route in `apps/web/src/app/routes/dashboard/<feature>.tsx` that renders the page, and a nav item to `NAV_ITEMS` in `src/app/ui/dashboard-shell.tsx`. The route tree regenerates on next `dev` run.
+5. **Web page:** Create `apps/web/src/pages/<feature>/ui/<Feature>Page.tsx` + `index.ts`, composing the feature's barrel. Add a thin route in `apps/web/src/app/routes/dashboard/<feature>.tsx` that renders the page, and a nav item to `NAV_ITEMS` in `src/app/ui/dashboard-shell/nav-items.ts`. The route tree regenerates on next `dev` run.
 6. **API calls:** Use `api.<resource>.<method>()` from the Eden Treaty client (`@/shared/lib/api`) inside the feature's `api/` segment — types flow automatically from the `App` type.

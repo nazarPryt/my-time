@@ -1,6 +1,6 @@
 {
 	"name": "my-time-monorepo",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"private": true,
 	"workspaces": [
 		"apps/*",
@@ -30,7 +30,7 @@
 		"ci:local": "bun scripts/ci-local.ts",
 		"release": "bun scripts/release/release.ts",
 		"release:check": "bun scripts/release/release-check.ts",
-		"test:scripts": "bun test scripts/release",
+		"test:scripts": "bun test scripts",
 		"lint:check": "biome check .",
 		"lint:fix": "biome check --write --unsafe . && biome format --write .",
 		"docker:build": "docker compose --env-file ./apps/api/.env build",
@@ -40,6 +40,10 @@
 		"docker:start": "docker compose --env-file ./apps/api/.env start",
 		"docker:stop": "docker compose --env-file ./apps/api/.env stop",
 		"docker:logs": "docker compose --env-file ./apps/api/.env logs -f",
+		"docker:prune": "docker builder prune -f --filter until=168h",
+		"observability:up": "docker compose -f docker-compose.observability.yml up -d --build",
+		"observability:down": "docker compose -f docker-compose.observability.yml down",
+		"check:observability": "bun scripts/check-observability.ts",
 		"test:db:up": "docker compose -f docker-compose.test.yml up -d --wait",
 		"test:db:down": "docker compose -f docker-compose.test.yml down",
 		"test:web": "bun --filter web test",

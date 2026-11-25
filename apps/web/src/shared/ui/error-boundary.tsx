@@ -1,5 +1,6 @@
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { reportClientError } from '../lib/error-reporting'
 import { SHARED_TEST_IDS } from './test-ids'
 
 interface ErrorScreenProps {
@@ -73,6 +74,7 @@ export class ErrorBoundary extends Component<
 
 	componentDidCatch(error: Error, info: ErrorInfo) {
 		console.error('Uncaught error:', error, info)
+		reportClientError(error)
 	}
 
 	reset = () => this.setState({ error: null })

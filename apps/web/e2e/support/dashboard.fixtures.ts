@@ -1,5 +1,5 @@
-import { test as base } from '@playwright/test'
 import { mockAuth } from './auth.mocks'
+import { test as base } from './base.fixtures'
 import { mockReleasesSeen } from './releases.mocks'
 
 /**
@@ -16,4 +16,4 @@ export const test = base.extend({
 	},
 })
 
-export { expect } from '@playwright/test'
+export { expect } from './base.fixtures'

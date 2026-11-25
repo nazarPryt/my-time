@@ -41,6 +41,8 @@
 	--sidebar-ring: oklch(0.707 0.022 261.325);
 	--skeleton: oklch(0.94 0.006 264.531);
 	--skeleton-highlight: oklch(1 0 0 / 0.85);
+	--scrollbar-thumb: oklch(0.551 0.027 264.364 / 0.35);
+	--scrollbar-thumb-hover: oklch(0.551 0.027 264.364 / 0.6);
 }
 
 .dark {
@@ -77,6 +79,8 @@
 	--sidebar-ring: oklch(0.551 0.027 264.364);
 	--skeleton: oklch(1 0 0 / 0.07);
 	--skeleton-highlight: oklch(1 0 0 / 0.07);
+	--scrollbar-thumb: oklch(1 0 0 / 0.15);
+	--scrollbar-thumb-hover: oklch(1 0 0 / 0.3);
 }
 
 @theme inline {
@@ -253,5 +257,28 @@
 	}
 	button {
 		cursor: pointer;
+	}
+
+	/* Inherited, so it also reaches remotes inside Shadow DOM. */
+	html {
+		scrollbar-width: thin;
+		scrollbar-color: var(--scrollbar-thumb) transparent;
+	}
+	/* Safari ignores scrollbar-color; Chrome ignores these once it is set. */
+	::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	::-webkit-scrollbar-thumb {
+		background-color: var(--scrollbar-thumb);
+		border: 2px solid transparent;
+		border-radius: 9999px;
+		background-clip: content-box;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background-color: var(--scrollbar-thumb-hover);
 	}
 }

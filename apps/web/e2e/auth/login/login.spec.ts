@@ -1,6 +1,6 @@
 import { AUTH_ERRORS } from '@my-time/contracts'
-import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
 import { DASHBOARD_PATH } from '../../dashboard/home/home-page'
+import { readAccessToken } from '../../support/access-token'
 import { MOCK_USER } from '../../support/auth.mocks'
 import { REGISTER_PATH } from '../register/register-page'
 import { expect, test } from './login.fixtures'
@@ -36,9 +36,8 @@ test.describe('Login page', () => {
 
 	test('shows validation errors on empty submit', async ({ loginPage }) => {
 		await loginPage.loginSubmit.click()
-		await expect(
-			loginPage.loginEmailError.or(loginPage.loginPasswordError).first(),
-		).toBeVisible()
+		await expect(loginPage.loginEmailError).toBeVisible()
+		await expect(loginPage.loginPasswordError).toBeVisible()
 	})
 
 	test('shows error message on invalid credentials', async ({
@@ -98,12 +97,7 @@ test.describe('Login page', () => {
 				).toBe(true)
 			await expect(loginPage.loginForm).toBeVisible()
 			expect(requests).toBe(0)
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBeNull()
+			expect(await readAccessToken(page)).toBeNull()
 		})
 	}
 
@@ -124,12 +118,7 @@ test.describe('Login page', () => {
 			})
 			await expect(homePage.dashboardHome).toBeVisible()
 			await expect(page).toHaveURL(DASHBOARD_URL)
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBe(MOCK_ACCESS_TOKEN)
+			expect(await readAccessToken(page)).toBe(MOCK_ACCESS_TOKEN)
 		})
 
 		test('submits using Enter', async ({ loginPage, homePage }) => {
@@ -164,12 +153,7 @@ test.describe('Login page', () => {
 			await loginPage.submit()
 			await expect(loginPage.loginSubmit).toBeDisabled()
 			await expect.poll(pending.requests).toBe(1)
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBeNull()
+			expect(await readAccessToken(page)).toBeNull()
 			pending.release()
 			await expect(homePage.dashboardHome).toBeVisible()
 		})
@@ -190,12 +174,7 @@ test.describe('Login page', () => {
 				AUTH_ERRORS.INVALID_CREDENTIALS.message,
 			)
 			await expect(loginPage.loginSubmit).toBeEnabled()
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBeNull()
+			expect(await readAccessToken(page)).toBeNull()
 			expect(refreshes).toBe(0)
 			await mockLoginResponse(page, 200, MOCK_LOGIN_SUCCESS)
 			await loginPage.fill(MOCK_USER.email, 'password123')
@@ -214,12 +193,7 @@ test.describe('Login page', () => {
 			await homePage.signOutButton.click()
 			await homePage.confirmDialogConfirmBtn.click()
 			await expect(page).toHaveURL(LOGIN_PATH)
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBeNull()
+			expect(await readAccessToken(page)).toBeNull()
 			await page.goto(DASHBOARD_PATH)
 			await expect(loginPage.loginForm).toBeVisible()
 			await expect(page).toHaveURL(LOGIN_PATH)
@@ -239,12 +213,7 @@ test.describe('Login page', () => {
 			await page.reload()
 			expect((await refreshed).method()).toBe('POST')
 			await expect(homePage.dashboardHome).toBeVisible()
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBe(MOCK_REFRESHED_ACCESS_TOKEN)
+			expect(await readAccessToken(page)).toBe(MOCK_REFRESHED_ACCESS_TOKEN)
 		})
 
 		test('returns to login and clears credentials when refresh is rejected', async ({
@@ -260,12 +229,7 @@ test.describe('Login page', () => {
 			await page.reload()
 			await expect(loginPage.loginForm).toBeVisible()
 			await expect(page).toHaveURL(LOGIN_PATH)
-			expect(
-				await page.evaluate(
-					(key) => localStorage.getItem(key),
-					ACCESS_TOKEN_KEY,
-				),
-			).toBeNull()
+			expect(await readAccessToken(page)).toBeNull()
 		})
 	})
 })

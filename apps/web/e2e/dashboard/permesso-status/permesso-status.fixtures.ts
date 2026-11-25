@@ -4,6 +4,7 @@ import {
 	mockPermessoStatus,
 } from './permesso-status.mocks'
 import { PermessoStatusPage } from './permesso-status-page'
+
 export const test = base.extend<{ permessoPage: PermessoStatusPage }>({
 	permessoPage: async ({ page }, use) => {
 		await mockPermessoStatus(page)

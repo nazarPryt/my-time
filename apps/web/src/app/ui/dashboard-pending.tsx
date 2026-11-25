@@ -1,5 +1,5 @@
+import { Logo } from '@/shared/ui/logo'
 import { Skeleton, SkeletonStatus } from '@/shared/ui/skeleton'
-import { Wordmark } from './dashboard-shell'
 
 const NAV_WIDTHS = ['w-12', 'w-16', 'w-24', 'w-24', 'w-28', 'w-16'] as const
 
@@ -16,12 +16,13 @@ export function DashboardPending() {
 		>
 			<header className="flex md:hidden items-center gap-3 h-14 px-4 border-b border-sidebar-border bg-sidebar shrink-0">
 				<Skeleton className="size-6" />
-				<Wordmark />
+				<Logo className="text-[17px] text-sidebar-foreground" />
 			</header>
 
 			<aside className="hidden md:flex w-55 shrink-0 flex-col bg-sidebar border-r border-sidebar-border">
-				<div className="h-14 flex items-center px-5 border-b border-sidebar-border shrink-0">
-					<Wordmark />
+				<div className="h-14 flex items-center justify-between gap-2 px-5 border-b border-sidebar-border shrink-0">
+					<Logo className="text-[17px] text-sidebar-foreground" />
+					<Skeleton className="h-4 w-11 rounded-full" />
 				</div>
 				<div className="flex-1 p-2 pt-3 space-y-0.5">
 					{NAV_WIDTHS.map((width, index) => (
@@ -35,8 +36,7 @@ export function DashboardPending() {
 						</div>
 					))}
 				</div>
-				<div className="shrink-0 p-3 border-t border-sidebar-border space-y-3">
-					<Skeleton className="h-2.5 w-8 ml-3" />
+				<div className="shrink-0 p-3 border-t border-sidebar-border">
 					<Skeleton className="h-8 w-full" />
 				</div>
 			</aside>

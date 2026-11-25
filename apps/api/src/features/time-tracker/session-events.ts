@@ -4,6 +4,7 @@ import {
 	type SessionStreamState,
 } from '@my-time/contracts'
 import { logger } from '@shared/logger'
+import { trackSseStream } from '@shared/metrics'
 import { differenceInMilliseconds } from 'date-fns'
 import {
 	desktopPresenceService,
@@ -38,11 +39,13 @@ class SessionStream {
 	private unsubscribe: () => void
 	private unsubscribePresence: () => void
 	private releasing: Promise<void> | undefined
+	private openedAt: number | undefined
+	private untrack: (() => void) | undefined
 
 	constructor(
 		private userId: string,
 		private signal: AbortSignal,
-		clientKind: ClientKind,
+		private clientKind: ClientKind,
 	) {
 		this.presenceDirty = clientKind === 'web'
 		this.desktopId = clientKind === 'desktop' ? crypto.randomUUID() : undefined
@@ -70,6 +73,12 @@ class SessionStream {
 		return new ReadableStream<Uint8Array>({
 			start: (controller) => {
 				this.controller = controller
+				this.openedAt = performance.now()
+				this.untrack = trackSseStream('session')
+				logger.info(
+					{ stream: 'session', userId: this.userId, client: this.clientKind },
+					'sse stream opened',
+				)
 				this.signal.addEventListener('abort', this.close, { once: true })
 				this.expiry = setTimeout(
 					this.close,
@@ -95,6 +104,17 @@ class SessionStream {
 	cleanup(): Promise<void> {
 		if (this.closed) return this.releasing ?? Promise.resolve()
 		this.closed = true
+		if (this.openedAt !== undefined) {
+			this.untrack?.()
+			logger.info(
+				{
+					stream: 'session',
+					userId: this.userId,
+					durationMs: Math.round(performance.now() - this.openedAt),
+				},
+				'sse stream closed',
+			)
+		}
 		clearTimeout(this.expiry)
 		clearTimeout(this.midnight)
 		clearTimeout(this.heartbeat)

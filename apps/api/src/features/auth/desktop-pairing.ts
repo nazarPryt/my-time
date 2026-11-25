@@ -24,15 +24,17 @@ export const desktopPairingService = {
 			expiresAt: addMinutes(now, 5),
 			nextPollAt: addSeconds(now, POLL_SECONDS),
 		})
-		return row
-			? {
-					requestId: row.id,
-					deviceSecret,
-					confirmationCode: row.confirmationCode,
-					expiresIn: TTL_SECONDS,
-					interval: POLL_SECONDS,
-				}
-			: null
+		if (!row) {
+			logger.warn('desktop pairing rate limited')
+			return null
+		}
+		return {
+			requestId: row.id,
+			deviceSecret,
+			confirmationCode: row.confirmationCode,
+			expiresIn: TTL_SECONDS,
+			interval: POLL_SECONDS,
+		}
 	},
 	info: desktopPairingRepository.info,
 	async approve(requestId: string, userId: string): Promise<boolean> {
