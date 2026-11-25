@@ -1,7 +1,7 @@
-import { Cron } from 'croner'
+import { scheduleJob } from '@shared/jobs'
 import pLimit from 'p-limit'
+import { checkPermessoWithTelemetry } from './check-telemetry'
 import { CHECK_CONCURRENCY, CHECK_CRON_SCHEDULE } from './constants'
-import { checkPermessoStatus } from './portal/checker'
 import { permessoRepository } from './repository'
 import { sendTelegramCheckResult } from './telegram/bot'
 
@@ -25,14 +25,18 @@ export async function runScheduledChecks() {
 	const due = subscriptions.filter((s) =>
 		s.checkHours.includes(getHourInTimeZone(now, s.timezone)),
 	)
-	if (due.length === 0) return
+	if (due.length === 0) return { due: 0, succeeded: 0, failed: 0 }
 
 	const limit = pLimit(CHECK_CONCURRENCY)
 
-	await Promise.all(
+	const outcomes = await Promise.all(
 		due.map((subscription) =>
 			limit(async () => {
-				const result = await checkPermessoStatus(subscription.practiceNumber)
+				const result = await checkPermessoWithTelemetry(
+					subscription.userId,
+					subscription.practiceNumber,
+					'scheduled',
+				)
 				await permessoRepository.recordCheckResult(
 					subscription.userId,
 					result,
@@ -45,14 +49,19 @@ export async function runScheduledChecks() {
 						result,
 					)
 				}
+				return result.success
 			}),
 		),
 	)
+	const succeeded = outcomes.filter(Boolean).length
+	return { due: due.length, succeeded, failed: due.length - succeeded }
 }
+
+export const PERMESSO_CHECKS_JOB = 'permesso.scheduled-checks'
 
 // Fires every hour on the hour and checks only the subscriptions whose
 // current local hour (per-subscription timezone) is in their checkHours —
 // each user picks their own check times from the Permesso Status page.
 export function schedulePermessoJobs() {
-	new Cron(CHECK_CRON_SCHEDULE, runScheduledChecks)
+	scheduleJob(PERMESSO_CHECKS_JOB, CHECK_CRON_SCHEDULE, runScheduledChecks)
 }

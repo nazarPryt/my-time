@@ -2,12 +2,12 @@ import type {
 	PermessoCheckHistoryResponse,
 	PermessoStatusResponse,
 } from '@my-time/contracts'
+import { checkPermessoWithTelemetry } from './check-telemetry'
 import {
 	PERMESSO_FAILURE_REASONS,
 	TELEGRAM_LINK_HEARTBEAT_MS,
 	TELEGRAM_LINK_TIMEOUT_MS,
 } from './constants'
-import { checkPermessoStatus } from './portal/checker'
 import { permessoRepository } from './repository'
 import {
 	buildTelegramDeepLink,
@@ -70,7 +70,11 @@ export const permessoService = {
 		if (!row)
 			return { ok: false, reason: PERMESSO_FAILURE_REASONS.noPracticeNumber }
 
-		const outcome = await checkPermessoStatus(row.practiceNumber)
+		const outcome = await checkPermessoWithTelemetry(
+			userId,
+			row.practiceNumber,
+			'manual',
+		)
 		await permessoRepository.recordCheckResult(userId, outcome, 'manual')
 
 		if (row.telegramChatId) {
