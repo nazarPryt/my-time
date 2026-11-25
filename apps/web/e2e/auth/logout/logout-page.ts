@@ -7,4 +7,9 @@ export class LogoutPage extends BaseLocators {
 		await this.page.goto(DASHBOARD_PATH)
 		await this.signOutButton.waitFor({ state: 'visible' })
 	}
+
+	async signOut() {
+		await this.signOutButton.click()
+		await this.confirmDialogConfirmBtn.click()
+	}
 }

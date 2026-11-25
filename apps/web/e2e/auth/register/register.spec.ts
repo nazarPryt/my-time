@@ -1,6 +1,6 @@
 import { AUTH_ERRORS } from '@my-time/contracts'
-import { ACCESS_TOKEN_KEY } from '@/shared/lib/token-storage'
 import { DASHBOARD_PATH } from '../../dashboard/home/home-page'
+import { readAccessToken } from '../../support/access-token'
 import { MOCK_USER } from '../../support/auth.mocks'
 import { MOCK_ACCESS_TOKEN, MOCK_LOGIN_SUCCESS } from '../login/login.mocks'
 import { LOGIN_PATH } from '../login/login-page'
@@ -22,12 +22,9 @@ test.describe('Register page', () => {
 
 	test('shows validation errors on empty submit', async ({ registerPage }) => {
 		await registerPage.registerSubmit.click()
-		await expect(
-			registerPage.registerNameError
-				.or(registerPage.registerEmailError)
-				.or(registerPage.registerPasswordError)
-				.first(),
-		).toBeVisible()
+		await expect(registerPage.registerNameError).toBeVisible()
+		await expect(registerPage.registerEmailError).toBeVisible()
+		await expect(registerPage.registerPasswordError).toBeVisible()
 	})
 
 	test('shows error message when email is already taken', async ({
@@ -76,14 +73,10 @@ test.describe('Register page', () => {
 		})
 		await expect(homePage.dashboardHome).toBeVisible()
 		await expect(page).toHaveURL(new RegExp(`${DASHBOARD_PATH}?$`))
-		expect(
-			await page.evaluate((key) => localStorage.getItem(key), ACCESS_TOKEN_KEY),
-		).toBe(MOCK_ACCESS_TOKEN)
+		expect(await readAccessToken(page)).toBe(MOCK_ACCESS_TOKEN)
 		await page.reload()
 		await expect(homePage.dashboardHome).toBeVisible()
-		expect(
-			await page.evaluate((key) => localStorage.getItem(key), ACCESS_TOKEN_KEY),
-		).toBe(MOCK_ACCESS_TOKEN)
+		expect(await readAccessToken(page)).toBe(MOCK_ACCESS_TOKEN)
 	})
 
 	test('failed registration stores no token and can be retried', async ({
@@ -97,9 +90,7 @@ test.describe('Register page', () => {
 		await expect(registerPage.registerEmailError).toHaveText(
 			AUTH_ERRORS.EMAIL_TAKEN.message,
 		)
-		expect(
-			await page.evaluate((key) => localStorage.getItem(key), ACCESS_TOKEN_KEY),
-		).toBeNull()
+		expect(await readAccessToken(page)).toBeNull()
 		await expect(registerPage.registerSubmit).toBeEnabled()
 		await mockRegisterResponse(page, 200, MOCK_LOGIN_SUCCESS)
 		await registerPage.registerEmail.fill('new-user@example.com')

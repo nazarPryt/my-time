@@ -1,4 +1,6 @@
 import { resolve } from 'node:path'
+import type { Subprocess } from 'bun'
+import { E2E_COMPOSE_PROJECT, signalExitCode } from './ci-local/ci-local-lib'
 import {
 	INTEGRATION_DATABASE_NAME,
 	INTEGRATION_DATABASE_PORT,
@@ -9,12 +11,24 @@ const compose = [
 	'docker',
 	'compose',
 	'-p',
-	'my-time-e2e',
+	E2E_COMPOSE_PROJECT,
 	'-f',
 	'docker-compose.test.yml',
 ]
+let child: Subprocess | undefined
+let interrupted: NodeJS.Signals | undefined
+let cleaningUp = false
+
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+	process.on(signal, () => {
+		if (interrupted) return
+		interrupted = signal
+		if (!cleaningUp) child?.kill('SIGTERM')
+	})
+}
+
 async function run(command: string[], cwd = root) {
-	return Bun.spawn(command, {
+	child = Bun.spawn(command, {
 		cwd,
 		stdout: 'inherit',
 		stderr: 'inherit',
@@ -23,25 +37,37 @@ async function run(command: string[], cwd = root) {
 			TEST_DB_NAME: INTEGRATION_DATABASE_NAME,
 			TEST_DB_PORT: String(INTEGRATION_DATABASE_PORT),
 		},
-	}).exited
+	})
+	try {
+		return await child.exited
+	} finally {
+		child = undefined
+	}
 }
 let exitCode = 1
 try {
-	const started = await run([...compose, 'up', '-d', '--wait'])
-	if (started !== 0)
+	// Clears a container left behind by a crashed run.
+	await run([...compose, 'down', '--volumes'])
+	const started = interrupted
+		? 1
+		: await run([...compose, 'up', '-d', '--wait'])
+	if (started !== 0 && !interrupted)
 		throw new Error('Disposable integration database failed to start')
-	exitCode = await run(
-		[
-			'bun',
-			'node_modules/@playwright/test/cli.js',
-			'test',
-			'--config',
-			'playwright.integration.config.ts',
-			...process.argv.slice(2),
-		],
-		resolve(root, 'apps/web'),
-	)
+	if (!interrupted) {
+		exitCode = await run(
+			[
+				'bun',
+				'node_modules/@playwright/test/cli.js',
+				'test',
+				'--config',
+				'playwright.integration.config.ts',
+				...process.argv.slice(2),
+			],
+			resolve(root, 'apps/web'),
+		)
+	}
 } finally {
+	cleaningUp = true
 	await run([...compose, 'down', '--volumes'])
 }
-process.exit(exitCode)
+process.exit(interrupted ? signalExitCode(interrupted) : exitCode)
