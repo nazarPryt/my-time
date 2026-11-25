@@ -4,6 +4,20 @@ import type { ReleaseNote } from './release-note'
 
 export const RELEASE_NOTES: ReleaseNote[] = [
 	{
+		version: '0.6.0',
+		date: '2026-11-25',
+		features: [
+			'New my·time logo on the sign-in page and in the browser tab',
+			'See the app version next to the logo, with a dot when there are new release notes',
+			'Read "What\'s new" more easily, with each release clearly separated',
+			'Thin scrollbars that match the light and dark themes',
+			'Right-click the GNOME player controls to switch which player they control',
+			'Errors in the web app and browser extension are reported so they get fixed sooner',
+			'Problems and outages are now detected and alerted on automatically',
+		],
+		fixes: [],
+	},
+	{
 		version: '0.5.1',
 		date: '2026-11-21',
 		features: [
