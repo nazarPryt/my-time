@@ -1,0 +1,30 @@
+apiVersion: 1
+
+# Credentials come from GRAFANA_ALERT_TELEGRAM_BOT_TOKEN / _CHAT_ID; the chat id
+# placeholder is filled in by grafana-entrypoint.sh (see why there).
+contactPoints:
+  - orgId: 1
+    name: telegram
+    receivers:
+      - uid: telegram
+        type: telegram
+        settings:
+          bottoken: "$GRAFANA_ALERT_TELEGRAM_BOT_TOKEN"
+          chatid: __TELEGRAM_CHAT_ID__
+          message: '{{ template "my-time.telegram" . }}'
+          parse_mode: None
+        disableResolveMessage: false
+
+templates:
+  - orgId: 1
+    name: my-time.telegram
+    template: |
+      {{ define "my-time.telegram" -}}
+      {{ range .Alerts -}}
+      {{ if eq .Status "firing" }}🔴 FIRING{{ else }}✅ RESOLVED{{ end }}: {{ .Labels.alertname }}{{ with .Labels.severity }} [{{ . }}]{{ end }}
+      {{ with .Annotations.summary }}{{ . }}
+      {{ end }}{{ with .Annotations.description }}{{ . }}
+      {{ end }}{{ if eq .Status "firing" }}{{ with .Annotations.runbook }}Runbook: {{ . }}
+      {{ end }}{{ end }}
+      {{ end -}}
+      {{ end }}

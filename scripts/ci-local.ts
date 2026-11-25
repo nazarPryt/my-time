@@ -44,6 +44,7 @@ const steps = [
 	['bun', 'run', 'test:web:e2e:integration'],
 	['bun', '--filter', 'web', 'build'],
 	['bun', '--filter', 'english-quiz', 'build'],
+	['bun', 'run', 'check:observability'],
 	[
 		'env',
 		'FRONTEND_WEB_URL=http://localhost:5173',

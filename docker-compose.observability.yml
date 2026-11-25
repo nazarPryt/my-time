@@ -1,0 +1,57 @@
+# Local copy of the production observability stack (docs/observability.md),
+# watching the dev servers on the host: `bun run observability:up`, then
+# Grafana on http://localhost:3001 (admin/admin). Same images and configs as
+# docker-compose.prod.yml; only the targets and published ports differ.
+name: my-time-observability
+
+x-host-gateway: &host-gateway
+  extra_hosts:
+    - host.docker.internal:host-gateway
+
+services:
+  loki:
+    extends:
+      file: docker-compose.prod.yml
+      service: loki
+
+  prometheus:
+    extends:
+      file: docker-compose.prod.yml
+      service: prometheus
+
+  alloy:
+    extends:
+      file: docker-compose.prod.yml
+      service: alloy
+    <<: *host-gateway
+    environment:
+      # `bun run api:dev` serves metrics on the host.
+      API_METRICS_TARGET: host.docker.internal:9464
+      API_URL: http://host.docker.internal:3000
+      FRONTEND_WEB_URL: http://host.docker.internal:5173
+      # `bun run docker:db` publishes the dev database on 5432.
+      POSTGRES_EXPORTER_DSN: ${OBSERVABILITY_POSTGRES_DSN:-postgresql://postgres:postgres@host.docker.internal:5432/my_time?sslmode=disable}
+      GRAFANA_METRICS_PASSWORD: ""
+    depends_on:
+      - loki
+      - prometheus
+
+  grafana:
+    extends:
+      file: docker-compose.prod.yml
+      service: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SERVER_ROOT_URL: http://localhost:3001/
+      GF_METRICS_BASIC_AUTH_PASSWORD: ""
+    depends_on:
+      - loki
+      - prometheus
+
+volumes:
+  loki-data:
+  prometheus-data:
+  grafana-data:
+  alloy-data:

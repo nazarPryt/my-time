@@ -1,0 +1,5 @@
+# Prometheus only stores metrics: Alloy scrapes every target and pushes the
+# samples here via remote_write, so there are no scrape_configs. An empty
+# file also stops the image's default self-scrape, which would duplicate
+# Alloy's job="prometheus" series.
+global: {}

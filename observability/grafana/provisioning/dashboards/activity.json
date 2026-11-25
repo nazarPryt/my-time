@@ -1,0 +1,1024 @@
+{
+	"uid": "my-time-activity",
+	"title": "Users & activity",
+	"description": "Sign-ups, logins, failed logins, active users, feature usage and client-side errors.",
+	"tags": ["my-time", "users"],
+	"timezone": "browser",
+	"schemaVersion": 40,
+	"version": 1,
+	"editable": true,
+	"graphTooltip": 1,
+	"liveNow": false,
+	"refresh": "1m",
+	"time": {
+		"from": "now-24h",
+		"to": "now"
+	},
+	"timepicker": {},
+	"fiscalYearStartMonth": 0,
+	"links": [
+		{
+			"title": "my-time dashboards",
+			"type": "dashboards",
+			"tags": ["my-time"],
+			"asDropdown": true,
+			"includeVars": false,
+			"keepTime": true,
+			"targetBlank": false,
+			"icon": "external link",
+			"tooltip": "",
+			"url": ""
+		}
+	],
+	"templating": {
+		"list": []
+	},
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": {
+					"type": "grafana",
+					"uid": "-- Grafana --"
+				},
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"type": "dashboard"
+			},
+			{
+				"name": "Deploys",
+				"datasource": {
+					"type": "loki",
+					"uid": "loki"
+				},
+				"enable": true,
+				"iconColor": "purple",
+				"expr": "{service=\"api\"} |= \"server is up and running\" | json",
+				"target": {
+					"refId": "Anno",
+					"expr": "{service=\"api\"} |= \"server is up and running\" | json"
+				},
+				"titleFormat": "Deploy",
+				"textFormat": "API started, version {{version}}",
+				"tagKeys": "version",
+				"instant": false
+			}
+		]
+	},
+	"panels": [
+		{
+			"type": "row",
+			"title": "Accounts and sign-ins",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 1
+			},
+			"id": 1
+		},
+		{
+			"type": "stat",
+			"title": "Sign-ups",
+			"description": "New accounts registered in the selected range.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum(increase(auth_events_total{event=\"register\"}[$__range])) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 2
+		},
+		{
+			"type": "stat",
+			"title": "Logins",
+			"description": "Successful logins (email + password) in the selected range. Token refreshes are not counted.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum(increase(auth_events_total{event=\"login\"}[$__range])) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 4,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 3
+		},
+		{
+			"type": "stat",
+			"title": "Failed logins",
+			"description": "Wrong email/password attempts in the selected range. A few are normal typos; amber above 20, red above 100 (someone may be guessing passwords).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum(increase(auth_events_total{event=\"login_failed\"}[$__range])) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 20
+							},
+							{
+								"color": "red",
+								"value": 100
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 4
+		},
+		{
+			"type": "stat",
+			"title": "Token refresh failures",
+			"description": "Refresh-token exchanges that were rejected (unknown or invalid token). Users then have to log in again. Some happen after tokens expire; a spike right after a deploy may mean tokens were invalidated.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum(increase(auth_events_total{event=\"refresh_failed\"}[$__range])) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 20
+							},
+							{
+								"color": "red",
+								"value": 100
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 5
+		},
+		{
+			"type": "stat",
+			"title": "Active users (range)",
+			"description": "Distinct signed-in users who made at least one API request in the selected range (from the access logs in Loki).",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "count(sum by (userId) (count_over_time({service=\"api\"} |= \"request completed\" |= \"userId\" | json userId | __error__=\"\" | userId!=\"\" [$__range]))) or vector(0)",
+					"editorMode": "code",
+					"queryType": "instant"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "value",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 16,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 6
+		},
+		{
+			"type": "stat",
+			"title": "Client errors",
+			"description": "Errors reported by the web app and browser extension in the selected range. Amber above 1, red above 20 — see 'Client errors reported' below.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum(increase(client_errors_total[$__range])) or vector(0)",
+					"legendFormat": "__auto",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							},
+							{
+								"color": "#EAB839",
+								"value": 1
+							},
+							{
+								"color": "red",
+								"value": 20
+							}
+						]
+					},
+					"mappings": [],
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"colorMode": "background",
+				"graphMode": "none",
+				"textMode": "auto",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"wideLayout": true,
+				"showPercentChange": false
+			},
+			"gridPos": {
+				"x": 20,
+				"y": 1,
+				"w": 4,
+				"h": 4
+			},
+			"id": 7
+		},
+		{
+			"type": "timeseries",
+			"title": "Auth events",
+			"description": "Sign-ups, logins, logouts, refreshes and their failures per hour (per bar on long ranges).",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (event) (increase(auth_events_total[$__interval]))",
+					"legendFormat": "{{event}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "bars",
+						"lineWidth": 1,
+						"fillOpacity": 70,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "linear",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "login_failed"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "#EAB839"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "refresh_failed"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "red"
+								}
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "register"
+						},
+						"properties": [
+							{
+								"id": "color",
+								"value": {
+									"mode": "fixed",
+									"fixedColor": "purple"
+								}
+							}
+						]
+					}
+				]
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"interval": "1h",
+			"gridPos": {
+				"x": 0,
+				"y": 5,
+				"w": 12,
+				"h": 8
+			},
+			"id": 8
+		},
+		{
+			"type": "timeseries",
+			"title": "Daily active users (rolling 24 h)",
+			"description": "Distinct signed-in users with at least one API request in the 24 hours before each point. Comes from Loki access logs, so it covers only the log retention (30 days).",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "count(sum by (userId) (count_over_time({service=\"api\"} |= \"request completed\" |= \"userId\" | json userId | __error__=\"\" | userId!=\"\" [1d])))",
+					"editorMode": "code",
+					"queryType": "range",
+					"legendFormat": "active users",
+					"step": "1h"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "line",
+						"lineWidth": 1,
+						"fillOpacity": 10,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "smooth",
+						"stacking": {
+							"mode": "none",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 5,
+				"w": 12,
+				"h": 8
+			},
+			"id": 9
+		},
+		{
+			"type": "row",
+			"title": "Feature usage",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 13,
+				"w": 24,
+				"h": 1
+			},
+			"id": 10
+		},
+		{
+			"type": "timeseries",
+			"title": "Requests by feature",
+			"description": "API requests per feature (time tracker, workouts, English quiz, site blocking, permesso) in each time bucket. Shows which parts of the app people actually use.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (feature) (label_replace(increase(http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz|site-blocking|permesso)(/.*)?\"}[$__interval]), \"feature\", \"$1\", \"route\", \"/api/v1/([^/]+).*\"))",
+					"legendFormat": "{{feature}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "bars",
+						"lineWidth": 1,
+						"fillOpacity": 70,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "linear",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"interval": "1h",
+			"gridPos": {
+				"x": 0,
+				"y": 14,
+				"w": 12,
+				"h": 9
+			},
+			"id": 11
+		},
+		{
+			"type": "bargauge",
+			"title": "Top feature routes",
+			"description": "The busiest routes of the time tracker, workouts and English quiz in the selected range.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "topk(15, sum by (route) (increase(http_requests_total{job=\"api\", route=~\"/api/v1/(time-tracker|workout|english-quiz)(/.*)?\"}[$__range])))",
+					"legendFormat": "{{route}}",
+					"editorMode": "code",
+					"range": false,
+					"instant": true
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "thresholds"
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "blue",
+								"value": null
+							}
+						]
+					},
+					"min": 0,
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"orientation": "horizontal",
+				"displayMode": "gradient",
+				"valueMode": "color",
+				"namePlacement": "top",
+				"showUnfilled": true,
+				"sizing": "auto",
+				"minVizHeight": 16,
+				"maxVizHeight": 300,
+				"minVizWidth": 8
+			},
+			"gridPos": {
+				"x": 12,
+				"y": 14,
+				"w": 12,
+				"h": 9
+			},
+			"id": 12
+		},
+		{
+			"type": "row",
+			"title": "Client errors",
+			"collapsed": false,
+			"panels": [],
+			"gridPos": {
+				"x": 0,
+				"y": 23,
+				"w": 24,
+				"h": 1
+			},
+			"id": 13
+		},
+		{
+			"type": "timeseries",
+			"title": "Client errors by source",
+			"description": "Errors reported by clients, per source (web app or browser extension). A spike right after a deploy usually means a new bug in the frontend.",
+			"datasource": {
+				"type": "prometheus",
+				"uid": "prometheus"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "sum by (source) (increase(client_errors_total[$__interval]))",
+					"legendFormat": "{{source}}",
+					"editorMode": "code",
+					"range": true,
+					"instant": false
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"drawStyle": "bars",
+						"lineWidth": 1,
+						"fillOpacity": 70,
+						"gradientMode": "none",
+						"showPoints": "never",
+						"spanNulls": false,
+						"axisSoftMin": 0,
+						"lineInterpolation": "linear",
+						"stacking": {
+							"mode": "normal",
+							"group": "A"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						},
+						"insertNulls": false
+					},
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": null
+							}
+						]
+					},
+					"decimals": 0
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true,
+					"calcs": []
+				},
+				"tooltip": {
+					"mode": "multi",
+					"sort": "desc"
+				}
+			},
+			"interval": "10m",
+			"gridPos": {
+				"x": 0,
+				"y": 24,
+				"w": 8,
+				"h": 10
+			},
+			"id": 14
+		},
+		{
+			"type": "logs",
+			"title": "Client errors reported",
+			"description": "Each reported client error: source, app version, message and the page URL. Expand a line to see the stack trace and user agent.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\"} |= \"client error reported\" | json | line_format \"[{{.source}} {{.appVersion}}] {{.message}} — {{.url}}\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 8,
+				"y": 24,
+				"w": 16,
+				"h": 10
+			},
+			"id": 15
+		},
+		{
+			"type": "logs",
+			"title": "Failed logins and refresh failures",
+			"description": "'login failed' (with a hash of the email, never the email itself) and 'token refresh failed' lines. Many lines with the same emailHash = someone guessing one account's password.",
+			"datasource": {
+				"type": "loki",
+				"uid": "loki"
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "loki",
+						"uid": "loki"
+					},
+					"expr": "{service=\"api\", level=\"warn\"} |~ \"login failed|token refresh failed\"",
+					"editorMode": "code",
+					"queryType": "range"
+				}
+			],
+			"options": {
+				"showTime": true,
+				"showLabels": false,
+				"showCommonLabels": false,
+				"wrapLogMessage": true,
+				"prettifyLogMessage": false,
+				"enableLogDetails": true,
+				"dedupStrategy": "none",
+				"sortOrder": "Descending"
+			},
+			"gridPos": {
+				"x": 0,
+				"y": 34,
+				"w": 24,
+				"h": 8
+			},
+			"id": 16
+		}
+	]
+}

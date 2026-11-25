@@ -1,0 +1,82 @@
+name: Uptime
+
+# Checks the public site from outside the VPS, so an outage that also takes
+# down Grafana (host down, network, DNS) still pages someone. Configure in
+# repo settings (docs/observability.md, "External uptime check"):
+#   variables UPTIME_WEB_URL, UPTIME_API_HEALTH_URL
+#   secrets   UPTIME_TELEGRAM_BOT_TOKEN, UPTIME_TELEGRAM_CHAT_ID
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Public endpoints
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe endpoints
+        id: probe
+        env:
+          WEB_URL: ${{ vars.UPTIME_WEB_URL }}
+          API_HEALTH_URL: ${{ vars.UPTIME_API_HEALTH_URL }}
+        run: |
+          set -u
+          failures=""
+          checked=0
+          probe() {
+            name=$1 url=$2
+            if [ -z "$url" ]; then
+              echo "::notice::$name URL not configured, skipping"
+              return
+            fi
+            checked=$((checked + 1))
+            # Retries ride out a deploy restart or a single dropped connection.
+            if status=$(curl --silent --show-error --output /dev/null \
+              --write-out '%{http_code}' --max-time 15 \
+              --retry 3 --retry-delay 20 --retry-all-errors --fail "$url"); then
+              echo "$name OK ($status)"
+            else
+              echo "::error::$name DOWN: $url (HTTP ${status:-none})"
+              failures="${failures}${name}: ${url} (HTTP ${status:-none})"$'\n'
+            fi
+          }
+          probe web "$WEB_URL"
+          probe api "$API_HEALTH_URL"
+          if [ "$checked" -eq 0 ]; then
+            echo "::warning::No uptime URLs configured; nothing checked"
+            exit 0
+          fi
+          if [ -n "$failures" ]; then
+            {
+              echo 'failures<<EOF'
+              printf '%s' "$failures"
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Notify Telegram
+        if: failure() && steps.probe.outputs.failures != ''
+        env:
+          BOT_TOKEN: ${{ secrets.UPTIME_TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.UPTIME_TELEGRAM_CHAT_ID }}
+          FAILURES: ${{ steps.probe.outputs.failures }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+            echo "::warning::Telegram secrets not set; failure only visible in Actions"
+            exit 0
+          fi
+          text=$(printf '🔴 my-time is DOWN (external check)\n%s\n%s' "$FAILURES" "$RUN_URL")
+          curl --silent --show-error --fail --max-time 15 \
+            --form-string "chat_id=$CHAT_ID" \
+            --form-string "text=$text" \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" > /dev/null
