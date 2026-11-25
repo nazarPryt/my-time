@@ -1,0 +1,57 @@
+# Disposable stack for `bun run observability:test`: layered on
+# docker-compose.observability.yml, it adds a throwaway Postgres and the API as
+# a container (so its logs reach Loki like on the VPS) and moves the published
+# ports off the dev ones. scripts/observability-test.ts starts and removes it.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: my_time
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3200:3000"
+    environment:
+      # Production mode: JSON logs, which Alloy and the Loki queries parse.
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@db:5432/my_time
+      JWT_SECRET: observability-test-secret
+      API_URL: http://localhost:3200
+      HOST: 0.0.0.0
+      PORT: 3000
+      FRONTEND_WEB_URL: http://localhost:3200
+      PERMESSO_WEBSITE_URL: http://example.invalid
+      TELEGRAM_BOT_TOKEN: "123:observability-test"
+      TELEGRAM_WEBHOOK_SECRET: observability_test
+      METRICS_PORT: 9464
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/v1/health"]
+      interval: 3s
+      retries: 40
+    depends_on:
+      db:
+        condition: service_healthy
+
+  alloy:
+    environment:
+      API_METRICS_TARGET: api:9464
+      API_URL: http://api:3000
+      FRONTEND_WEB_URL: http://api:3000
+      POSTGRES_EXPORTER_DSN: postgresql://postgres:postgres@db:5432/my_time?sslmode=disable
+
+  grafana:
+    ports: !override
+      - "3201:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin

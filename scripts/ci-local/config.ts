@@ -1,5 +1,6 @@
 import { homedir, tmpdir } from 'node:os'
 import { resolve } from 'node:path'
+import type { Env } from '../shared/step-runner'
 import { CI_DATABASE_PORT } from './ci-local-lib'
 
 const DATABASE_NAME = 'my_time_ci'
@@ -7,8 +8,6 @@ const DATABASE_NAME = 'my_time_ci'
 const FLAGS = ['--plain', '--dry-run', '--allow-dirty']
 
 export const USAGE = `Usage: bun run ci:local [${FLAGS.join('] [')}]`
-
-export type Env = Record<string, string | undefined>
 
 export interface CiOptions {
 	plain: boolean

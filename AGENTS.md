@@ -44,6 +44,7 @@ bun --filter web test:e2e:ui    # Playwright with UI
 bun run test:web:e2e:extension # Packaged Chrome extension (builds automatically)
 bun run test:web:e2e:integration # Real API + desktop controller + disposable Postgres
 bun --filter web typecheck:e2e # Browser and integration test types
+bun run observability:test     # Grafana dashboards show the right data (docs/observability.md)
 
 # Docker (uses apps/api/.env)
 bun run docker:db        # Start only the Postgres container
@@ -199,6 +200,10 @@ one job and its own dependencies:
 - `session-sync` is runtime behaviour (reconnects, timers), not a shape.
 - `micro-frontends` describes the frontend ↔ frontend boundary and needs DOM
   types, which `api` and `desktop` do not have.
+
+Repo scripts live in `scripts/`; code they share goes in `scripts/shared/`
+(e.g. `shared/step-runner/`, the live step list behind `ci:local` and
+`observability:test`). A script imports `shared/`, never another script's folder.
 
 Package manager: **bun** with workspaces. Linter/formatter: **Biome** (no ESLint, no Prettier).
 

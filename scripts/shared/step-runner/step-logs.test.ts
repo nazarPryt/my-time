@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { stepLogPath } from './step-runner'
+import { stepLogPath } from './step-logs'
 
 describe('stepLogPath', () => {
 	test('numbers and slugs the log file so they sort in run order', () => {

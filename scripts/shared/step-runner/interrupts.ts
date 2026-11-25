@@ -1,4 +1,7 @@
-import { signalExitCode } from './ci-local-lib'
+// The shell convention: 128 + signal number.
+export function signalExitCode(signal: NodeJS.Signals): number {
+	return signal === 'SIGTERM' ? 143 : 130
+}
 
 // Remembers the first SIGINT/SIGTERM; later signals are ignored so cleanup can finish.
 export class InterruptGuard {
