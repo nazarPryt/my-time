@@ -5,11 +5,13 @@ import {
 	useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { reportClientError } from '@/shared/lib/error-reporting'
 import { ErrorScreen } from '@/shared/ui/error-boundary'
 import { NotFoundScreen } from '@/shared/ui/not-found-screen'
 
 export const Route = createRootRoute({
 	component: RootLayout,
+	onCatch: (error) => reportClientError(error),
 	errorComponent: ({ error, reset }) => (
 		<ErrorScreen
 			error={error instanceof Error ? error : undefined}

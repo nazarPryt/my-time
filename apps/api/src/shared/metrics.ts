@@ -1,3 +1,4 @@
+import { CLIENT_ERROR_SOURCES } from '@my-time/contracts'
 import client from 'prom-client'
 import { API_CONFIG } from './api-config'
 import { APP_VERSION } from './app-version'
@@ -90,6 +91,13 @@ export const authEventsTotal = new client.Counter({
 	registers: [metricsRegistry],
 })
 
+export const clientErrorsTotal = new client.Counter({
+	name: 'client_errors_total',
+	help: 'Errors reported by browser clients.',
+	labelNames: ['source'] as const,
+	registers: [metricsRegistry],
+})
+
 // Alerts use increase(), which can't see the first event after a restart
 // unless the series already exists at 0.
 for (const trigger of ['scheduled', 'manual'])
@@ -97,6 +105,7 @@ for (const trigger of ['scheduled', 'manual'])
 		permessoChecksTotal.inc({ trigger, result }, 0)
 for (const result of ['sent', 'failed', 'blocked'])
 	telegramMessagesTotal.inc({ result }, 0)
+for (const source of CLIENT_ERROR_SOURCES) clientErrorsTotal.inc({ source }, 0)
 
 const appInfo = new client.Gauge({
 	name: 'app_info',

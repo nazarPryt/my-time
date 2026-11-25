@@ -1,6 +1,7 @@
 import { checkDatabaseHealth } from '@db/connect'
 import cors from '@elysiajs/cors'
 import { authPlugin } from '@features/auth/routes'
+import { clientErrorsPlugin } from '@features/client-errors/routes'
 import { englishQuizPlugin } from '@features/english-quiz/routes'
 import { permessoPlugin } from '@features/permesso/routes'
 import { releasesPlugin } from '@features/releases/routes'
@@ -28,6 +29,7 @@ export const app = new Elysia({ prefix: API_PREFIX })
 	.use(permessoPlugin)
 	.use(releasesPlugin)
 	.use(englishQuizPlugin)
+	.use(clientErrorsPlugin)
 	.get('/', () => '✅ my-time api — up and running')
 	.get('/health', async ({ status }) =>
 		(await checkDatabaseHealth())

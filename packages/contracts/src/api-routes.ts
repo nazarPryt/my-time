@@ -62,3 +62,8 @@ export const RELEASES_ROUTES = {
 	prefix: '/releases',
 	seen: '/seen',
 } as const
+
+export const CLIENT_ERRORS_ROUTES = {
+	prefix: '/client-errors',
+	root: '/',
+} as const
